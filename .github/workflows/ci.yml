@@ -111,7 +111,9 @@ jobs:
           $libDir = Join-Path $mpvDir "lib"
           New-Item -ItemType Directory -Force -Path $libDir | Out-Null
           $defLines | Set-Content -Path $defFile -Encoding ASCII
-          lib /def:$defFile /machine:x64 /out:(Join-Path $libDir "mpv.lib")
+          $libOut = Join-Path $libDir "mpv.lib"
+          & lib.exe "/def:$defFile" "/machine:x64" "/out:$libOut"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "MPV_ROOT=$mpvDir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
 
       - name: Setup vcpkg
