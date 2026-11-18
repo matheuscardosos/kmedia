@@ -1,0 +1,62 @@
+name: Docs Sync
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-sync-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  docs-sync:
+    name: Require documentation updates
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check documentation and manual updates
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          SKIP_DOCS: ${{ contains(github.event.pull_request.labels.*.name, 'skip-docs') }}
+        run: |
+          if [ "$SKIP_DOCS" = "true" ]; then
+            echo "Skipping docs check due to skip-docs label."
+            exit 0
+          fi
+
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          CHANGED_FILES=$(git diff --name-only "origin/$BASE_REF...HEAD")
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          REQUIRES_DOCS=false
+          if echo "$PR_TITLE" | grep -Eq '^feat(\([^)]+\))?!?: '; then
+            REQUIRES_DOCS=true
+          fi
+          if echo "$CHANGED_FILES" | grep -Eq '^(resources/qml/|src/app/|src/integrations/|src/parsers/|src/media/|src/network/|src/models/)'; then
+            REQUIRES_DOCS=true
+          fi
+
+          if [ "$REQUIRES_DOCS" = "false" ]; then
+            echo "No user-facing feature or behavioral paths modified."
+            exit 0
+          fi
+
+          if echo "$CHANGED_FILES" | grep -Eq '^(docs/src/.*\.md|docs/architecture/.*\.md|README\.md|CHANGELOG\.md|CONTRIBUTING\.md)$'; then
+            echo "Documentation or changelog update detected."
+            exit 0
+          fi
+
+          echo "ERROR: Feature or user-facing changes require updating user manuals (docs/src/), docs/architecture/business-rules.md, or CHANGELOG.md (or applying the skip-docs label for pure internal fixes)."
+          exit 1

@@ -79,5 +79,6 @@ Available presets in `CMakePresets.json`:
 
 1. Check open issues and milestones before starting larger features.
 2. Create a focused branch from `main` referencing the related issue.
-3. Ensure formatting, `kmedia_qmllint`, and all Catch2/Qt tests pass locally.
-4. Submit a pull request using the repository template with clear verification notes.
+3. Keep user manuals (`docs/src/en/`, `docs/src/pt/`), [docs/architecture/business-rules.md](docs/architecture/business-rules.md), and `CHANGELOG.md` in sync whenever adding features or changing settings/UI behavior. CI enforces this via the `Docs Sync` check (use the `skip-docs` PR label only for purely internal refactors or bugfixes without user-visible behavior changes).
+4. Ensure formatting, `kmedia_qmllint`, and all Catch2/Qt tests pass locally.
+5. Submit a pull request using the repository template with clear verification notes.
