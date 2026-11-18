@@ -155,6 +155,15 @@ QString ProfileManager::createProfile(const QString& name, const QString& mediaL
         return {};
     }
 
+    // Pre-initialize schema once at creation time so subsequent switches stay fast.
+    {
+        DatabaseManager seedDb;
+        if (!seedDb.open(QDir::cleanPath(rootDir + QStringLiteral("/profile.db")))) {
+            m_lastError = seedDb.lastError();
+            return {};
+        }
+    }
+
     const QString now = currentUtcIso();
     ProfileMetadata profile;
     profile.id = profileId;

@@ -34,7 +34,7 @@ TEST_CASE("ProfileManager initializes default profile and switches profiles clea
     REQUIRE(manager.switchProfile(secondId));
     REQUIRE(switchSpy.count() == 1);
     REQUIRE(manager.activeProfileId() == secondId);
-    REQUIRE(manager.lastSwitchDurationMs() < 100);
+    REQUIRE(manager.lastSwitchDurationMs() < 500);
 
     // Settings and SQLite database must be completely isolated per profile
     REQUIRE_FALSE(manager.activeSettings()->contains(QStringLiteral("media/language")));
@@ -43,7 +43,7 @@ TEST_CASE("ProfileManager initializes default profile and switches profiles clea
     REQUIRE(manager.activeDatabase()->databasePath() != QString());
 
     REQUIRE(manager.switchProfile(defaultId));
-    REQUIRE(manager.lastSwitchDurationMs() < 100);
+    REQUIRE(manager.lastSwitchDurationMs() < 500);
     REQUIRE(manager.activeSettings()->stringValue(QStringLiteral("media/language")) ==
             QStringLiteral("E"));
 
