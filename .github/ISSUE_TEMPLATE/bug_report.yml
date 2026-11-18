@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a crash, playback issue, or unexpected behavior in KMedia.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the issue and what you expected to happen.
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 10/11 (x64)
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (x64)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: KMedia Version
+      placeholder: "e.g. 0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open KMedia
+        2. Load a media item
+        3. Trigger playback on the secondary display
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or hardware details
+      description: GPU model, display setup, OBS/Zoom version, or error output if available.

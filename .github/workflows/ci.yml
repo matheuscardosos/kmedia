@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: Format check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: Verify C++ formatting
+        run: |
+          mapfile -t files < <(find src tests -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' \))
+          if [ ${#files[@]} -gt 0 ]; then
+            clang-format --dry-run --Werror "${files[@]}"
+          fi
+
+  build:
+    name: Build and test (${{ matrix.os }})
+    needs: format
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            preset: linux-release
+            qt_arch: linux_gcc_64
+          - os: windows-latest
+            preset: windows-msvc-release
+            qt_arch: win64_msvc2022_64
+          - os: macos-latest
+            preset: macos-release
+            qt_arch: clang_64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC environment
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Qt 6.8.3
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          arch: ${{ matrix.qt_arch }}
+          modules: 'qtshadertools qtwebsockets qtimageformats qtpdf'
+          cache: true
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build pkg-config libmpv-dev libgl1-mesa-dev libegl1 libxcb-cursor0 libxkbcommon-dev
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install ninja pkg-config mpv
+          echo "PKG_CONFIG_PATH=$(brew --prefix mpv)/lib/pkgconfig:${PKG_CONFIG_PATH:-}" >> "$GITHUB_ENV"
+          echo "MPV_ROOT=$(brew --prefix mpv)" >> "$GITHUB_ENV"
+
+      - name: Install Windows dependencies
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python -m pip install --quiet ninja
+          $mpvDir = Join-Path $env:RUNNER_TEMP "mpv-dev"
+          New-Item -ItemType Directory -Force -Path $mpvDir | Out-Null
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -like "mpv-dev-x86_64-*.7z" -and $_.name -notlike "*v3*" } | Select-Object -First 1
+          $archive = Join-Path $env:RUNNER_TEMP "mpv-dev.7z"
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $archive
+          7z x $archive "-o$mpvDir" -y | Out-Null
+
+          # Generate MSVC import library from libmpv-2.dll exports
+          $dll = Join-Path $mpvDir "libmpv-2.dll"
+          $exports = dumpbin /EXPORTS $dll
+          $defLines = @("LIBRARY libmpv-2.dll", "EXPORTS")
+          $inExports = $false
+          foreach ($line in $exports) {
+            if ($line -match "^\s*ordinal\s+hint") {
+              $inExports = $true
+              continue
+            }
+            if ($inExports -and $line -match "^\s*Summary") {
+              break
+            }
+            if ($inExports -and $line -match "^\s*\d+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+(\S+)") {
+              $defLines += "  $($Matches[1])"
+            }
+          }
+          $defFile = Join-Path $mpvDir "libmpv.def"
+          $libDir = Join-Path $mpvDir "lib"
+          New-Item -ItemType Directory -Force -Path $libDir | Out-Null
+          $defLines | Set-Content -Path $defFile -Encoding ASCII
+          lib /def:$defFile /machine:x64 /out:(Join-Path $libDir "mpv.lib")
+          "MPV_ROOT=$mpvDir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
+
+      - name: Setup vcpkg
+        shell: bash
+        run: |
+          VCPKG_DIR="${RUNNER_TEMP}/vcpkg"
+          if [ ! -d "$VCPKG_DIR" ]; then
+            git clone --depth 1 https://github.com/microsoft/vcpkg.git "$VCPKG_DIR"
+          fi
+          if [ "${RUNNER_OS}" = "Windows" ]; then
+            cmd //c "${VCPKG_DIR//\//\\}\\bootstrap-vcpkg.bat -disableMetrics"
+          else
+            "$VCPKG_DIR/bootstrap-vcpkg.sh" -disableMetrics
+          fi
+          echo "VCPKG_ROOT=$VCPKG_DIR" >> "$GITHUB_ENV"
+
+      - name: Cache vcpkg binary archives
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/vcpkg
+            ~/AppData/Local/vcpkg
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --preset ${{ matrix.preset }} --output-on-failure

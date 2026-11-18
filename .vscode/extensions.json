@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "llvm-vs-code-extensions.vscode-clangd",
+    "ms-vscode.cmake-tools",
+    "theqtcompany.qt-core",
+    "theqtcompany.qt-cpp",
+    "theqtcompany.qt-qml",
+    "editorconfig.editorconfig"
+  ]
+}

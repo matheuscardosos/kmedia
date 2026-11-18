@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "kmedia",
+  "version-semver": "0.1.0",
+  "description": "Native C++20, Qt 6, and libmpv media manager and presentation workstation",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": [
+    "catch2",
+    "minizip-ng"
+  ]
+}

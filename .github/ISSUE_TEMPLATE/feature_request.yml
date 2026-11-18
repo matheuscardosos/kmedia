@@ -1,0 +1,19 @@
+name: Feature request
+description: Propose an improvement or new capability for KMedia.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the workflow problem and the proposed improvement.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Use case
+      description: Explain how this helps during congregation media preparation or presentation.
+    validations:
+      required: true
