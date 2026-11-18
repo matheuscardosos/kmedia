@@ -1,3 +1,5 @@
+![KMedia banner](./docs/src/assets/kmedia-banner.png)
+
 # KMedia
 
 ## Overview
