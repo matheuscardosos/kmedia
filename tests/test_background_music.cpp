@@ -66,4 +66,14 @@ TEST_CASE("BackgroundMusicEngine manages queues and performs headless fade-out",
     REQUIRE(fadeDoneSpy.count() == 1);
     REQUIRE_FALSE(engine.isPlaying());
     REQUIRE(engine.currentVolume() == 80);
+
+    engine.play();
+    REQUIRE(engine.isPlaying());
+    engine.fadeOutAndStop(150);
+    REQUIRE(engine.isFading());
+    REQUIRE(fadeDoneSpy.wait(2000));
+    REQUIRE(fadeDoneSpy.count() == 2);
+    REQUIRE_FALSE(engine.isFading());
+    REQUIRE_FALSE(engine.isPlaying());
+    REQUIRE(engine.currentVolume() == 80);
 }

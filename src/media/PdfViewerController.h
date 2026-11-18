@@ -47,7 +47,7 @@ public:
     void setPanY(double panY);
     [[nodiscard]] QString errorMessage() const;
 
-    [[nodiscard]] QImage renderPage(int pageIndex, const QSize& requestedSize) const;
+    [[nodiscard]] QImage renderPage(int pageIndex, const QSize& requestedSize);
 
 public slots:
     [[nodiscard]] bool load(const QUrl& url);

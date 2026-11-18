@@ -99,7 +99,7 @@ QString PdfViewerController::errorMessage() const
     return m_errorMessage;
 }
 
-QImage PdfViewerController::renderPage(int pageIndex, const QSize& requestedSize) const
+QImage PdfViewerController::renderPage(int pageIndex, const QSize& requestedSize)
 {
     if (!isLoaded() || pageIndex < 0 || pageIndex >= m_document.pageCount()) {
         return {};

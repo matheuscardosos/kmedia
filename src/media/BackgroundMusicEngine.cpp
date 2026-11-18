@@ -384,7 +384,7 @@ void BackgroundMusicEngine::next()
         m_currentIndex = (m_currentIndex + 1) % static_cast<int>(m_playlist.size());
     }
     emit queueChanged();
-    if (m_mpv != nullptr) {
+    if (m_playing && m_mpv != nullptr) {
         loadTrackAtIndex(m_currentIndex);
     }
 }
@@ -397,7 +397,7 @@ void BackgroundMusicEngine::previous()
     m_currentIndex =
         (m_currentIndex <= 0) ? static_cast<int>(m_playlist.size()) - 1 : m_currentIndex - 1;
     emit queueChanged();
-    if (m_mpv != nullptr) {
+    if (m_playing && m_mpv != nullptr) {
         loadTrackAtIndex(m_currentIndex);
     }
 }

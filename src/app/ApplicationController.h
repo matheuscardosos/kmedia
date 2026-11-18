@@ -6,6 +6,12 @@
 
 #include <memory>
 
+Q_MOC_INCLUDE("integrations/DisplayManager.h")
+Q_MOC_INCLUDE("media/BackgroundMusicEngine.h")
+Q_MOC_INCLUDE("media/MpvRendererItem.h")
+Q_MOC_INCLUDE("media/PdfViewerController.h")
+Q_MOC_INCLUDE("media/PlaybackController.h")
+
 class MpvRendererItem;
 
 namespace kmedia {
