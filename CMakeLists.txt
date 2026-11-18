@@ -41,8 +41,20 @@ find_package(LibMPV REQUIRED)
 include(CompilerWarnings)
 
 qt_add_library(kmedia_core STATIC
+    src/core/DatabaseManager.h
+    src/core/DatabaseManager.cpp
+    src/core/NetworkManager.h
+    src/core/NetworkManager.cpp
+    src/core/ProfileManager.h
+    src/core/ProfileManager.cpp
     src/core/RuntimeInfo.h
     src/core/RuntimeInfo.cpp
+    src/core/SettingsStore.h
+    src/core/SettingsStore.cpp
+    src/core/SystemUtils.h
+    src/core/SystemUtils.cpp
+    src/media/ThumbnailCache.h
+    src/media/ThumbnailCache.cpp
 )
 
 kmedia_set_compiler_warnings(kmedia_core)
@@ -58,12 +70,14 @@ target_compile_definitions(kmedia_core PUBLIC
 target_link_libraries(kmedia_core
     PUBLIC
         Qt6::Core
+        Qt6::Gui
         Qt6::Network
         Qt6::Pdf
         Qt6::Sql
         Qt6::WebSockets
     PRIVATE
         LibMPV::LibMPV
+        $<$<PLATFORM_ID:Windows>:psapi>
 )
 
 set(KMEDIA_PLATFORM_SOURCES "")

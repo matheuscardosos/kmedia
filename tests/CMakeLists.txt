@@ -1,15 +1,21 @@
 find_package(Catch2 3 CONFIG REQUIRED)
 
 qt_add_executable(kmedia_tests
+    test_main.cpp
     test_smoke.cpp
+    test_database_manager.cpp
+    test_profile_manager.cpp
+    test_settings_and_network.cpp
+    test_thumbnail_cache.cpp
 )
 
 kmedia_set_compiler_warnings(kmedia_tests)
 
 target_link_libraries(kmedia_tests PRIVATE
     kmedia_core
-    Catch2::Catch2WithMain
+    Catch2::Catch2
     Qt6::Core
+    Qt6::Gui
     Qt6::Test
     LibMPV::LibMPV
 )
