@@ -1,6 +1,10 @@
 ## Summary
 
-Describe the changes in this pull request and reference the related issue (`Closes #...`).
+Describe the changes in this pull request cleanly.
+
+## Related Issue
+
+- Reference an issue: `Closes #<number>` or `Refs #<number>` (or `No-Issue: <reason>` for standalone chores)
 
 ## Documentation
 
