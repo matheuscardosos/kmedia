@@ -1,0 +1,38 @@
+bug:
+  - head-branch: ['^fix', 'fix']
+
+enhancement:
+  - head-branch: ['^feat', 'feat']
+
+core:
+  - changed-files:
+      - any-glob-to-any-file: ['src/core/**/*', 'tests/test_*']
+
+media:
+  - changed-files:
+      - any-glob-to-any-file: ['src/media/**/*']
+
+parsers:
+  - changed-files:
+      - any-glob-to-any-file: ['src/parsers/**/*']
+
+integration:
+  - changed-files:
+      - any-glob-to-any-file: ['src/integrations/**/*']
+
+ui:
+  - changed-files:
+      - any-glob-to-any-file: ['resources/**/*', 'src/app/**/*']
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ['docs/**/*', '**/*.md']
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+          - 'CMakeLists.txt'
+          - 'CMakePresets.json'
+          - 'cmake/**/*'
+          - 'vcpkg.json'

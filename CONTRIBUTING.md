@@ -18,7 +18,9 @@ kmedia/
 └── tests/                  # Catch2 + Qt Test unit and integration suite
 ```
 
-## Architecture and Engineering Targets
+## Architecture, Business Rules, and Engineering Targets
+
+Review the domain behavioral contracts in [docs/architecture/business-rules.md](docs/architecture/business-rules.md) before modifying core services, media playback, dual-screen presentation, or integrations.
 
 - **Memory footprint target:** Under 45 MB RAM at idle and under 75 MB RAM during 1080p playback.
 - **Startup target:** Under 400 ms cold startup backed by SQLite WAL persistence and disk-backed thumbnail caching.
@@ -27,20 +29,20 @@ kmedia/
 
 ## UI Design System
 
-KMedia uses a dark **Studio Carbon & Broadcast Orange** palette calibrated to eliminate screen glare inside dimly lit A/V booths:
+KMedia uses a dark **Studio Carbon & Broadcast Orange** palette calibrated to eliminate screen glare inside dimly lit A/V booths (see [resources/qml/Theme.qml](resources/qml/Theme.qml)):
 
 | Role | Token | Hex |
 | :--- | :--- | :--- |
-| Window Base | `windowBg` | `#0D0F12` |
-| Panel Surface | `surfaceBg` | `#14171C` |
-| Card / Row Surface | `cardBg` | `#1B1F26` |
-| Elevated Hover | `hoverBg` | `#222730` |
-| Subtle Border | `borderColor` | `#262B34` |
-| Primary Accent | `accent` | `#FF6B00` |
-| Primary Text | `textPrimary` | `#F0F2F5` |
-| Secondary Text | `textSecondary` | `#8E95A2` |
+| Window Base | `windowBase` | `#0D0F12` |
+| Panel Surface | `panelSurface` | `#14171C` |
+| Card / Row Surface | `cardSurface` | `#1B1F26` |
+| Elevated Hover | `cardHover` | `#232832` |
+| Subtle Border | `borderHairline` | `#282D37` |
+| Primary Accent | `accentPrimary` | `#FF6B00` |
+| Primary Text | `textPrimary` | `#F4F5F7` |
+| Secondary Text | `textSecondary` | `#949BA8` |
 
-Layout follows a fixed three-column workstation grid: a compact left navigation rail, a dense center playlist/media workspace, and a right-hand live preview and inspector panel.
+Layout adapts smoothly across three responsive breakpoints (`Wide >= 1080 px` three-column workstation, `Medium 680-1079 px` collapsed icon rail, and `Compact 360-679 px` single-column strip for side-by-side operation with Zoom).
 
 ## Building from Source
 
