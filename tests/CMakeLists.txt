@@ -7,6 +7,9 @@ qt_add_executable(kmedia_tests
     test_profile_manager.cpp
     test_settings_and_network.cpp
     test_thumbnail_cache.cpp
+    test_playback_and_pdf.cpp
+    test_background_music.cpp
+    test_display_manager.cpp
 )
 
 kmedia_set_compiler_warnings(kmedia_tests)

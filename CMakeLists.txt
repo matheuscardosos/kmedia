@@ -53,6 +53,16 @@ qt_add_library(kmedia_core STATIC
     src/core/SettingsStore.cpp
     src/core/SystemUtils.h
     src/core/SystemUtils.cpp
+    src/integrations/DisplayManager.h
+    src/integrations/DisplayManager.cpp
+    src/media/BackgroundMusicEngine.h
+    src/media/BackgroundMusicEngine.cpp
+    src/media/MpvRendererItem.h
+    src/media/MpvRendererItem.cpp
+    src/media/PdfViewerController.h
+    src/media/PdfViewerController.cpp
+    src/media/PlaybackController.h
+    src/media/PlaybackController.cpp
     src/media/ThumbnailCache.h
     src/media/ThumbnailCache.cpp
 )
@@ -72,7 +82,9 @@ target_link_libraries(kmedia_core
         Qt6::Core
         Qt6::Gui
         Qt6::Network
+        Qt6::OpenGL
         Qt6::Pdf
+        Qt6::Quick
         Qt6::Sql
         Qt6::WebSockets
     PRIVATE
@@ -112,6 +124,9 @@ set_source_files_properties(resources/qml/Theme.qml PROPERTIES
 set_source_files_properties(resources/qml/Main.qml PROPERTIES
     QT_RESOURCE_ALIAS Main.qml
 )
+set_source_files_properties(resources/qml/PresentationWindow.qml PROPERTIES
+    QT_RESOURCE_ALIAS PresentationWindow.qml
+)
 set_source_files_properties(resources/qml/components/NavRailButton.qml PROPERTIES
     QT_RESOURCE_ALIAS components/NavRailButton.qml
 )
@@ -138,11 +153,11 @@ qt_add_qml_module(kmedia
     SOURCES
         src/app/ApplicationController.h
         src/app/ApplicationController.cpp
-        src/media/MpvRendererItem.h
-        src/media/MpvRendererItem.cpp
+        src/app/QmlTypes.h
     QML_FILES
         resources/qml/Theme.qml
         resources/qml/Main.qml
+        resources/qml/PresentationWindow.qml
         resources/qml/components/NavRailButton.qml
         resources/qml/components/StatusRow.qml
         resources/qml/components/LeftNavRail.qml

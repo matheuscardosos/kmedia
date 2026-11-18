@@ -3,7 +3,7 @@
 #include <QQuickFramebufferObject>
 #include <QString>
 #include <QUrl>
-#include <QtQmlIntegration/qqmlintegration.h>
+#include <QVariantList>
 
 #include <memory>
 
@@ -12,12 +12,27 @@ struct mpv_handle;
 class MpvRendererItem : public QQuickFramebufferObject
 {
     Q_OBJECT
-    QML_ELEMENT
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged FINAL)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged FINAL)
     Q_PROPERTY(bool mediaLoaded READ isMediaLoaded NOTIFY mediaLoadedChanged FINAL)
     Q_PROPERTY(QString hardwareDecoder READ hardwareDecoder NOTIFY hardwareDecoderChanged FINAL)
+    Q_PROPERTY(qint64 positionMs READ positionMs NOTIFY positionChanged FINAL)
+    Q_PROPERTY(qint64 durationMs READ durationMs NOTIFY durationChanged FINAL)
+    Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY volumeChanged FINAL)
+    Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY mutedChanged FINAL)
+    Q_PROPERTY(
+        QString audioDevice READ audioDevice WRITE setAudioDevice NOTIFY audioDeviceChanged FINAL)
+    Q_PROPERTY(QVariantList audioDevices READ audioDevices NOTIFY audioDevicesChanged FINAL)
+    Q_PROPERTY(QVariantList audioTracks READ audioTracks NOTIFY tracksChanged FINAL)
+    Q_PROPERTY(QVariantList subtitleTracks READ subtitleTracks NOTIFY tracksChanged FINAL)
+    Q_PROPERTY(int currentAudioTrack READ currentAudioTrack WRITE setCurrentAudioTrack NOTIFY
+                   tracksChanged FINAL)
+    Q_PROPERTY(int currentSubtitleTrack READ currentSubtitleTrack WRITE setCurrentSubtitleTrack
+                   NOTIFY tracksChanged FINAL)
+    Q_PROPERTY(double zoomScale READ zoomScale WRITE setZoomScale NOTIFY viewportChanged FINAL)
+    Q_PROPERTY(double panX READ panX WRITE setPanX NOTIFY viewportChanged FINAL)
+    Q_PROPERTY(double panY READ panY WRITE setPanY NOTIFY viewportChanged FINAL)
 
 public:
     struct WakeupBridge;
@@ -38,17 +53,63 @@ public:
     [[nodiscard]] bool isMediaLoaded() const;
     [[nodiscard]] QString hardwareDecoder() const;
 
+    [[nodiscard]] qint64 positionMs() const;
+    [[nodiscard]] qint64 durationMs() const;
+
+    [[nodiscard]] int volume() const;
+    void setVolume(int volume);
+
+    [[nodiscard]] bool isMuted() const;
+    void setMuted(bool muted);
+
+    [[nodiscard]] QString audioDevice() const;
+    void setAudioDevice(const QString& deviceId);
+    [[nodiscard]] QVariantList audioDevices() const;
+
+    [[nodiscard]] QVariantList audioTracks() const;
+    [[nodiscard]] QVariantList subtitleTracks() const;
+    [[nodiscard]] int currentAudioTrack() const;
+    void setCurrentAudioTrack(int trackId);
+    [[nodiscard]] int currentSubtitleTrack() const;
+    void setCurrentSubtitleTrack(int trackId);
+
+    [[nodiscard]] double zoomScale() const;
+    void setZoomScale(double zoomScale);
+    [[nodiscard]] double panX() const;
+    void setPanX(double panX);
+    [[nodiscard]] double panY() const;
+    void setPanY(double panY);
+
     [[nodiscard]] std::shared_ptr<mpv_handle> sharedHandle() const;
+
+    [[nodiscard]] static double zoomScaleToMpvLog2(double zoomScale);
 
 public slots:
     void loadFile(const QUrl& url);
+    void loadMedia(const QUrl& url, qint64 trimStartMs, qint64 trimEndMs);
+    void play();
+    void pause();
+    void togglePause();
     void stop();
+    void seekMs(qint64 positionMs);
+    void seekRelativeMs(qint64 deltaMs);
+    void setTrimRange(qint64 trimStartMs, qint64 trimEndMs);
+    void resetViewport();
 
 signals:
     void sourceChanged();
     void pausedChanged();
     void mediaLoadedChanged();
     void hardwareDecoderChanged();
+    void positionChanged();
+    void durationChanged();
+    void volumeChanged();
+    void mutedChanged();
+    void audioDeviceChanged();
+    void audioDevicesChanged();
+    void tracksChanged();
+    void viewportChanged();
+    void playbackFinished();
     void playbackError(const QString& message);
 
 private slots:
@@ -56,6 +117,9 @@ private slots:
 
 private:
     void initializeMpv();
+    void applyTrimProperties(qint64 trimStartMs, qint64 trimEndMs);
+    void handleTrackListNode(const void* nodePtr);
+    void handleAudioDeviceListNode(const void* nodePtr);
 
     std::shared_ptr<mpv_handle> m_mpv;
     std::shared_ptr<WakeupBridge> m_wakeupBridge;
@@ -63,4 +127,17 @@ private:
     bool m_paused{true};
     bool m_mediaLoaded{false};
     QString m_hardwareDecoder{QStringLiteral("auto-safe")};
+    qint64 m_positionMs{0};
+    qint64 m_durationMs{0};
+    int m_volume{100};
+    bool m_muted{false};
+    QString m_audioDevice{QStringLiteral("auto")};
+    QVariantList m_audioDevices;
+    QVariantList m_audioTracks;
+    QVariantList m_subtitleTracks;
+    int m_currentAudioTrack{1};
+    int m_currentSubtitleTrack{0};
+    double m_zoomScale{1.0};
+    double m_panX{0.0};
+    double m_panY{0.0};
 };

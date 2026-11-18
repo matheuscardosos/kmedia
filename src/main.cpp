@@ -1,3 +1,6 @@
+#include "app/ApplicationController.h"
+#include "media/PdfViewerController.h"
+
 #include <QGuiApplication>
 #include <QIcon>
 #include <QQmlApplicationEngine>
@@ -28,6 +31,12 @@ int main(int argc, char* argv[])
     std::setlocale(LC_NUMERIC, "C");
 
     QQmlApplicationEngine engine;
+    if (auto* controller = engine.singletonInstance<ApplicationController*>(
+            "KMedia.UI", "ApplicationController")) {
+        engine.addImageProvider(QStringLiteral("kmedia-pdf"),
+                                new kmedia::PdfPageImageProvider(controller->pdfController()));
+    }
+
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
         []() { QCoreApplication::exit(1); }, Qt::QueuedConnection);

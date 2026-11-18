@@ -9,13 +9,14 @@ Cada perfil de congregação no KMedia mantém seu próprio banco de dados e pas
 
 ## Exibição e Standby
 
-- **Monitor de Apresentação:** Use a seleção automática da segunda tela ou escolha manualmente a saída desejada.
-- **Imagem de Standby:** Defina uma imagem personalizada da congregação para exibição enquanto nenhuma mídia estiver ativa.
+- **Monitor de Apresentação:** Use a seleção automática da segunda tela ou escolha manualmente a saída desejada (com retorno automático caso o monitor escolhido seja desconectado).
+- **Decodificação por Hardware:** Utiliza aceleração segura por GPU (`auto-safe`) no `libmpv` para manter o notebook frio e silencioso.
+- **Imagem de Standby:** Defina uma imagem personalizada da congregação para exibição enquanto nenhuma mídia estiver ativa ou em `Standby / Blackout`.
 
 ## Áudio e Música Ambiente
 
 - **Dispositivo de Saída:** Escolha um dispositivo específico pela lista do `libmpv` para evitar microfonia ou eco entre o som local e o Zoom.
-- **Música Ambiente Programada:** Defina os horários de início das reuniões para que a música ambiente faça um fade-out suave de 5 segundos e pare exatamente na hora.
+- **Música Ambiente Programada:** Defina os dias, horários de início das reuniões e a duração do fade-out (padrão `5000 ms`) para que a música ambiente faça o fade-out suave e pare exatamente na hora.
 
 ## OBS Studio e Zoom
 

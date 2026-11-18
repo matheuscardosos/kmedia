@@ -9,13 +9,14 @@ Each congregation profile in KMedia keeps its own isolated settings database and
 
 ## Display & Standby
 
-- **Presentation Display:** Choose automatic secondary-display assignment or select a specific output screen manually.
-- **Standby Image:** Configure a custom congregation standby image shown when playback is idle or in standby.
+- **Presentation Display:** Choose automatic secondary-display assignment or select a specific output screen manually (override falls back automatically if the selected display disconnects).
+- **Hardware Video Decoding:** Uses safe GPU decoding (`auto-safe`) via `libmpv` to keep laptop thermals and CPU usage minimal.
+- **Standby Image:** Configure a custom congregation standby image shown when playback is idle or in standby (`Standby / Blackout`).
 
 ## Audio & Background Music
 
 - **Output Device:** Select a dedicated audio device from `libmpv` to avoid feedback loops between hall speakers and Zoom.
-- **Scheduled Background Music:** Set midweek and weekend meeting start times so ambient background music automatically performs a smooth 5-second fade-out and stops on schedule.
+- **Scheduled Background Music:** Set midweek and weekend meeting days and start times plus fade-out duration (default `5000 ms`) so ambient background music automatically performs a smooth fade-out and stops on schedule.
 
 ## OBS Studio & Zoom
 

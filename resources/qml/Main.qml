@@ -46,4 +46,8 @@ ApplicationWindow {
             Layout.fillHeight: true
         }
     }
+
+    PresentationWindow {
+        id: presentationWindow
+    }
 }

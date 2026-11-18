@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Repository documentation (`CONTRIBUTING.md`, `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`) and user-focused `README.md`.
 - Core persistence and profile engine (`DatabaseManager` with SQLite3 WAL migrations, `ProfileManager`, `SettingsStore`, `NetworkManager`, `SystemUtils`, and disk-backed LRU `ThumbnailCache`) with Catch2 unit tests.
 - Repository automation (`.github/dependabot.yml`, `.github/labeler.yml`, PR Conventional Commit title and issue traceability check, `Docs Sync` documentation enforcement, and CodeQL scanning) plus domain business rules in `docs/architecture/business-rules.md`.
+- Media engine and dual-screen presentation modules (`MpvRendererItem` transport/trims/tracks/zoom-pan, `PlaybackController`, `BackgroundMusicEngine` with scheduled 5-second fade-out, `DisplayManager` with `PresentationWindow`, and `PdfViewerController` with `PdfPageImageProvider`) plus Catch2 unit tests.
 
 ## [0.1.0] - 2026-11-18
 
