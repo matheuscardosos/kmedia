@@ -31,6 +31,11 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS
 
 qt_standard_project_setup(REQUIRES 6.8)
 
+if(APPLE)
+    include(AppleWorkarounds)
+    kmedia_strip_missing_macos_agl()
+endif()
+
 find_package(LibMPV REQUIRED)
 
 include(CompilerWarnings)

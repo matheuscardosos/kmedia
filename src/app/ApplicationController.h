@@ -4,7 +4,7 @@
 #include <QString>
 #include <QtQmlIntegration/qqmlintegration.h>
 
-class ApplicationController final : public QObject
+class ApplicationController : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
