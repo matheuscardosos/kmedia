@@ -37,13 +37,13 @@ This document defines the behavioral contracts and architectural invariants that
 
 ## 6. Network Politeness and Archive Safety
 
-- All catalog and meeting media requests identify `KMedia/<version>` in `User-Agent`, enable HTTP/2, limit concurrent transfers to at most `3` by default (never above `6`), honor `ETag` (`If-None-Match`) and `Last-Modified` (`If-Modified-Since`), and use exponential backoff only on transient statuses (`408`, `429`, `5xx`).
-- Archive extractors (`.jwpub`, `.jwlplaylist`, `S-34`) must validate every archive path against directory traversal (Zip-Slip) before reading or writing data.
+- All catalog and meeting media requests identify `KMedia/<version>` in `User-Agent`, enable HTTP/2, limit concurrent transfers to at most `3` by default (never above `6`), honor `ETag` (`If-None-Match`) and `Last-Modified` (`If-Modified-Since`), stream payloads to `.part` files before atomic rename, verify SHA-256 checksums, and use exponential backoff only on transient statuses (`408`, `429`, `5xx`).
+- Archive extractors (`.jwpub`, `.jwlplaylist`, `S-34 / S-34mp`) must validate every archive path and entry size cap against directory traversal (Zip-Slip) and decompression bombs before reading or writing data, and convert JW Library 100-nanosecond ticks into non-destructive millisecond trim bounds (`10000 ticks/ms`).
 
 ## 7. Cloud Folder Synchronization Rules
 
-- Local Dropbox, OneDrive, Google Drive, and Nextcloud directories are watched through OS filesystem notifications (`QFileSystemWatcher`) with zero disk-scanning timers in steady state.
-- Filesystem modification notifications are debounced (`500 ms`) before importing so partially synced cloud files are never read prematurely.
+- Local Dropbox, OneDrive, Google Drive, and Nextcloud directories are watched recursively through OS filesystem notifications (`QFileSystemWatcher`) with zero disk-scanning timers in steady state.
+- Filesystem modification notifications are debounced (`500 ms`) per file and checked for size/timestamp stability and readable archive integrity before importing so partially synced cloud files are never read prematurely.
 
 ## 8. Responsive Operator Console Breakpoints
 

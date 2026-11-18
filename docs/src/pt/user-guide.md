@@ -22,8 +22,10 @@ Este manual apresenta o fluxo principal do KMedia para preparar e exibir mídias
 ## Importação de Mídias
 
 - **Arrastar e Soltar:** Arraste vídeos (`MP4`, `MKV`, `WebM`), áudios (`MP3`, `AAC`, `OGG`, `FLAC`), imagens (`JPEG`, `PNG`, `WebP`) ou documentos `PDF` diretamente para a playlist.
-- **Pacotes de Publicações:** Importe arquivos `.jwpub` e `.jwlplaylist` nativamente sem precisar descompactar manualmente.
-- **Pastas Sincronizadas na Nuvem:** Configure uma pasta local do Dropbox, OneDrive, Google Drive ou Nextcloud para importar novas mídias automaticamente.
+- **Pacotes de Publicações e Discursos (`.jwpub` e `S-34 / S-34mp`):** Abra arquivos `.jwpub` nativamente com `minizip-ng` (com leitura SQLite interna de `contents` e validação contra Zip-Slip) e extraia seletivamente apenas as imagens, vídeos ou mídias do discurso público escolhido, sem arquivos temporários sobrando em disco.
+- **Playlists do JW Library (`.jwlplaylist`):** Importe pacotes `.jwlplaylist` preservando a ordem do `TagMap`, marcadores, flag de repetição (`EndAction`), mídias/miniaturas embutidas e pontos de corte convertidos a partir dos ticks de 100 nanossegundos.
+- **Downloads e Catálogo:** Baixe catálogos de idiomas e mídias de reuniões com cache condicional via `ETag` / `Last-Modified`, fila com concorrência limitada, gravação direta em `.part`, verificação SHA-256 em tempo real e controles de pausa, retomada ou cancelamento.
+- **Pastas Sincronizadas na Nuvem:** Configure ou detecte automaticamente pastas locais do Dropbox, OneDrive, Google Drive ou Nextcloud para importar mídias estáveis automaticamente após o debounce de `500 ms`.
 
 ## Apresentação em Segunda Tela
 

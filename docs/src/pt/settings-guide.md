@@ -18,6 +18,11 @@ Cada perfil de congregação no KMedia mantém seu próprio banco de dados e pas
 - **Dispositivo de Saída:** Escolha um dispositivo específico pela lista do `libmpv` para evitar microfonia ou eco entre o som local e o Zoom.
 - **Música Ambiente Programada:** Defina os dias, horários de início das reuniões e a duração do fade-out (padrão `5000 ms`) para que a música ambiente faça o fade-out suave e pare exatamente na hora.
 
+## Downloads de Rede e Sincronização na Nuvem
+
+- **Concorrência na Fila de Downloads:** Limite transferências simultâneas de catálogo e mídias (`1` a `6`, padrão `3`) com HTTP/2, cache condicional por `ETag` / `Last-Modified`, gravação atômica via `.part` e checagem SHA-256.
+- **Pastas Sincronizadas Monitoradas:** Defina diretórios locais do Dropbox, OneDrive, Google Drive ou Nextcloud (`cloud/watched_folders`) monitorados recursivamente por eventos do sistema com estabilização de `500 ms` antes da importação.
+
 ## OBS Studio e Zoom
 
 - **OBS WebSocket v5:** Configure host, porta (padrão `4455`) e senha opcional para acionar cenas automaticamente ao iniciar, pausar ou encerrar mídias.

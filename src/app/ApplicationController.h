@@ -11,12 +11,18 @@ Q_MOC_INCLUDE("media/BackgroundMusicEngine.h")
 Q_MOC_INCLUDE("media/MpvRendererItem.h")
 Q_MOC_INCLUDE("media/PdfViewerController.h")
 Q_MOC_INCLUDE("media/PlaybackController.h")
+Q_MOC_INCLUDE("network/DownloadService.h")
+Q_MOC_INCLUDE("parsers/CloudSyncWatcher.h")
 
 class MpvRendererItem;
 
 namespace kmedia {
 class BackgroundMusicEngine;
+class CatalogClient;
+class CloudSyncWatcher;
 class DisplayManager;
+class DownloadService;
+class NetworkManager;
 class PdfViewerController;
 class PlaybackController;
 class ProfileManager;
@@ -38,6 +44,8 @@ class ApplicationController : public QObject
     Q_PROPERTY(kmedia::BackgroundMusicEngine* backgroundMusic READ backgroundMusic CONSTANT FINAL)
     Q_PROPERTY(kmedia::DisplayManager* displayManager READ displayManager CONSTANT FINAL)
     Q_PROPERTY(kmedia::PdfViewerController* pdf READ pdfController CONSTANT FINAL)
+    Q_PROPERTY(kmedia::DownloadService* downloads READ downloadService CONSTANT FINAL)
+    Q_PROPERTY(kmedia::CloudSyncWatcher* cloudWatcher READ cloudWatcher CONSTANT FINAL)
 
 public:
     explicit ApplicationController(QObject* parent = nullptr);
@@ -55,6 +63,8 @@ public:
     [[nodiscard]] kmedia::BackgroundMusicEngine* backgroundMusic() const;
     [[nodiscard]] kmedia::DisplayManager* displayManager() const;
     [[nodiscard]] kmedia::PdfViewerController* pdfController() const;
+    [[nodiscard]] kmedia::DownloadService* downloadService() const;
+    [[nodiscard]] kmedia::CloudSyncWatcher* cloudWatcher() const;
 
     Q_INVOKABLE void bindPresentationMpv(MpvRendererItem* mpvItem);
 
@@ -65,9 +75,13 @@ private:
     void applyProfileSettings();
 
     std::unique_ptr<kmedia::ProfileManager> m_profileManager;
+    std::unique_ptr<kmedia::NetworkManager> m_networkManager;
     std::unique_ptr<kmedia::ThumbnailCache> m_thumbnailCache;
     std::unique_ptr<kmedia::PdfViewerController> m_pdfController;
     std::unique_ptr<kmedia::PlaybackController> m_playbackController;
     std::unique_ptr<kmedia::BackgroundMusicEngine> m_backgroundMusic;
     std::unique_ptr<kmedia::DisplayManager> m_displayManager;
+    std::unique_ptr<kmedia::DownloadService> m_downloadService;
+    std::unique_ptr<kmedia::CatalogClient> m_catalogClient;
+    std::unique_ptr<kmedia::CloudSyncWatcher> m_cloudWatcher;
 };

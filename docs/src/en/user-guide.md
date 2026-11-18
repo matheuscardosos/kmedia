@@ -22,8 +22,10 @@ This guide covers the core KMedia workflow for preparing and presenting meeting 
 ## Importing Media
 
 - **Drag and Drop:** Drop video (`MP4`, `MKV`, `WebM`), audio (`MP3`, `AAC`, `OGG`, `FLAC`), image (`JPEG`, `PNG`, `WebP`), or `PDF` files directly onto the playlist.
-- **Publication Packages:** Import `.jwpub` and `.jwlplaylist` files directly without external unzipping tools.
-- **Watched Cloud Folders:** Configure a local folder synced with Dropbox, OneDrive, Google Drive, or Nextcloud so newly added items appear automatically in the active meeting.
+- **Publication and Public Talk Packages (`.jwpub` and `S-34 / S-34mp`):** Open `.jwpub` archives natively with `minizip-ng` (including nested `contents` SQLite inspection and Zip-Slip path checks) and selectively extract only the requested meeting images, videos, or public talk media assets without cluttering disk storage.
+- **JW Library Playlists (`.jwlplaylist`):** Import `.jwlplaylist` archives preserving `TagMap` item order, marker labels, loop flags (`EndAction`), embedded media/thumbnails, and non-destructive trim bounds converted cleanly from 100-nanosecond ticks.
+- **Catalog and Media Downloads:** Fetch language lists and publication media assets with conditional `ETag` / `Last-Modified` caching, bounded transfer queues, `.part` disk streaming, inline SHA-256 verification, and pause, resume, or cancel controls.
+- **Watched Cloud Folders:** Configure local Dropbox, OneDrive, Google Drive, or Nextcloud folders (or auto-detect standard sync folders) so newly added and settled items appear automatically with `500 ms` stability debouncing.
 
 ## Presenting on a Secondary Display
 

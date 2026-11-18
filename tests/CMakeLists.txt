@@ -1,6 +1,7 @@
 find_package(Catch2 3 CONFIG REQUIRED)
 
 qt_add_executable(kmedia_tests
+    TestZipFixtures.h
     test_main.cpp
     test_smoke.cpp
     test_database_manager.cpp
@@ -10,6 +11,10 @@ qt_add_executable(kmedia_tests
     test_playback_and_pdf.cpp
     test_background_music.cpp
     test_display_manager.cpp
+    test_jwpub_and_s34.cpp
+    test_jwlplaylist_parser.cpp
+    test_download_service.cpp
+    test_cloud_sync_watcher.cpp
 )
 
 kmedia_set_compiler_warnings(kmedia_tests)
@@ -17,8 +22,11 @@ kmedia_set_compiler_warnings(kmedia_tests)
 target_link_libraries(kmedia_tests PRIVATE
     kmedia_core
     Catch2::Catch2
+    MINIZIP::minizip-ng
     Qt6::Core
     Qt6::Gui
+    Qt6::Network
+    Qt6::Sql
     Qt6::Test
     LibMPV::LibMPV
 )

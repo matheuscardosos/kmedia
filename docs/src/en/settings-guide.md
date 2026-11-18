@@ -18,6 +18,11 @@ Each congregation profile in KMedia keeps its own isolated settings database and
 - **Output Device:** Select a dedicated audio device from `libmpv` to avoid feedback loops between hall speakers and Zoom.
 - **Scheduled Background Music:** Set midweek and weekend meeting days and start times plus fade-out duration (default `5000 ms`) so ambient background music automatically performs a smooth fade-out and stops on schedule.
 
+## Network Downloads and Cloud Sync
+
+- **Download Queue Concurrency:** Limit simultaneous catalog and meeting media transfers (`1` to `6`, default `3`) with HTTP/2, conditional `ETag` / `Last-Modified` validation, `.part` atomic disk streaming, and SHA-256 checksum checks.
+- **Watched Synced Folders:** Add custom local directories synced via Dropbox, OneDrive, Google Drive, or Nextcloud (`cloud/watched_folders`), monitored recursively through OS events with `500 ms` per-file stabilization before importing.
+
 ## OBS Studio & Zoom
 
 - **OBS WebSocket v5:** Set host, port (default `4455`), and optional password, then map playback start, pause, stop, and standby events to specific OBS scenes.

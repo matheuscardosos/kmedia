@@ -22,6 +22,7 @@ inline constexpr auto kStandbyBlackoutMode = "presentation/standby_mode";
 inline constexpr auto kObsHost = "obs/host";
 inline constexpr auto kObsPort = "obs/port";
 inline constexpr auto kZoomAutoShare = "zoom/auto_share";
+inline constexpr auto kCloudSyncFolders = "cloud/watched_folders";
 
 } // namespace settings_keys
 

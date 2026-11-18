@@ -5,6 +5,8 @@
 #include "media/MpvRendererItem.h"
 #include "media/PdfViewerController.h"
 #include "media/PlaybackController.h"
+#include "network/DownloadService.h"
+#include "parsers/CloudSyncWatcher.h"
 
 #include <QtQmlIntegration/qqmlintegration.h>
 
@@ -44,5 +46,21 @@ struct PdfViewerControllerForeign
     Q_GADGET
     QML_FOREIGN(kmedia::PdfViewerController)
     QML_NAMED_ELEMENT(PdfViewerController)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct DownloadServiceForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::DownloadService)
+    QML_NAMED_ELEMENT(DownloadService)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct CloudSyncWatcherForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::CloudSyncWatcher)
+    QML_NAMED_ELEMENT(CloudSyncWatcher)
     QML_UNCREATABLE("Provided by ApplicationController")
 };

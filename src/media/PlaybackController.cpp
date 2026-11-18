@@ -237,7 +237,8 @@ QString PlaybackController::formattedDuration() const
     return SystemUtils::formatDurationMs(m_durationMs);
 }
 
-PlaybackController::MediaKind PlaybackController::detectMediaKind(const QUrl& url)
+PlaybackController::MediaKind PlaybackController::detectMediaKind(const QUrl& url,
+                                                                  bool fallbackToVideo)
 {
     const QString path = url.isLocalFile() ? url.toLocalFile() : url.path();
     const QString ext = QFileInfo(path).suffix().toLower();
@@ -260,7 +261,7 @@ PlaybackController::MediaKind PlaybackController::detectMediaKind(const QUrl& ur
     if (ext == QStringLiteral("pdf")) {
         return MediaKind::Pdf;
     }
-    return MediaKind::Video;
+    return fallbackToVideo ? MediaKind::Video : MediaKind::None;
 }
 
 std::pair<qint64, qint64> PlaybackController::normalizeTrimRange(qint64 startMs, qint64 endMs)

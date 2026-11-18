@@ -86,7 +86,7 @@ public:
     [[nodiscard]] QString formattedPosition() const;
     [[nodiscard]] QString formattedDuration() const;
 
-    [[nodiscard]] static MediaKind detectMediaKind(const QUrl& url);
+    [[nodiscard]] static MediaKind detectMediaKind(const QUrl& url, bool fallbackToVideo = true);
     [[nodiscard]] static std::pair<qint64, qint64> normalizeTrimRange(qint64 startMs, qint64 endMs);
 
 public slots:

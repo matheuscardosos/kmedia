@@ -37,6 +37,7 @@ if(APPLE)
 endif()
 
 find_package(LibMPV REQUIRED)
+find_package(minizip-ng CONFIG REQUIRED)
 
 include(CompilerWarnings)
 
@@ -65,6 +66,22 @@ qt_add_library(kmedia_core STATIC
     src/media/PlaybackController.cpp
     src/media/ThumbnailCache.h
     src/media/ThumbnailCache.cpp
+    src/network/CatalogClient.h
+    src/network/CatalogClient.cpp
+    src/network/DownloadService.h
+    src/network/DownloadService.cpp
+    src/parsers/CloudSyncWatcher.h
+    src/parsers/CloudSyncWatcher.cpp
+    src/parsers/JwlPlaylistParser.h
+    src/parsers/JwlPlaylistParser.cpp
+    src/parsers/JwpubParser.h
+    src/parsers/JwpubParser.cpp
+    src/parsers/S34Parser.h
+    src/parsers/S34Parser.cpp
+    src/parsers/SqlitePackageUtils.h
+    src/parsers/SqlitePackageUtils.cpp
+    src/parsers/ZipArchiveReader.h
+    src/parsers/ZipArchiveReader.cpp
 )
 
 kmedia_set_compiler_warnings(kmedia_core)
@@ -89,6 +106,7 @@ target_link_libraries(kmedia_core
         Qt6::WebSockets
     PRIVATE
         LibMPV::LibMPV
+        MINIZIP::minizip-ng
         $<$<PLATFORM_ID:Windows>:psapi>
 )
 
