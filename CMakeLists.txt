@@ -113,6 +113,9 @@ set_source_files_properties(resources/qml/components/CenterWorkspace.qml PROPERT
 set_source_files_properties(resources/qml/components/InspectorPanel.qml PROPERTIES
     QT_RESOURCE_ALIAS components/InspectorPanel.qml
 )
+set_source_files_properties(resources/icons/icon.png PROPERTIES
+    QT_RESOURCE_ALIAS icons/icon.png
+)
 
 qt_add_qml_module(kmedia
     URI KMedia.UI
@@ -131,6 +134,8 @@ qt_add_qml_module(kmedia
         resources/qml/components/LeftNavRail.qml
         resources/qml/components/CenterWorkspace.qml
         resources/qml/components/InspectorPanel.qml
+    RESOURCES
+        resources/icons/icon.png
 )
 
 target_include_directories(kmedia PRIVATE

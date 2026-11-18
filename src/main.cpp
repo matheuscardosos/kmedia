@@ -1,4 +1,5 @@
 #include <QGuiApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QSGRendererInterface>
@@ -21,6 +22,7 @@ int main(int argc, char* argv[])
     app.setOrganizationDomain(QStringLiteral("kmedia.app"));
     app.setApplicationName(QStringLiteral("KMedia"));
     app.setApplicationVersion(QStringLiteral(KMEDIA_APP_VERSION));
+    app.setWindowIcon(QIcon(QStringLiteral(":/qt/qml/KMedia/UI/icons/icon.png")));
 
     // libmpv requires C numeric locale to parse decimal numbers consistently.
     std::setlocale(LC_NUMERIC, "C");

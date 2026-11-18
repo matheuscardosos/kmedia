@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <!-- Fundo arredondado -->
+  <rect width="1000" height="1000" rx="195" fill="#131416" />
+
+  <!-- Grupo centralizado (K branco + triângulo laranja) -->
+  <g>
+    <!-- Haste vertical do K -->
+    <rect x="169" y="278.5" width="149" height="443" rx="15" fill="#F5F5F5" />
+
+    <!-- Pernas diagonais do K -->
+    <path d="M 310 442
+         L 482 286
+         Q 494 278.5, 510 278.5
+         L 651 278.5
+         Q 664 278.5, 656 290
+         L 473 498.5
+         L 659 709
+         Q 667 721.5, 652 721.5
+         L 508 721.5
+         Q 493 721.5, 484 710
+         L 388 581
+         L 310 646
+         Z" fill="#F5F5F5" />
+
+    <!-- Ícone de play laranja -->
+    <path d="M 633 402
+         Q 633 386, 647 394
+         L 823 492
+         Q 836 500, 823 508
+         L 647 606
+         Q 633 614, 633 598
+         Z" fill="#FF6B00" />
+  </g>
+</svg>

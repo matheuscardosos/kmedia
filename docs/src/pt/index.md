@@ -5,6 +5,9 @@ hero:
   name: KMedia
   text: Apresentador Nativo de Mídia para Reuniões
   tagline: Construído do zero em C++20, Qt 6 e libmpv para operação silenciosa, menos de 45 MB de RAM em repouso e reprodução acelerada por GPU em duas telas.
+  image:
+    src: /logo.svg
+    alt: Logo do KMedia
   actions:
     - theme: brand
       text: Baixar

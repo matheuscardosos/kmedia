@@ -1,64 +1,54 @@
 # KMedia
 
-**KMedia** is a native, cross-platform desktop application written from scratch in **C++20**, **Qt 6**, and **libmpv** to download, organize, and present audio, video, images, and PDF documents for congregation meetings.
+## Overview
 
-I built KMedia to replace heavyweight browser-wrapped media presenters with a cold, quiet, low-memory workstation engineered for Kingdom Hall laptops and hybrid A/V booths.
+**KMedia** is a free, open-source, cross-platform desktop application for Windows, macOS, and Linux that downloads, organizes, and presents audio, video, images, and PDF documents for congregation meetings.
 
-- **Documentation & Website:** [matheuscardosos.github.io/kmedia](https://matheuscardosos.github.io/kmedia/)
-- **License:** [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE)
+I built KMedia from scratch in native **C++20**, **Qt 6**, and **libmpv** to deliver fast startup, low memory consumption, and quiet, reliable operation on Kingdom Hall laptops and hybrid A/V booths.
 
-## Engineering Goals
+## Download and Documentation
 
-- **Low Memory Footprint:** Under 45 MB RAM at idle and under 75 MB RAM during 1080p video playback.
-- **Thermal & CPU Efficiency:** Near-zero CPU usage at idle and mandatory GPU hardware-accelerated video decoding (`hwdec=auto-safe` via `libmpv`).
-- **Instant Startup:** Sub-400 ms cold start backed by SQLite WAL persistence and disk-backed WebP/JPEG thumbnail caching.
-- **Clean-Room Native Stack:** 100% idiomatic C++20 and Qt Quick (QML), with native `.jwpub`, `.jwlplaylist`, `Qt6::Pdf`, OBS Studio WebSocket v5, and Zoom integration.
+- [Documentation website](https://matheuscardosos.github.io/kmedia/)
+- [Download KMedia](https://matheuscardosos.github.io/kmedia/download)
+- [Portuguese documentation](https://matheuscardosos.github.io/kmedia/pt/)
 
-## Visual Identity
+## Quick Overview
 
-KMedia uses a **Studio Carbon & Broadcast Orange** dark interface calibrated for zero screen glare in dimly lit auditoriums:
+- **Automatic media management:** Fetch, organize, and keep weekly meeting media up to date across languages.
+- **Dual-screen presentation:** Automatic secondary display detection with borderless output, standby mode, and instant blackout.
+- **Native media playback:** Hardware-accelerated video and audio playback with zoom, pan, and non-destructive trim controls.
+- **Hybrid meeting ready:** Native OBS Studio scene switching and one-click Zoom workflow support.
+- **Multi-congregation profiles:** Keep isolated media folders, meeting schedules, and booth settings for multiple congregations in one app.
+- **Cross-platform and multilingual:** Designed for Windows, macOS, and Linux with an interface translated into multiple languages.
 
-- Window Base: `#0D0F12`
-- Panel Surface: `#14171C`
-- Card / Row Surface: `#1B1F26`
-- Primary Accent: `#FF6B00`
+## Why Choose KMedia?
 
-## Tech Stack
+- **Built for Kingdom Hall hardware:** Runs without heavyweight browser runtimes, keeping idle RAM usage minimal and fans quiet on older booth laptops.
+- **Instant startup and switching:** Opens in fractions of a second and switches between congregation profiles immediately.
+- **Hardware-accelerated stability:** Decodes video smoothly on GPU (`libmpv` with safe hardware decoding) while isolating playback reliability from the rest of the interface.
+- **All media formats in one place:** Handles weekly meeting packages, public talks, PDFs, local files, and cloud-synced folders without external plugins.
 
-- **Language:** C++20
-- **UI Framework:** Qt 6.8+ (`Qt6::Quick`, `Qt6::QuickControls2`, `Qt6::Pdf`, `Qt6::Sql`, `Qt6::Network`, `Qt6::WebSockets`)
-- **Video & Audio Engine:** `libmpv` (`mpv_render_context` OpenGL FBO interoperability)
-- **Build & Dependencies:** CMake 3.25+, Ninja, `vcpkg` manifest mode (`catch2`, `minizip-ng`)
+## What Can KMedia Do?
 
-## Building from Source
+- Download weekly meeting media, videos, images, and songs automatically in any available language
+- Present videos, audio tracks, high-resolution images, and multi-page PDF documents on an external display
+- Set non-destructive start and end trim markers, zoom/pan regions, and drag-and-drop playlist ordering
+- Schedule ambient background music before and after meetings with automatic 5-second fade-out
+- Import `.jwpub` publications, `.jwlplaylist` files, `S-34` / `S-34mp` public talk packages, and local media folders
+- Synchronize media automatically from local Dropbox, OneDrive, Google Drive, or Nextcloud folders
+- Integrate with OBS Studio (WebSocket v5) for automatic scene switching and launch Zoom meetings with isolated booth routing
+- Configure custom titles, schedules, and special events independently per congregation profile
 
-### Prerequisites
+## Languages and Terms of Use
 
-- CMake 3.25+ and Ninja
-- C++20 compiler (MSVC 2022, MinGW-w64 GCC 13+, Clang 16+, or Apple Clang)
-- Qt 6.8+ with `Quick`, `QuickControls2`, `OpenGL`, `Sql`, `Network`, `WebSockets`, `Pdf`, and `LinguistTools`
-- `libmpv` development headers and library (`MPV_ROOT` on Windows, `libmpv-dev` on Ubuntu/Debian, `mpv` via Homebrew on macOS)
-- `vcpkg` (`VCPKG_ROOT` environment variable set)
+Weekly meeting media can be fetched in any language available on the official website of Jehovah's Witnesses, while the KMedia interface itself supports independent UI translations.
 
-### Configure, Build, and Test
+For details regarding official website content policies, see the [Terms of Use section in the FAQ](https://matheuscardosos.github.io/kmedia/faq).
 
-```bash
-cmake --preset <preset>
-cmake --build --preset <preset>
-ctest --preset <preset> --output-on-failure
-```
+## Contributing and Building from Source
 
-Available presets in `CMakePresets.json`:
+Interested in contributing, reporting an issue, or compiling KMedia yourself? Please check [CONTRIBUTING.md](CONTRIBUTING.md) for prerequisites, build instructions, architecture notes, and coding guidelines, or review the [CHANGELOG.md](CHANGELOG.md).
 
-- `windows-msvc-release` / `windows-msvc-debug`
-- `windows-mingw-release` / `windows-mingw-debug`
-- `linux-release` / `linux-debug`
-- `macos-release`
+## License
 
-## Repository Roadmap
-
-1. **Phase 1 (Current):** Repository foundation, CMake/vcpkg presets, CI/CD, VitePress site, and compiling Qt 6 + `libmpv` Studio Carbon shell.
-2. **Phase 2:** Core persistence and profile engine (`DatabaseManager`, `ProfileManager`, `SettingsStore`, `ThumbnailCache`).
-3. **Phase 3:** Media engine and dual-screen presentation (`MpvRendererItem`, `PlaybackController`, `BackgroundMusicEngine`, `DisplayManager`).
-4. **Phase 4:** Native `.jwpub` / `.jwlplaylist` parsers, watched-folder synchronization, and media download service.
-5. **Phase 5:** Process monitoring, OBS WebSocket v5 client, Zoom bridge, translations, and polished three-column operator UI.
+KMedia is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE).

@@ -5,6 +5,9 @@ hero:
   name: KMedia
   text: Native Congregation Media Presenter
   tagline: Built from scratch in C++20, Qt 6, and libmpv for silent operation, sub-45 MB idle RAM, and hardware-accelerated dual-screen playback.
+  image:
+    src: /logo.svg
+    alt: KMedia logo
   actions:
     - theme: brand
       text: Download
