@@ -7,6 +7,7 @@
 
 #include <memory>
 
+Q_MOC_INCLUDE("core/MeetingTimer.h")
 Q_MOC_INCLUDE("integrations/DisplayManager.h")
 Q_MOC_INCLUDE("integrations/ObsWebSocketClient.h")
 Q_MOC_INCLUDE("integrations/ProcessMonitor.h")
@@ -30,6 +31,7 @@ class CatalogClient;
 class CloudSyncWatcher;
 class DisplayManager;
 class DownloadService;
+class MeetingTimer;
 class NetworkManager;
 class ObsWebSocketClient;
 class PdfViewerController;
@@ -71,6 +73,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(kmedia::ObsWebSocketClient* obsClient READ obsClient CONSTANT FINAL)
     Q_PROPERTY(kmedia::ZoomBridge* zoomBridge READ zoomBridge CONSTANT FINAL)
     Q_PROPERTY(kmedia::PlaylistModel* playlist READ playlist CONSTANT FINAL)
+    Q_PROPERTY(kmedia::MeetingTimer* meetingTimer READ meetingTimer CONSTANT FINAL)
 
 public:
     static void setStartupDemoMode(bool enabled);
@@ -106,6 +109,7 @@ public:
     [[nodiscard]] kmedia::ObsWebSocketClient* obsClient() const;
     [[nodiscard]] kmedia::ZoomBridge* zoomBridge() const;
     [[nodiscard]] kmedia::PlaylistModel* playlist() const;
+    [[nodiscard]] kmedia::MeetingTimer* meetingTimer() const;
 
     Q_INVOKABLE void bindPresentationMpv(MpvRendererItem* mpvItem);
     Q_INVOKABLE bool setUiLanguage(const QString& languageCode);
@@ -155,4 +159,5 @@ private:
     std::unique_ptr<kmedia::ObsWebSocketClient> m_obsClient;
     std::unique_ptr<kmedia::ZoomBridge> m_zoomBridge;
     std::unique_ptr<kmedia::PlaylistModel> m_playlistModel;
+    std::unique_ptr<kmedia::MeetingTimer> m_meetingTimer;
 };

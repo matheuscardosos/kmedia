@@ -128,6 +128,7 @@ ApplicationWindow {
                 onAddMediaRequested: mediaFileDialog.open()
                 onOpenCommandPalette: commandPalette.open()
                 onOpenBoothSettings: root.currentTabIndex = 4
+                onOpenDownloadsTab: root.currentTabIndex = 3
             }
 
             InspectorPanel {

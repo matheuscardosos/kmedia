@@ -4,6 +4,7 @@
 #include <QPointer>
 #include <QString>
 #include <QUrl>
+#include <QVariantList>
 
 #include <utility>
 
@@ -34,6 +35,11 @@ class PlaybackController : public QObject
     Q_PROPERTY(double panY READ panY WRITE setPanY NOTIFY viewportChanged FINAL)
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY audioChanged FINAL)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY audioChanged FINAL)
+    Q_PROPERTY(bool subtitlesVisible READ areSubtitlesVisible WRITE setSubtitlesVisible NOTIFY
+                   subtitlesChanged FINAL)
+    Q_PROPERTY(QVariantList subtitleTracks READ subtitleTracks NOTIFY tracksChanged FINAL)
+    Q_PROPERTY(int currentSubtitleTrack READ currentSubtitleTrack WRITE setCurrentSubtitleTrack
+                   NOTIFY tracksChanged FINAL)
     Q_PROPERTY(QString formattedPosition READ formattedPosition NOTIFY positionChanged FINAL)
     Q_PROPERTY(QString formattedDuration READ formattedDuration NOTIFY durationChanged FINAL)
 
@@ -82,6 +88,11 @@ public:
     void setVolume(int volume);
     [[nodiscard]] bool isMuted() const;
     void setMuted(bool muted);
+    [[nodiscard]] bool areSubtitlesVisible() const;
+    void setSubtitlesVisible(bool visible);
+    [[nodiscard]] QVariantList subtitleTracks() const;
+    [[nodiscard]] int currentSubtitleTrack() const;
+    void setCurrentSubtitleTrack(int trackId);
 
     [[nodiscard]] QString formattedPosition() const;
     [[nodiscard]] QString formattedDuration() const;
@@ -104,6 +115,7 @@ public slots:
     void setViewport(double zoomScale, double panX, double panY);
     void resetViewport();
     void toggleStandby();
+    void toggleSubtitles();
 
 signals:
     void mediaChanged();
@@ -114,6 +126,8 @@ signals:
     void trimChanged();
     void viewportChanged();
     void audioChanged();
+    void subtitlesChanged();
+    void tracksChanged();
     void playbackFinished();
     void playbackError(const QString& message);
 
@@ -138,6 +152,7 @@ private:
     double m_panY{0.0};
     int m_volume{100};
     bool m_muted{false};
+    bool m_subtitlesVisible{true};
 };
 
 } // namespace kmedia

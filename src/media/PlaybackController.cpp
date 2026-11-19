@@ -51,6 +51,18 @@ void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
         emit durationChanged();
     });
 
+    connect(m_mpvItem.data(), &MpvRendererItem::tracksChanged, this, [this]() {
+        if (m_mpvItem.isNull()) {
+            return;
+        }
+        const bool subVisible = m_mpvItem->areSubtitlesVisible();
+        if (m_subtitlesVisible != subVisible) {
+            m_subtitlesVisible = subVisible;
+            emit subtitlesChanged();
+        }
+        emit tracksChanged();
+    });
+
     connect(m_mpvItem.data(), &MpvRendererItem::playbackFinished, this,
             &PlaybackController::playbackFinished);
     connect(m_mpvItem.data(), &MpvRendererItem::playbackError, this,
@@ -58,6 +70,7 @@ void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
 
     m_mpvItem->setVolume(m_volume);
     m_mpvItem->setMuted(m_muted);
+    m_mpvItem->setSubtitlesVisible(m_subtitlesVisible);
 }
 
 void PlaybackController::attachPdfController(PdfViewerController* pdfController)
@@ -225,6 +238,40 @@ void PlaybackController::setMuted(bool muted)
         m_mpvItem->setMuted(muted);
     }
     emit audioChanged();
+}
+
+bool PlaybackController::areSubtitlesVisible() const
+{
+    return m_subtitlesVisible;
+}
+
+void PlaybackController::setSubtitlesVisible(bool visible)
+{
+    if (m_subtitlesVisible == visible) {
+        return;
+    }
+    m_subtitlesVisible = visible;
+    if (!m_mpvItem.isNull()) {
+        m_mpvItem->setSubtitlesVisible(visible);
+    }
+    emit subtitlesChanged();
+}
+
+QVariantList PlaybackController::subtitleTracks() const
+{
+    return m_mpvItem.isNull() ? QVariantList{} : m_mpvItem->subtitleTracks();
+}
+
+int PlaybackController::currentSubtitleTrack() const
+{
+    return m_mpvItem.isNull() ? 0 : m_mpvItem->currentSubtitleTrack();
+}
+
+void PlaybackController::setCurrentSubtitleTrack(int trackId)
+{
+    if (!m_mpvItem.isNull()) {
+        m_mpvItem->setCurrentSubtitleTrack(trackId);
+    }
 }
 
 QString PlaybackController::formattedPosition() const
@@ -432,6 +479,11 @@ void PlaybackController::resetViewport()
 void PlaybackController::toggleStandby()
 {
     setStandbyActive(!m_standbyActive);
+}
+
+void PlaybackController::toggleSubtitles()
+{
+    setSubtitlesVisible(!m_subtitlesVisible);
 }
 
 void PlaybackController::syncViewportToActiveTarget()

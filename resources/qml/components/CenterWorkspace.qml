@@ -17,6 +17,7 @@ Rectangle {
     signal addMediaRequested()
     signal openCommandPalette()
     signal openBoothSettings()
+    signal openDownloadsTab()
 
     function openAddMediaDialog() {
         root.addMediaRequested()
@@ -101,6 +102,7 @@ Rectangle {
             compactMode: root.compactMode
             onOpenCommandPalette: root.openCommandPalette()
             onOpenBoothSettings: root.openBoothSettings()
+            onOpenDownloadsTab: root.openDownloadsTab()
         }
 
         // Docked Studio Broadcast Transport Bar inside Meeting view

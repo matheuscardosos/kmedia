@@ -31,10 +31,14 @@ KMedia is licensed under the GNU Affero General Public License v3.0 or later (`A
   - License: ISC License (see `resources/icons/lucide/LICENSE.txt`)
   - Upstream: https://lucide.dev/
 
+- **Simple Icons (OBS Studio Brand Emblem)** (`resources/icons/custom/obs-studio.svg`)
+  - License: CC0-1.0 Public Domain Dedication (trademark belongs to OBS Project)
+  - Upstream: https://simpleicons.org/
+
 - **Inter Font Family** (`resources/fonts/`)
   - Copyright (c) The Inter Project Authors (Rasmus Andersson)
   - License: SIL Open Font License 1.1 (see `resources/fonts/OFL.txt`)
   - Upstream: https://rsms.me/inter/
 
-- **KMedia Original Application Logo and Publication Icons** (`resources/icons/logo.svg`, `resources/icons/custom/`)
-  - License: AGPL-3.0-or-later (original artwork created for KMedia)
+- **KMedia Original Application Logo and Custom Marks** (`resources/icons/logo.svg`, `resources/icons/custom/jwpub.svg`, `resources/icons/custom/jwlplaylist.svg`, `resources/icons/custom/zoom.svg`)
+  - License: AGPL-3.0-or-later (original artwork created for KMedia; Zoom trademark belongs to Zoom Video Communications, Inc.)

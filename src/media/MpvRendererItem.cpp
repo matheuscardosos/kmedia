@@ -410,6 +410,24 @@ void MpvRendererItem::setCurrentSubtitleTrack(int trackId)
     emit tracksChanged();
 }
 
+bool MpvRendererItem::areSubtitlesVisible() const
+{
+    return m_subtitlesVisible;
+}
+
+void MpvRendererItem::setSubtitlesVisible(bool visible)
+{
+    if (m_subtitlesVisible == visible) {
+        return;
+    }
+    m_subtitlesVisible = visible;
+    if (m_mpv != nullptr) {
+        int flag = visible ? 1 : 0;
+        mpv_set_property_async(m_mpv.get(), 0, "sub-visibility", MPV_FORMAT_FLAG, &flag);
+    }
+    emit tracksChanged();
+}
+
 double MpvRendererItem::zoomScale() const
 {
     return m_zoomScale;
@@ -613,6 +631,7 @@ void MpvRendererItem::initializeMpv()
     mpv_observe_property(m_mpv.get(), 0, "mute", MPV_FORMAT_FLAG);
     mpv_observe_property(m_mpv.get(), 0, "aid", MPV_FORMAT_INT64);
     mpv_observe_property(m_mpv.get(), 0, "sid", MPV_FORMAT_INT64);
+    mpv_observe_property(m_mpv.get(), 0, "sub-visibility", MPV_FORMAT_FLAG);
     mpv_observe_property(m_mpv.get(), 0, "track-list", MPV_FORMAT_NODE);
     mpv_observe_property(m_mpv.get(), 0, "audio-device-list", MPV_FORMAT_NODE);
     mpv_set_wakeup_callback(m_mpv.get(), &onMpvWakeup, m_wakeupBridge.get());
@@ -770,6 +789,13 @@ void MpvRendererItem::processMpvEvents()
                 const int sid = static_cast<int>(*static_cast<const qint64*>(prop->data));
                 if (m_currentSubtitleTrack != sid) {
                     m_currentSubtitleTrack = sid;
+                    emit tracksChanged();
+                }
+            } else if (std::strcmp(prop->name, "sub-visibility") == 0 &&
+                       prop->format == MPV_FORMAT_FLAG) {
+                const bool visible = (*static_cast<const int*>(prop->data)) != 0;
+                if (m_subtitlesVisible != visible) {
+                    m_subtitlesVisible = visible;
                     emit tracksChanged();
                 }
             } else if (std::strcmp(prop->name, "track-list") == 0 &&

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/MeetingTimer.h"
 #include "integrations/DisplayManager.h"
 #include "integrations/ObsWebSocketClient.h"
 #include "integrations/ProcessMonitor.h"
@@ -98,5 +99,13 @@ struct PlaylistModelForeign
     Q_GADGET
     QML_FOREIGN(kmedia::PlaylistModel)
     QML_NAMED_ELEMENT(PlaylistModel)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct MeetingTimerForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::MeetingTimer)
+    QML_NAMED_ELEMENT(MeetingTimer)
     QML_UNCREATABLE("Provided by ApplicationController")
 };

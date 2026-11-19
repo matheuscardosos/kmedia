@@ -5,6 +5,7 @@ qt_add_executable(kmedia_tests
     test_main.cpp
     test_smoke.cpp
     test_database_manager.cpp
+    test_meeting_timer.cpp
     test_profile_manager.cpp
     test_settings_and_network.cpp
     test_thumbnail_cache.cpp

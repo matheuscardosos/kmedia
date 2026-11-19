@@ -45,6 +45,8 @@ include(CompilerWarnings)
 qt_add_library(kmedia_core STATIC
     src/core/DatabaseManager.h
     src/core/DatabaseManager.cpp
+    src/core/MeetingTimer.h
+    src/core/MeetingTimer.cpp
     src/core/NetworkManager.h
     src/core/NetworkManager.cpp
     src/core/ProfileManager.h
@@ -178,6 +180,12 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/ToastBanner.qml
     resources/qml/components/CommandPalette.qml
     resources/qml/components/ActionPillBar.qml
+    resources/qml/components/PillDisplayPopover.qml
+    resources/qml/components/PillMusicPopover.qml
+    resources/qml/components/PillTimerPopover.qml
+    resources/qml/components/PillObsPopover.qml
+    resources/qml/components/PillZoomPopover.qml
+    resources/qml/components/PillDownloadsPopover.qml
     resources/qml/components/TransportBar.qml
     resources/qml/components/MeetingPlaylistView.qml
     resources/qml/components/MediaLibraryView.qml
