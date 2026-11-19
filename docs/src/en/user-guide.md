@@ -2,11 +2,24 @@
 
 This guide covers the core KMedia workflow for preparing and presenting meeting media.
 
-## Three-Column Operator Console
+## Three-Column Responsive Operator Console
 
-1. **Left Navigation Rail:** Switch between active congregation profiles, navigate between *Meeting*, *Media*, *Playlists*, *Downloads*, and *Settings*, and monitor live status for OBS Studio, Zoom, secondary displays, and disk storage.
-2. **Center Workspace:** Manage the active meeting playlist, reorder items via drag-and-drop, add local files or `.jwpub`/`.jwlplaylist` packages, and control playback from the bottom transport bar.
-3. **Right Live Preview & Inspector:** Monitor the current presentation output, toggle instant *Standby / Blackout*, inspect media metadata, set non-destructive start/end trim timestamps, or adjust image/PDF zoom, pan, and page selection.
+KMedia adapts automatically across desktop, split-screen booth laptops, and compact narrow panes (`360x520` minimum width for side-by-side Zoom use), and supports switching cleanly between **Studio Carbon (Dark)** and **Studio Daylight (Light)** themes (`Ctrl+D` or the sidebar toggle button):
+
+1. **Wide (`>= 1080 px`):** Displays the full `234 px` left navigation rail with KMedia branding and congregation profile switcher, flexible center playlist workspace, and docked `344 px` Live Preview & Inspector card stack.
+2. **Medium (`680 px` to `1079 px`):** Collapses the left rail to a narrow icon/badge bar (`64 px`) and places the Live Preview & Inspector into an on-demand slide-over drawer.
+3. **Compact (`< 680 px`, down to `360x520`):** Moves navigation into a compact bottom tab bar (`54 px`), compacts the **Floating Pill Action Bar** (`ActionPillBar`) into an icon capsule, and keeps the full-width transport bar above navigation tabs.
+
+![KMedia Desktop Workstation (Dark Theme)](../assets/kmedia-preview.png)
+
+![KMedia Desktop Workstation (Light Theme)](../assets/kmedia-light-preview.png)
+
+![KMedia Compact Side-by-Side Layout](../assets/kmedia-compact-preview.png)
+
+1. **Left Navigation Rail / Compact Tabs:** Switch congregations cleanly, toggle Dark/Light theme, navigate between *Meeting*, *Media*, *Playlists*, *Downloads*, and *Settings*, and inspect live OBS Studio, 2nd Display, Zoom, and free disk space.
+2. **Meeting Sections & Center Workspace:** Items group automatically under colored workbook section headers (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*, *Public Talk*, *Watchtower Study*, or *Circuit Overseer*), with drag-and-drop grip handles (`#`), inline trim badges, context menus, week/playlist switching (`< [ Midweek Meeting v ] >`), the **Floating Pill Action Bar**, and the two-tier bottom transport dock.
+3. **Command Palette (`Ctrl+K`) & Toast Feedback:** Press `Ctrl+K` anywhere to jump between tabs, toggle playback/standby, switch themes, fade background music, or import media packages without touching the mouse.
+4. **Right Live Preview & Inspector Cards:** Monitor the 16:9 stage output with *ON AIR / READY / STANDBY* overlays, instant *Standby* / *Blackout* glass buttons, real file metadata, live routing status, non-destructive trim markers (`00:00.000`), and viewport zoom or PDF page controls.
 
 ## Playback, Trim, Zoom, and PDF Presentation
 

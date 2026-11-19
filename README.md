@@ -14,6 +14,18 @@ I built KMedia from scratch in native **C++20**, **Qt 6**, and **libmpv** to del
 - [Download KMedia](https://matheuscardosos.github.io/kmedia/download)
 - [Portuguese documentation](https://matheuscardosos.github.io/kmedia/pt/)
 
+## Interface Preview
+
+KMedia features dual **Studio Carbon (Dark)** and **Studio Daylight (Light)** booth themes, **Meeting Section Dividers** (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*), a **Floating Pill Action Bar**, and responsive scaling down to a compact `360x520` pane beside Zoom.
+
+![KMedia Desktop Workstation (Dark Theme)](./docs/src/assets/kmedia-preview.png)
+
+![KMedia Desktop Workstation (Light Theme)](./docs/src/assets/kmedia-light-preview.png)
+
+<p align="center">
+  <img src="./docs/src/assets/kmedia-compact-preview.png" alt="KMedia Compact Side-by-Side Layout" width="320" />
+</p>
+
 ## Quick Overview
 
 - **Automatic media management:** Fetch, organize, and keep weekly meeting media up to date across languages.

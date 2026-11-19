@@ -2,10 +2,13 @@
 
 Cada perfil de congregação no KMedia mantém seu próprio banco de dados e pasta de arquivos isolados.
 
-## Perfis de Congregação
+## Perfis de Congregação e Idioma da Interface
 
 - Crie perfis separados para diferentes congregações ou grupos de idioma que compartilham o mesmo computador.
 - Defina diretório de armazenamento, idioma preferido do catálogo e horários semanais das reuniões de meio e fim de semana.
+- Alterne dinamicamente o idioma da interface entre **English** e **Português** (`kmedia_en.qm` / `kmedia_pt.qm`) com retradução instantânea do QML em tempo de execução.
+- Alterne o **Tema Escuro da Cabine (`Studio Carbon`)** e o **Tema Claro (`Studio Daylight`)** pelo ícone no topo da barra lateral, em **Configurações** ou via `Ctrl+D` (`ui/dark_theme` salvo por congregação).
+- Execute com `--demo` para explorar o aplicativo com segurança em um perfil isolado (`--theme dark|light`, `--screenshot` e `--window-size LxA` permitem gerar capturas reais em tema escuro, claro e compacto).
 
 ## Exibição e Standby
 

@@ -1,159 +1,113 @@
+pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Controls.Basic
 import QtQuick.Layouts
-
 import KMedia.UI
+import ".."
+import "../controls"
 
-ColumnLayout {
+Rectangle {
     id: root
 
-    required property string sectionTitle
+    property int activeTabIndex: 0
+    property bool compactMode: false
+    property bool showPreviewToggle: false
+    property bool previewOpen: false
+    property string sectionTitle: qsTr("Meeting Workspace")
+    signal previewToggled()
+    signal addMediaRequested()
+    signal openCommandPalette()
+    signal openBoothSettings()
 
-    spacing: 0
+    function openAddMediaDialog() {
+        root.addMediaRequested()
+    }
 
-    Rectangle {
-        Layout.fillWidth: true
-        Layout.preferredHeight: Theme.headerHeight
-        color: Theme.windowBase
+    color: Theme.windowBase
 
-        Rectangle {
-            height: 1
-            color: Theme.borderHairline
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-        }
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: root.compactMode ? Theme.spacingSm : Theme.spacingMd
+        spacing: Theme.spacingSm
 
-        RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: Theme.spacingLg
-            anchors.rightMargin: Theme.spacingLg
+        // Compact secondary header only shown for non-Meeting views
+        StudioCard {
+            visible: root.activeTabIndex !== 0
+            Layout.fillWidth: true
+            implicitHeight: 52
+            surfaceColor: Theme.panelSurface
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 2
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 14
+                anchors.rightMargin: 14
+                spacing: 10
 
                 Text {
                     text: root.sectionTitle
                     color: Theme.textPrimary
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeLg
-                    font.weight: Font.DemiBold
-                }
-
-                Text {
-                    text: qsTr("Native Qt %1 + libmpv %2 workspace").arg(ApplicationController.qtVersion).arg(ApplicationController.mpvVersion)
-                    color: Theme.textSecondary
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeXs
-                }
-            }
-
-            Button {
-                id: addMediaButton
-
-                text: qsTr("+ Add Media")
-                background: Rectangle {
-                    radius: Theme.radiusSmall
-                    color: addMediaButton.pressed
-                        ? Theme.accentPressed
-                        : (addMediaButton.hovered ? Theme.accentHover : Theme.accentPrimary)
-                }
-                contentItem: Text {
-                    text: addMediaButton.text
-                    color: Theme.textPrimary
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeSm
-                    font.weight: Font.DemiBold
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    leftPadding: Theme.spacingMd
-                    rightPadding: Theme.spacingMd
-                }
-            }
-        }
-    }
-
-    Item {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-
-        Rectangle {
-            anchors.centerIn: parent
-            width: Math.min(parent.width - Theme.spacingXl * 2, 440)
-            height: emptyColumn.implicitHeight + Theme.spacingXl * 2
-            radius: Theme.radiusLarge
-            color: Theme.cardSurface
-            border.width: 1
-            border.color: Theme.borderHairline
-
-            ColumnLayout {
-                id: emptyColumn
-
-                anchors.centerIn: parent
-                width: parent.width - Theme.spacingXl * 2
-                spacing: Theme.spacingSm
-
-                Text {
+                    font.weight: Font.Bold
+                    elide: Text.ElideRight
                     Layout.fillWidth: true
-                    text: qsTr("No media items queued")
-                    color: Theme.textPrimary
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLg
-                    font.weight: Font.DemiBold
-                    horizontalAlignment: Text.AlignHCenter
                 }
 
-                Text {
-                    Layout.fillWidth: true
-                    text: qsTr("Drag and drop local video, audio, image, PDF, JWPUB, or JWLPLAYLIST files here to begin.")
-                    color: Theme.textSecondary
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeSm
-                    wrapMode: Text.WordWrap
-                    horizontalAlignment: Text.AlignHCenter
+                StudioButton {
+                    visible: root.showPreviewToggle
+                    variant: root.previewOpen ? "primary" : "secondary"
+                    iconName: "monitor"
+                    text: root.compactMode ? "" : (root.previewOpen ? qsTr("Hide Preview") : qsTr("Preview"))
+                    implicitHeight: 32
+                    onClicked: root.previewToggled()
                 }
             }
         }
-    }
 
-    Rectangle {
-        Layout.fillWidth: true
-        Layout.preferredHeight: Theme.transportBarHeight
-        color: Theme.panelSurface
+        StackLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            currentIndex: root.activeTabIndex
 
-        Rectangle {
-            height: 1
-            color: Theme.borderHairline
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
+            MeetingPlaylistView {
+                compactMode: root.compactMode
+                showPreviewToggle: root.showPreviewToggle
+                previewOpen: root.previewOpen
+                onAddMediaRequested: root.addMediaRequested()
+                onPreviewToggled: root.previewToggled()
+            }
+
+            MediaLibraryView {
+                compactMode: root.compactMode
+                onAddFilesRequested: root.addMediaRequested()
+            }
+
+            PlaylistsView {
+                compactMode: root.compactMode
+            }
+
+            DownloadsView {
+                compactMode: root.compactMode
+            }
+
+            SettingsView {
+                compactMode: root.compactMode
+            }
         }
 
-        RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: Theme.spacingLg
-            anchors.rightMargin: Theme.spacingLg
-            spacing: Theme.spacingMd
+        // Quick-access Floating Pill Taskbar for booth toggles and shortcuts
+        ActionPillBar {
+            visible: root.activeTabIndex === 0
+            Layout.fillWidth: true
+            compactMode: root.compactMode
+            onOpenCommandPalette: root.openCommandPalette()
+            onOpenBoothSettings: root.openBoothSettings()
+        }
 
-            Text {
-                text: qsTr("00:00 / 00:00")
-                color: Theme.textPrimary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeMd
-                font.features: ({ "tnum": 1 })
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Text {
-                text: qsTr("Standby")
-                color: Theme.textSecondary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeSm
-            }
+        // Docked Studio Broadcast Transport Bar inside Meeting view
+        TransportBar {
+            visible: root.activeTabIndex === 0
+            Layout.fillWidth: true
+            compactMode: root.compactMode
         }
     }
 }

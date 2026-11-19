@@ -13,14 +13,25 @@ namespace settings_keys {
 
 inline constexpr auto kMediaLanguage = "media/language";
 inline constexpr auto kUiLanguage = "ui/language";
+inline constexpr auto kUiDarkTheme = "ui/dark_theme";
 inline constexpr auto kBackgroundMusicFadeMs = "audio/background_fade_ms";
 inline constexpr auto kAudioOutputDevice = "audio/output_device";
 inline constexpr auto kHardwareDecoder = "video/hwdec";
 inline constexpr auto kMaxConcurrentDownloads = "network/max_concurrent_downloads";
 inline constexpr auto kThumbnailCacheMaxMb = "cache/thumbnail_max_mb";
 inline constexpr auto kStandbyBlackoutMode = "presentation/standby_mode";
+inline constexpr auto kObsEnabled = "obs/enabled";
 inline constexpr auto kObsHost = "obs/host";
 inline constexpr auto kObsPort = "obs/port";
+inline constexpr auto kObsPassword = "obs/password";
+inline constexpr auto kObsScenePlay = "obs/scene_play";
+inline constexpr auto kObsScenePause = "obs/scene_pause";
+inline constexpr auto kObsSceneStop = "obs/scene_stop";
+inline constexpr auto kObsSceneStandby = "obs/scene_standby";
+inline constexpr auto kZoomMeetingId = "zoom/meeting_id";
+inline constexpr auto kZoomMeetingPass = "zoom/meeting_pass";
+inline constexpr auto kZoomDisplayName = "zoom/display_name";
+inline constexpr auto kZoomAudioDevice = "zoom/audio_device";
 inline constexpr auto kZoomAutoShare = "zoom/auto_share";
 inline constexpr auto kCloudSyncFolders = "cloud/watched_folders";
 

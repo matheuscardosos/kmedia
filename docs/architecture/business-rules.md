@@ -48,12 +48,18 @@ This document defines the behavioral contracts and architectural invariants that
 ## 8. Responsive Operator Console Breakpoints
 
 - The operator main window (`Main.qml`) must support resizing down to a compact side-by-side layout (`minimumWidth: 360`, `minimumHeight: 520`) so operators can run KMedia side by side with Zoom cleanly on `1280x720` and `1366x768` booth displays:
-  - **Wide (`width >= 1080 px`):** Three-column desktop workstation (`210 px` left navigation rail, flexible center workspace, `340 px` right live preview and inspector).
-  - **Medium (`680 px <= width < 1080 px`):** Narrow icon-only navigation rail (`56 px`), full center workspace, and collapsible inspector drawer/tab for 50/50 split screens.
-  - **Compact (`width < 680 px`, down to `360 px`):** Mobile-style stacked workspace with compact bottom or top tab switcher, single-column playlist/library view, persistent quick transport + `Standby/Blackout` strip, and toggleable mini preview.
+  - **Wide (`width >= 1080 px`):** Three-column desktop workstation (`234 px` left navigation rail, flexible center workspace, `344 px` right live preview and inspector card stack).
+  - **Medium (`680 px <= width < 1080 px`):** Narrow icon-only navigation rail (`64 px`), flexible center workspace, and collapsible inspector drawer for 50/50 split screens.
+  - **Compact (`width < 680 px`, down to `360x520`):** Single-column stacked workspace with a `54 px` compact bottom tab switcher, icon-only floating pill action strip (`ActionPillBar`), persistent transport + `Standby/Blackout` strip, and toggleable preview drawer.
 
 ## 9. Hybrid Booth Integrations (OBS Studio and Zoom)
 
 - `ProcessMonitor` queries running processes (`OBS Studio` and `Zoom`) on a gentle `3 s` interval using lightweight native OS APIs without spawning child shell processes.
 - `ObsWebSocketClient` connects asynchronously via `Qt6::WebSockets` (`OpCode 0 Hello` -> SHA-256 challenge auth -> `OpCode 1 Identify` -> `OpCode 2 Identified`) only when OBS is detected or explicitly requested.
 - `ZoomBridge` launches meetings via `zoommtg://` and configures dedicated `libmpv` audio output selection so Kingdom Hall speakers never echo back into Zoom.
+
+## 10. UI Design System, Theme Persistence, and Meeting Section Grouping
+
+- All QML controls inherit semantic tokens from `Theme.qml` supporting both **Studio Carbon (Dark)** and **Studio Daylight (Light)** modes persisted per profile via `ui/dark_theme` (and overridable at launch with `--theme dark|light`).
+- Meeting playlist entries (`PlaylistModel`) group visually under workbook section headers (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*, *Public Talk*, *Watchtower Study*, *Circuit Overseer*, or custom imported sections) via `ListView.section` without breaking flat `moveItem` drag-and-drop index ordering.
+- Quick booth actions stay one click away through the floating `ActionPillBar` and `Ctrl+K` `CommandPalette` using bundled `Inter` typography and `MultiEffect`-tinted Lucide vector SVGs.

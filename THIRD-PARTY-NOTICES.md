@@ -1,0 +1,40 @@
+# Third-Party Software Notices
+
+KMedia is licensed under the GNU Affero General Public License v3.0 or later (`AGPL-3.0-or-later`). The application incorporates or links the following third-party open-source components and bundled assets:
+
+## Core Frameworks and Libraries
+
+- **Qt 6** (`Core`, `Gui`, `LinguistTools`, `Network`, `OpenGL`, `Pdf`, `Quick`, `QuickControls2`, `QuickEffects`, `Sql`, `Svg`, `Test`, `WebSockets`)
+  - License: LGPL-3.0-or-later / GPL-3.0-or-later
+  - Upstream: https://www.qt.io/
+
+- **libmpv**
+  - License: LGPL-2.1-or-later / GPL-2.0-or-later
+  - Upstream: https://mpv.io/
+
+- **minizip-ng**
+  - License: zlib License
+  - Upstream: https://github.com/zlib-ng/minizip-ng
+
+- **SQLite** (via Qt Sqlite driver and embedded SQLite package reading)
+  - License: Public Domain
+  - Upstream: https://www.sqlite.org/
+
+- **Catch2** (unit and integration tests only)
+  - License: BSL-1.0
+  - Upstream: https://github.com/catchorg/Catch2
+
+## Bundled Visual and Typography Assets
+
+- **Lucide Icons** (`resources/icons/lucide/`)
+  - Copyright (c) Lucide Contributors
+  - License: ISC License (see `resources/icons/lucide/LICENSE.txt`)
+  - Upstream: https://lucide.dev/
+
+- **Inter Font Family** (`resources/fonts/`)
+  - Copyright (c) The Inter Project Authors (Rasmus Andersson)
+  - License: SIL Open Font License 1.1 (see `resources/fonts/OFL.txt`)
+  - Upstream: https://rsms.me/inter/
+
+- **KMedia Original Application Logo and Publication Icons** (`resources/icons/logo.svg`, `resources/icons/custom/`)
+  - License: AGPL-3.0-or-later (original artwork created for KMedia)

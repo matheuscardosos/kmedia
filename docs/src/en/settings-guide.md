@@ -2,10 +2,13 @@
 
 Each congregation profile in KMedia keeps its own isolated settings database and media folder.
 
-## Congregation Profiles
+## Congregation Profiles & Interface Language
 
 - Create separate profiles for different congregations or language groups sharing the same computer.
 - Configure each profile's media storage directory, preferred catalog language, and weekly midweek/weekend meeting schedule.
+- Switch the application UI language dynamically between **English** and **Português** (`kmedia_en.qm` / `kmedia_pt.qm`) with live QML retranslation.
+- Toggle **Dark Booth Theme (`Studio Carbon`)** or **Light Theme (`Studio Daylight`)** cleanly from the top sidebar icon button, **Settings -> Appearance**, or `Ctrl+D` (`ui/dark_theme` persists per congregation profile).
+- Launch with `--demo` to inspect the interface safely inside an isolated temporary profile (`--theme dark|light`, `--screenshot`, and `--window-size WxH` allow automated light, dark, and compact screenshot capture).
 
 ## Display & Standby
 

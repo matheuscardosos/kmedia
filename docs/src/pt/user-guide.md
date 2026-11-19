@@ -2,11 +2,24 @@
 
 Este manual apresenta o fluxo principal do KMedia para preparar e exibir mídias das reuniões.
 
-## Console de Três Colunas
+## Console Responsivo de Três Colunas
 
-1. **Barra Lateral Esquerda:** Alterne entre perfis de congregações, navegue entre *Reunião*, *Mídia*, *Playlists*, *Downloads* e *Configurações*, e acompanhe em tempo real o status do OBS Studio, Zoom, segundo monitor e espaço em disco.
-2. **Área Central da Reunião:** Gerencie a lista de reprodução ativa, reorganize itens arrastando e soltando, adicione arquivos locais ou pacotes `.jwpub`/`.jwlplaylist` e controle a reprodução pela barra inferior.
-3. **Painel Direito de Prévia e Inspetor:** Acompanhe a saída enviada ao projetor, ative *Standby / Blackout* com um clique, confira metadados técnicos, defina pontos de corte de início/fim ou controle zoom, deslocamento e páginas de imagens e PDFs.
+O KMedia se adapta automaticamente a telas largas de cabine, divisão 50/50 ou janela compacta lateral (`360x520` mínimo para trabalhar lado a lado com o Zoom) e permite alternar entre os temas **Studio Carbon (Escuro)** e **Studio Daylight (Claro)** via `Ctrl+D` ou pelo botão no topo da barra lateral:
+
+1. **Modo Largo (`>= 1080 px`):** Exibe a barra lateral completa (`234 px`) com logotipo e seletor de congregação, a área central da reunião e a pilha de cartões do inspetor direito (`344 px`).
+2. **Modo Médio (`680 px` a `1079 px`):** Recolhe a barra lateral para o modo compacto (`64 px`) e transforma a pré-visualização ao vivo em gaveta retrátil sob demanda.
+3. **Modo Compacto (`< 680 px`, até `360x520`):** Move a navegação para abas inferiores compactas (`54 px`), resume a **Barra em Pílula (`ActionPillBar`)** a ícones com indicadores de status e mantém a barra de reprodução e acesso ao *Standby*.
+
+![Console Desktop do KMedia (Tema Escuro)](../assets/kmedia-preview.png)
+
+![Console Desktop do KMedia (Tema Claro)](../assets/kmedia-light-preview.png)
+
+![Layout Compacto Lado a Lado do KMedia](../assets/kmedia-compact-preview.png)
+
+1. **Barra Lateral / Abas Compactas:** Alterne perfis de congregação e o tema Claro/Escuro, navegue entre *Reunião*, *Mídias*, *Playlists*, *Downloads* e *Configurações*, e acompanhe em tempo real o status de OBS, 2ª Tela, Zoom e armazenamento livre em disco.
+2. **Divisão por Seções e Área Central:** Os itens são agrupados sob cabeçalhos coloridos por seção (*Tesouros da Palavra de Deus*, *Faça Seu Melhor no Ministério*, *Nossa Vida Cristã*, *Discurso Público*, *A Sentinela* e *Visita do Superintendente*), com alça de arrastar-e-soltar, seletor rápido de reuniões/semanas (`< [ Midweek Meeting v ] >`), barra em pílula com atalhos e controles completos de reprodução e música ambiente.
+3. **Paleta de Comandos (`Ctrl+K`) e Notificações:** Pressione `Ctrl+K` em qualquer tela para executar comandos rápidos sem tirar as mãos do teclado.
+4. **Painel Direito de Prévia e Inspetor:** Acompanhe o quadro ao vivo com selo *ON AIR / READY / STANDBY* e botões de vidro *Standby* / *Blackout*, metadados do arquivo, status das saídas e precisão de corte não destrutivo (`00:00.000`).
 
 ## Reprodução, Cortes, Zoom e Apresentação de PDFs
 

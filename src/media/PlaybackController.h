@@ -99,6 +99,7 @@ public slots:
     void togglePause();
     void stop();
     void seekMs(qint64 positionMs);
+    void setFallbackDurationMs(qint64 durationMs);
     void setTrimRange(qint64 startMs, qint64 endMs);
     void setViewport(double zoomScale, double panX, double panY);
     void resetViewport();

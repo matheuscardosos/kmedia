@@ -391,6 +391,16 @@ void PlaybackController::seekMs(qint64 positionMs)
     emit positionChanged();
 }
 
+void PlaybackController::setFallbackDurationMs(qint64 durationMs)
+{
+    const qint64 clamped = qMax<qint64>(0, durationMs);
+    if (m_durationMs > 0 || clamped == 0) {
+        return;
+    }
+    m_durationMs = clamped;
+    emit durationChanged();
+}
+
 void PlaybackController::setTrimRange(qint64 startMs, qint64 endMs)
 {
     const auto [cleanStart, cleanEnd] = normalizeTrimRange(startMs, endMs);
