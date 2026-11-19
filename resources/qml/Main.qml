@@ -22,7 +22,7 @@ ApplicationWindow {
     readonly property bool isCompact: width < Theme.compactBreakpoint
     readonly property bool isMedium: width >= Theme.compactBreakpoint && width < Theme.wideBreakpoint
     readonly property bool isWide: width >= Theme.wideBreakpoint
-    property int currentTabIndex: 0
+    property int currentTabIndex: ApplicationController.startupTabIndex
     property bool inspectorDrawerOpen: false
 
     readonly property list<string> sectionTitles: [

@@ -43,6 +43,8 @@ find_package(minizip-ng CONFIG REQUIRED)
 include(CompilerWarnings)
 
 qt_add_library(kmedia_core STATIC
+    src/core/BoothSecurity.h
+    src/core/BoothSecurity.cpp
     src/core/DatabaseManager.h
     src/core/DatabaseManager.cpp
     src/core/MeetingCalendarModel.h
@@ -191,6 +193,7 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/PillZoomPopover.qml
     resources/qml/components/PillDownloadsPopover.qml
     resources/qml/components/TransportBar.qml
+    resources/qml/components/BoothChecklistPopup.qml
     resources/qml/components/MeetingPlaylistView.qml
     resources/qml/components/CalendarEventPopup.qml
     resources/qml/components/CalendarSchedulePopup.qml
@@ -201,6 +204,8 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/DownloadsView.qml
     resources/qml/components/DownloadQueueCard.qml
     resources/qml/components/CatalogBrowserCard.qml
+    resources/qml/components/SettingsPinGate.qml
+    resources/qml/components/SettingsSecurityCard.qml
     resources/qml/components/SettingsView.qml
     resources/qml/components/CenterWorkspace.qml
     resources/qml/components/InspectorPanel.qml

@@ -63,6 +63,9 @@ class ApplicationController : public QObject
     Q_PROPERTY(QString uiLanguage READ uiLanguage NOTIFY uiLanguageChanged FINAL)
     Q_PROPERTY(bool darkTheme READ isDarkTheme WRITE setDarkTheme NOTIFY darkThemeChanged FINAL)
     Q_PROPERTY(bool demoMode READ isDemoMode NOTIFY demoModeChanged FINAL)
+    Q_PROPERTY(int startupTabIndex READ startupTabIndex CONSTANT FINAL)
+    Q_PROPERTY(bool boothPinEnabled READ isBoothPinEnabled NOTIFY boothLockChanged FINAL)
+    Q_PROPERTY(bool boothUnlocked READ isBoothUnlocked NOTIFY boothLockChanged FINAL)
     Q_PROPERTY(
         QStringList availableProfileNames READ availableProfileNames NOTIFY profilesChanged FINAL)
     Q_PROPERTY(
@@ -84,6 +87,7 @@ class ApplicationController : public QObject
 public:
     static void setStartupDemoMode(bool enabled);
     static void setStartupThemeOverride(const QString& theme);
+    static void setStartupTabIndex(int tabIndex);
 
     explicit ApplicationController(QObject* parent = nullptr);
     ~ApplicationController() override;
@@ -102,6 +106,9 @@ public:
     [[nodiscard]] bool isDarkTheme() const;
     void setDarkTheme(bool dark);
     [[nodiscard]] bool isDemoMode() const;
+    [[nodiscard]] int startupTabIndex() const;
+    [[nodiscard]] bool isBoothPinEnabled() const;
+    [[nodiscard]] bool isBoothUnlocked() const;
     [[nodiscard]] QStringList availableProfileNames() const;
     [[nodiscard]] QStringList availableProfileIds() const;
 
@@ -126,6 +133,11 @@ public:
                                       const QString& mediaLanguage = QStringLiteral("E"));
     Q_INVOKABLE void saveCloudFolder(const QString& folderPath);
     Q_INVOKABLE void saveObsAndZoomSettings();
+    Q_INVOKABLE void saveFadeDurationMs(int ms);
+    Q_INVOKABLE bool enableBoothPin(const QString& newPin);
+    Q_INVOKABLE bool disableBoothPin(const QString& currentPin);
+    Q_INVOKABLE bool unlockBoothSettings(const QString& candidatePin);
+    Q_INVOKABLE void lockBoothSettings();
     Q_INVOKABLE void enterDemoMode();
     Q_INVOKABLE void toggleDarkTheme();
     Q_INVOKABLE void showToast(const QString& message,
@@ -137,6 +149,7 @@ signals:
     void uiLanguageChanged();
     void darkThemeChanged();
     void demoModeChanged();
+    void boothLockChanged();
     void toastRequested(const QString& message, const QString& level);
 
 private:
@@ -145,6 +158,7 @@ private:
 
     static bool s_startupDemoMode;
     static QString s_startupThemeOverride;
+    static int s_startupTabIndex;
 
     QQmlEngine* m_qmlEngine{nullptr};
     std::unique_ptr<QTranslator> m_translator;
@@ -152,6 +166,9 @@ private:
     bool m_demoMode{false};
     bool m_darkTheme{true};
     QString m_uiLanguage{QStringLiteral("en")};
+    QString m_boothPinSalt;
+    QString m_boothPinHash;
+    bool m_boothUnlocked{true};
 
     std::unique_ptr<kmedia::ProfileManager> m_profileManager;
     std::unique_ptr<kmedia::NetworkManager> m_networkManager;

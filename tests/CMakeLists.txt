@@ -4,6 +4,7 @@ qt_add_executable(kmedia_tests
     TestZipFixtures.h
     test_main.cpp
     test_smoke.cpp
+    test_booth_security.cpp
     test_database_manager.cpp
     test_meeting_calendar.cpp
     test_meeting_timer.cpp

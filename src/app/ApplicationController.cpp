@@ -1,5 +1,6 @@
 #include "ApplicationController.h"
 
+#include "core/BoothSecurity.h"
 #include "core/DatabaseManager.h"
 #include "core/MeetingCalendarModel.h"
 #include "core/MeetingTimer.h"
@@ -31,6 +32,7 @@
 
 bool ApplicationController::s_startupDemoMode = false;
 QString ApplicationController::s_startupThemeOverride;
+int ApplicationController::s_startupTabIndex = 0;
 
 static void ensureTranslationsInitialized()
 {
@@ -45,6 +47,11 @@ void ApplicationController::setStartupDemoMode(bool enabled)
 void ApplicationController::setStartupThemeOverride(const QString& theme)
 {
     s_startupThemeOverride = theme.trimmed().toLower();
+}
+
+void ApplicationController::setStartupTabIndex(int tabIndex)
+{
+    s_startupTabIndex = qBound(0, tabIndex, 5);
 }
 
 ApplicationController::ApplicationController(QObject* parent)
@@ -369,6 +376,103 @@ void ApplicationController::saveObsAndZoomSettings()
                              m_zoomBridge->isAutoShareOnPlayback());
 }
 
+void ApplicationController::saveFadeDurationMs(int ms)
+{
+    const int cleanMs = qBound(500, ms, 30000);
+    m_backgroundMusic->setFadeDurationMs(cleanMs);
+    if (!m_demoMode) {
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(
+                QLatin1StringView(kmedia::settings_keys::kBackgroundMusicFadeMs), cleanMs);
+        }
+    }
+}
+
+int ApplicationController::startupTabIndex() const
+{
+    return s_startupTabIndex;
+}
+
+bool ApplicationController::isBoothPinEnabled() const
+{
+    return !m_boothPinHash.isEmpty();
+}
+
+bool ApplicationController::isBoothUnlocked() const
+{
+    return m_boothUnlocked || m_boothPinHash.isEmpty();
+}
+
+bool ApplicationController::enableBoothPin(const QString& newPin)
+{
+    if (!kmedia::BoothSecurity::isValidPinFormat(newPin)) {
+        return false;
+    }
+    const QString salt = kmedia::BoothSecurity::generateSalt();
+    const QString hash = kmedia::BoothSecurity::hashPin(newPin, salt);
+    if (hash.isEmpty()) {
+        return false;
+    }
+    m_boothPinSalt = salt;
+    m_boothPinHash = hash;
+    m_boothUnlocked = true;
+    if (!m_demoMode) {
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kSecurityPinSalt),
+                                     salt);
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kSecurityPinHash),
+                                     hash);
+        }
+    }
+    emit boothLockChanged();
+    return true;
+}
+
+bool ApplicationController::disableBoothPin(const QString& currentPin)
+{
+    if (!isBoothPinEnabled()) {
+        return true;
+    }
+    if (!kmedia::BoothSecurity::verifyPin(currentPin, m_boothPinSalt, m_boothPinHash)) {
+        return false;
+    }
+    m_boothPinSalt.clear();
+    m_boothPinHash.clear();
+    m_boothUnlocked = true;
+    if (!m_demoMode) {
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->remove(QLatin1StringView(kmedia::settings_keys::kSecurityPinSalt));
+            (void)settings->remove(QLatin1StringView(kmedia::settings_keys::kSecurityPinHash));
+        }
+    }
+    emit boothLockChanged();
+    return true;
+}
+
+bool ApplicationController::unlockBoothSettings(const QString& candidatePin)
+{
+    if (!isBoothPinEnabled()) {
+        m_boothUnlocked = true;
+        emit boothLockChanged();
+        return true;
+    }
+    if (!kmedia::BoothSecurity::verifyPin(candidatePin, m_boothPinSalt, m_boothPinHash)) {
+        return false;
+    }
+    m_boothUnlocked = true;
+    emit boothLockChanged();
+    return true;
+}
+
+void ApplicationController::lockBoothSettings()
+{
+    if (!isBoothPinEnabled() || !m_boothUnlocked) {
+        return;
+    }
+    m_boothUnlocked = false;
+    emit boothLockChanged();
+}
+
 void ApplicationController::enterDemoMode()
 {
     m_demoSandbox = std::make_unique<QTemporaryDir>();
@@ -507,6 +611,13 @@ void ApplicationController::applyProfileSettings()
             m_cloudWatcher->addWatchedFolder(folder.trimmed());
         }
     }
+
+    m_boothPinSalt =
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kSecurityPinSalt));
+    m_boothPinHash =
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kSecurityPinHash));
+    m_boothUnlocked = m_boothPinHash.isEmpty();
+    emit boothLockChanged();
 }
 
 void ApplicationController::wireIntegrations()
