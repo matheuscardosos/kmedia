@@ -1031,7 +1031,90 @@
     </message>
 </context>
 <context>
+    <name>BoothChecklistPopup</name>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="57"/>
+        <source>Booth Readiness Checklists</source>
+        <translation>Booth Readiness Checklists</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="66"/>
+        <source>%1/%2 ready</source>
+        <translation>%1/%2 ready</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="83"/>
+        <source>Pre-Meeting</source>
+        <translation>Pre-Meeting</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="91"/>
+        <source>Post-Meeting</source>
+        <translation>Post-Meeting</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="121"/>
+        <source>Presentation Display: %1</source>
+        <translation>Presentation Display: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="122"/>
+        <source>Single Display Mode (check HDMI/projector)</source>
+        <translation>Single Display Mode (check HDMI/projector)</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="150"/>
+        <source>Meeting Queue: %1 item(s)</source>
+        <translation>Meeting Queue: %1 item(s)</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="178"/>
+        <source>Sound Check &amp; Auditorium Output Verified</source>
+        <translation>Sound Check &amp; Auditorium Output Verified</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="213"/>
+        <source>OBS &amp; Zoom Booth Test Passed</source>
+        <translation>OBS &amp; Zoom Booth Test Passed</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="214"/>
+        <source>Standby Slide / Screen Routing Verified</source>
+        <translation>Standby Slide / Screen Routing Verified</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="250"/>
+        <source>Restore Auditorium Standby Screen</source>
+        <translation>Restore Auditorium Standby Screen</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="286"/>
+        <source>Stop Media &amp; Ambient Music Playback</source>
+        <translation>Stop Media &amp; Ambient Music Playback</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="323"/>
+        <source>Verify OBS Recording &amp; Zoom Closed</source>
+        <translation>Verify OBS Recording &amp; Zoom Closed</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/BoothChecklistPopup.qml" line="347"/>
+        <source>Done</source>
+        <translation>Done</translation>
+    </message>
+</context>
+<context>
     <name>MeetingPlaylistView</name>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="341"/>
+        <source>Checklist</source>
+        <translation>Checklist</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="348"/>
+        <source>Pre and post-meeting booth checklists</source>
+        <translation>Pre and post-meeting booth checklists</translation>
+    </message>
     <message>
         <location filename="../qml/components/MeetingPlaylistView.qml" line="137"/>
         <source>Previous meeting playlist</source>
@@ -1475,7 +1558,148 @@
     </message>
 </context>
 <context>
+    <name>SettingsPinGate</name>
+    <message>
+        <location filename="../qml/components/SettingsPinGate.qml" line="16"/>
+        <source>Incorrect PIN</source>
+        <translation>Incorrect PIN</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsPinGate.qml" line="52"/>
+        <source>Booth Settings Locked</source>
+        <translation>Booth Settings Locked</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsPinGate.qml" line="60"/>
+        <source>Enter the congregation booth PIN to modify settings.</source>
+        <translation>Enter the congregation booth PIN to modify settings.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsPinGate.qml" line="78"/>
+        <source>Enter booth PIN...</source>
+        <translation>Enter booth PIN...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsPinGate.qml" line="93"/>
+        <source>Unlock</source>
+        <translation>Unlock</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsSecurityCard</name>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="34"/>
+        <source>Booth Settings PIN Lock</source>
+        <translation>Booth Settings PIN Lock</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="43"/>
+        <source>Enabled</source>
+        <translation>Enabled</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="43"/>
+        <source>Disabled</source>
+        <translation>Disabled</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="61"/>
+        <source>Current PIN (to remove) or new PIN (4-12 chars)</source>
+        <translation>Current PIN (to remove) or new PIN (4-12 chars)</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="62"/>
+        <source>Set booth PIN (4-12 chars)...</source>
+        <translation>Set booth PIN (4-12 chars)...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="75"/>
+        <source>Update PIN</source>
+        <translation>Update PIN</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="75"/>
+        <source>Enable PIN</source>
+        <translation>Enable PIN</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="80"/>
+        <source>Booth PIN updated</source>
+        <translation>Booth PIN updated</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="82"/>
+        <source>PIN must be 4-12 letters or digits</source>
+        <translation>PIN must be 4-12 letters or digits</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="90"/>
+        <source>Disable</source>
+        <translation>Disable</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="95"/>
+        <source>Booth PIN disabled</source>
+        <translation>Booth PIN disabled</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="97"/>
+        <source>Incorrect current PIN</source>
+        <translation>Incorrect current PIN</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="125"/>
+        <source>Keyboard Shortcuts &amp; Diagnostics</source>
+        <translation>Keyboard Shortcuts &amp; Diagnostics</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsSecurityCard.qml" line="149"/>
+        <source>KMedia %1 | Qt %2 | libmpv %3 | Memory %4</source>
+        <translation>KMedia %1 | Qt %2 | libmpv %3 | Memory %4</translation>
+    </message>
+</context>
+<context>
     <name>SettingsView</name>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="15"/>
+        <source>General</source>
+        <translation>General</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="16"/>
+        <source>Schedule</source>
+        <translation>Schedule</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="17"/>
+        <source>Display</source>
+        <translation>Display</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="18"/>
+        <source>Audio</source>
+        <translation>Audio</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="19"/>
+        <source>Integrations</source>
+        <translation>Integrations</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="20"/>
+        <source>Security</source>
+        <translation>Security</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="75"/>
+        <source>Search settings...</source>
+        <translation>Search settings...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="92"/>
+        <source>Lock</source>
+        <translation>Lock</translation>
+    </message>
     <message>
         <location filename="../qml/components/SettingsView.qml" line="104"/>
         <source>Active Congregation: %1</source>
@@ -1510,6 +1734,56 @@
         <location filename="../qml/components/SettingsView.qml" line="68"/>
         <source>Dark Booth Theme (Studio Carbon)</source>
         <translation>Dark Booth Theme (Studio Carbon)</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="331"/>
+        <source>Congregation Schedule &amp; Special Events</source>
+        <translation>Congregation Schedule &amp; Special Events</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="342"/>
+        <source>Current Schedule</source>
+        <translation>Current Schedule</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="396"/>
+        <source>Save Times</source>
+        <translation>Save Times</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="404"/>
+        <source>Meeting schedule updated</source>
+        <translation>Meeting schedule updated</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="437"/>
+        <source>Display Routing &amp; Standby</source>
+        <translation>Display Routing &amp; Standby</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="447"/>
+        <source>Auto</source>
+        <translation>Auto</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="456"/>
+        <source>Presentation Output Active</source>
+        <translation>Presentation Output Active</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="544"/>
+        <source>Background Music &amp; Fade Timing</source>
+        <translation>Background Music &amp; Fade Timing</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="575"/>
+        <source>Fade-Out Duration</source>
+        <translation>Fade-Out Duration</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="596"/>
+        <source>Updated fade duration</source>
+        <translation>Updated fade duration</translation>
     </message>
     <message>
         <location filename="../qml/components/SettingsView.qml" line="207"/>
@@ -1550,11 +1824,6 @@
         <location filename="../qml/components/SettingsView.qml" line="304"/>
         <source>Updated watched folders</source>
         <translation>Updated watched folders</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/SettingsView.qml" line="331"/>
-        <source>KMedia %1 | Qt %2 | libmpv %3 | Memory %4</source>
-        <translation>KMedia %1 | Qt %2 | libmpv %3 | Memory %4</translation>
     </message>
 </context>
 <context>

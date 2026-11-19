@@ -21,6 +21,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Searchable two-pane settings console (`SettingsView`) across six categories (*General*, *Schedule*, *Display*, *Audio*, *Integrations*, *Security*) with per-profile salted SHA-256 Booth PIN protection (`BoothSecurity`, `SettingsPinGate`, `SettingsSecurityCard`) and CLI `--tab` screenshot/launch targeting.
+- Clean-room JW meeting section vector glyphs (`section-treasures`, `section-ministry`, `section-living`, `section-public-talk`, `section-watchtower`, `section-overseer` in operator mode with generic fallback in `--demo`) and pre/post-meeting booth readiness checklists (`BoothChecklistPopup`).
 - Circuit Overseer visit, Memorial, Circuit Assembly, and Regional Convention schedule overrides (`MeetingCalendarModel`, `MeetingCatalogService`, `CalendarEventPopup`) with per-profile JSON persistence, automatic *Circuit Overseer* section injection, and smart sync handling on special-event weeks.
 - Custom meeting section builder and color customization (`PlaylistModel`, `DatabaseManager`, `CustomSectionPopup`, `MeetingPlaylistView`) supporting custom section creation, renaming, palette swatch coloring, section reordering, item-to-section assignment, and dragging across section boundaries with SQLite persistence.
 - Monthly and 4-week meeting calendar navigation (`MeetingCalendarModel`, `CalendarView`, `CalendarSchedulePopup`) with configurable per-profile congregation midweek/weekend days and times, local catalog readiness indicators (`MWB` / `W`), direct week opening/syncing, visual 16:9 thumbnail grid & compact list modes with live search/type filters in `MediaLibraryView`, and streamlined icon-driven workspace cards.

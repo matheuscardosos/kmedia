@@ -39,6 +39,8 @@ inline constexpr auto kZoomDisplayName = "zoom/display_name";
 inline constexpr auto kZoomAudioDevice = "zoom/audio_device";
 inline constexpr auto kZoomAutoShare = "zoom/auto_share";
 inline constexpr auto kCloudSyncFolders = "cloud/watched_folders";
+inline constexpr auto kSecurityPinHash = "security/booth_pin_hash";
+inline constexpr auto kSecurityPinSalt = "security/booth_pin_salt";
 
 } // namespace settings_keys
 

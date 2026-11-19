@@ -1,4 +1,5 @@
 #include "app/ApplicationController.h"
+#include "core/BoothSecurity.h"
 #include "media/PdfViewerController.h"
 
 #include <QCommandLineOption>
@@ -103,12 +104,18 @@ int main(int argc, char* argv[])
     const QCommandLineOption themeOption(
         QStringList{QStringLiteral("theme")},
         QStringLiteral("Force UI color theme at startup (dark or light)."), QStringLiteral("mode"));
+    const QCommandLineOption tabOption(
+        QStringList{QStringLiteral("tab")},
+        QStringLiteral("Select initial workspace tab (meeting, calendar, media, playlists, "
+                       "downloads, settings)."),
+        QStringLiteral("name"));
 
     parser.addOption(demoOption);
     parser.addOption(screenshotOption);
     parser.addOption(windowSizeOption);
     parser.addOption(delayOption);
     parser.addOption(themeOption);
+    parser.addOption(tabOption);
     parser.process(app);
 
     if (parser.isSet(demoOption)) {
@@ -116,6 +123,10 @@ int main(int argc, char* argv[])
     }
     if (parser.isSet(themeOption)) {
         ApplicationController::setStartupThemeOverride(parser.value(themeOption));
+    }
+    if (parser.isSet(tabOption)) {
+        ApplicationController::setStartupTabIndex(
+            kmedia::BoothSecurity::parseTabArgument(parser.value(tabOption)));
     }
 
     QQmlApplicationEngine engine;

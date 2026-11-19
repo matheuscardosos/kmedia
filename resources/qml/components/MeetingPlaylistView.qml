@@ -20,8 +20,38 @@ Item {
         return ApplicationController.playlist.colorForSection(title)
     }
 
+    function sectionGlyph(title) {
+        if (ApplicationController.demoMode) {
+            return { category: "lucide", name: "list-video" }
+        }
+        const t = (title || "").toLowerCase()
+        if (t.indexOf("treasure") >= 0 || t.indexOf("tesouro") >= 0) {
+            return { category: "custom", name: "section-treasures" }
+        }
+        if (t.indexOf("apply yourself") >= 0 || t.indexOf("ministério") >= 0) {
+            return { category: "custom", name: "section-ministry" }
+        }
+        if (t.indexOf("living") >= 0 || t.indexOf("vida cristã") >= 0) {
+            return { category: "custom", name: "section-living" }
+        }
+        if (t.indexOf("public talk") >= 0 || t.indexOf("discurso") >= 0) {
+            return { category: "custom", name: "section-public-talk" }
+        }
+        if (t.indexOf("watchtower") >= 0 || t.indexOf("sentinela") >= 0) {
+            return { category: "custom", name: "section-watchtower" }
+        }
+        if (t.indexOf("overseer") >= 0 || t.indexOf("superintendente") >= 0) {
+            return { category: "custom", name: "section-overseer" }
+        }
+        return { category: "lucide", name: "list-video" }
+    }
+
     CustomSectionPopup {
         id: sectionPopup
+    }
+
+    BoothChecklistPopup {
+        id: checklistPopup
     }
 
     function formatMsToClock(ms) {
@@ -302,6 +332,21 @@ Item {
                     }
 
                     StudioButton {
+                        id: checklistBtn
+
+                        variant: "secondary"
+                        iconName: "clipboard-check"
+                        text: root.compactMode ? "" : qsTr("Checklist")
+                        leftPadding: root.compactMode ? 0 : 10
+                        rightPadding: root.compactMode ? 0 : 10
+                        Layout.preferredWidth: root.compactMode ? 34 : checklistBtn.implicitWidth
+                        Layout.preferredHeight: 34
+                        onClicked: checklistPopup.open()
+                        ToolTip.visible: checklistBtn.hovered
+                        ToolTip.text: qsTr("Pre and post-meeting booth checklists")
+                    }
+
+                    StudioButton {
                         id: addSectionBtn
 
                         variant: "secondary"
@@ -497,6 +542,7 @@ Item {
                             const _watch = ApplicationController.playlist.sections
                             return ApplicationController.playlist.colorForSection(sectionHeader.section)
                         }
+                        readonly property var resolvedGlyph: root.sectionGlyph(sectionHeader.section)
 
                         width: playlistView.width - 10
                         height: 40
@@ -518,7 +564,8 @@ Item {
 
                                 StudioIcon {
                                     anchors.centerIn: parent
-                                    name: "list-video"
+                                    name: sectionHeader.resolvedGlyph.name
+                                    category: sectionHeader.resolvedGlyph.category
                                     size: 13
                                     color: "#FFFFFF"
                                 }
