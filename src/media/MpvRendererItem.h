@@ -30,6 +30,8 @@ class MpvRendererItem : public QQuickFramebufferObject
                    tracksChanged FINAL)
     Q_PROPERTY(int currentSubtitleTrack READ currentSubtitleTrack WRITE setCurrentSubtitleTrack
                    NOTIFY tracksChanged FINAL)
+    Q_PROPERTY(bool subtitlesVisible READ areSubtitlesVisible WRITE setSubtitlesVisible NOTIFY
+                   tracksChanged FINAL)
     Q_PROPERTY(double zoomScale READ zoomScale WRITE setZoomScale NOTIFY viewportChanged FINAL)
     Q_PROPERTY(double panX READ panX WRITE setPanX NOTIFY viewportChanged FINAL)
     Q_PROPERTY(double panY READ panY WRITE setPanY NOTIFY viewportChanged FINAL)
@@ -72,6 +74,8 @@ public:
     void setCurrentAudioTrack(int trackId);
     [[nodiscard]] int currentSubtitleTrack() const;
     void setCurrentSubtitleTrack(int trackId);
+    [[nodiscard]] bool areSubtitlesVisible() const;
+    void setSubtitlesVisible(bool visible);
 
     [[nodiscard]] double zoomScale() const;
     void setZoomScale(double zoomScale);
@@ -137,6 +141,7 @@ private:
     QVariantList m_subtitleTracks;
     int m_currentAudioTrack{1};
     int m_currentSubtitleTrack{0};
+    bool m_subtitlesVisible{true};
     double m_zoomScale{1.0};
     double m_panX{0.0};
     double m_panY{0.0};

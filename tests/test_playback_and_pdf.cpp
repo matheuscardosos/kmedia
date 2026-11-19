@@ -77,6 +77,15 @@ TEST_CASE("PlaybackController detects kinds, normalizes trims, and preserves sta
     REQUIRE(controller.isStandbyActive());
     REQUIRE(controller.source() == imageUrl);
 
+    QSignalSpy subSpy(&controller, &kmedia::PlaybackController::subtitlesChanged);
+    REQUIRE(controller.areSubtitlesVisible());
+    controller.toggleSubtitles();
+    REQUIRE_FALSE(controller.areSubtitlesVisible());
+    REQUIRE(subSpy.count() == 1);
+    controller.setSubtitlesVisible(true);
+    REQUIRE(controller.areSubtitlesVisible());
+    REQUIRE(subSpy.count() == 2);
+
     controller.resetViewport();
     REQUIRE(controller.zoomScale() == Catch::Approx(1.0));
     REQUIRE(controller.panX() == Catch::Approx(0.0));

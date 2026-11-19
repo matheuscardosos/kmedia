@@ -4,49 +4,54 @@
 <context>
     <name>ActionPillBar</name>
     <message>
-        <location filename="../qml/components/ActionPillBar.qml" line="103"/>
-        <source>Display</source>
-        <translation>Tela</translation>
+        <location filename="../qml/components/ActionPillBar.qml" line="270"/>
+        <source>Presentation Display (Ctrl+P)</source>
+        <translation>Tela de Apresentação (Ctrl+P)</translation>
     </message>
     <message>
-        <location filename="../qml/components/ActionPillBar.qml" line="104"/>
-        <source>Toggle secondary presentation display (Ctrl+P)</source>
-        <translation>Alternar tela secundária de apresentação (Ctrl+P)</translation>
+        <location filename="../qml/components/ActionPillBar.qml" line="283"/>
+        <source>Toggle Standby Blackout</source>
+        <translation>Alternar Tela de Espera (Blackout)</translation>
     </message>
     <message>
-        <location filename="../qml/components/ActionPillBar.qml" line="115"/>
-        <source>Standby</source>
-        <translation>Espera</translation>
+        <location filename="../qml/components/ActionPillBar.qml" line="294"/>
+        <source>Subtitles: On (click to hide)</source>
+        <translation>Legendas: Ativadas (clique para ocultar)</translation>
     </message>
     <message>
-        <location filename="../qml/components/ActionPillBar.qml" line="116"/>
-        <source>Toggle standby blackout overlay</source>
-        <translation>Alternar tela de espera (Blackout)</translation>
+        <location filename="../qml/components/ActionPillBar.qml" line="295"/>
+        <source>Subtitles: Off (click to show)</source>
+        <translation>Legendas: Desativadas (clique para exibir)</translation>
     </message>
     <message>
-        <location filename="../qml/components/ActionPillBar.qml" line="125"/>
-        <source>Music</source>
-        <translation>Música</translation>
+        <location filename="../qml/components/ActionPillBar.qml" line="315"/>
+        <source>Background Music Controls</source>
+        <translation>Controles da Música Ambiente</translation>
     </message>
     <message>
-        <location filename="../qml/components/ActionPillBar.qml" line="126"/>
-        <source>Toggle entrance background music</source>
-        <translation>Alternar música ambiente</translation>
+        <location filename="../qml/components/ActionPillBar.qml" line="332"/>
+        <source>Meeting Timer</source>
+        <translation>Cronômetro da Reunião</translation>
     </message>
     <message>
-        <location filename="../qml/components/ActionPillBar.qml" line="148"/>
-        <source>OBS WebSocket status and booth settings</source>
-        <translation>Status do OBS WebSocket e ajustes da cabine</translation>
+        <location filename="../qml/components/ActionPillBar.qml" line="350"/>
+        <source>OBS Studio Integration</source>
+        <translation>Integração OBS Studio</translation>
     </message>
     <message>
-        <location filename="../qml/components/ActionPillBar.qml" line="160"/>
-        <source>Launch congregation Zoom meeting</source>
-        <translation>Abrir reunião da congregação no Zoom</translation>
+        <location filename="../qml/components/ActionPillBar.qml" line="366"/>
+        <source>Zoom Booth Controls</source>
+        <translation>Controles do Zoom na Cabine</translation>
     </message>
     <message>
-        <location filename="../qml/components/ActionPillBar.qml" line="176"/>
-        <source>Open quick command palette (Ctrl+K)</source>
-        <translation>Abrir paleta rápida de comandos (Ctrl+K)</translation>
+        <location filename="../qml/components/ActionPillBar.qml" line="388"/>
+        <source>Transfer Queue &amp; Downloads</source>
+        <translation>Fila de Transferências e Downloads</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/ActionPillBar.qml" line="397"/>
+        <source>Command Palette (Ctrl+K)</source>
+        <translation>Paleta de Comandos (Ctrl+K)</translation>
     </message>
 </context>
 <context>
@@ -653,6 +658,279 @@
         <location filename="../qml/components/MeetingPlaylistView.qml" line="790"/>
         <source>Remove from Playlist</source>
         <translation>Remover da Playlist</translation>
+    </message>
+</context>
+<context>
+    <name>PillDisplayPopover</name>
+    <message>
+        <location filename="../qml/components/PillDisplayPopover.qml" line="28"/>
+        <source>Presentation Display</source>
+        <translation>Tela de Apresentação</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillDisplayPopover.qml" line="98"/>
+        <source>Primary</source>
+        <translation>Principal</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillDisplayPopover.qml" line="126"/>
+        <source>Auto Select</source>
+        <translation>Seleção Automática</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillDisplayPopover.qml" line="135"/>
+        <source>Hide</source>
+        <translation>Ocultar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillDisplayPopover.qml" line="135"/>
+        <source>Show</source>
+        <translation>Exibir</translation>
+    </message>
+</context>
+<context>
+    <name>PillDownloadsPopover</name>
+    <message>
+        <location filename="../qml/components/PillDownloadsPopover.qml" line="27"/>
+        <source>Transfer Queue</source>
+        <translation>Fila de Transferências</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillDownloadsPopover.qml" line="36"/>
+        <source>%1 active</source>
+        <translation>%1 ativos</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillDownloadsPopover.qml" line="48"/>
+        <source>Queued: %1</source>
+        <translation>Na fila: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillDownloadsPopover.qml" line="89"/>
+        <source>Open Downloads</source>
+        <translation>Abrir Downloads</translation>
+    </message>
+</context>
+<context>
+    <name>PillMusicPopover</name>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="31"/>
+        <source>Background Music</source>
+        <translation>Música Ambiente</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="42"/>
+        <source>No ambient tracks queued</source>
+        <translation>Nenhuma faixa ambiente na fila</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="53"/>
+        <source>Fading</source>
+        <translation>Atenuando</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="54"/>
+        <source>Live</source>
+        <translation>Tocando</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="54"/>
+        <source>Idle</source>
+        <translation>Parado</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="76"/>
+        <source>Previous track</source>
+        <translation>Faixa anterior</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="82"/>
+        <source>Pause</source>
+        <translation>Pausar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="82"/>
+        <source>Play</source>
+        <translation>Reproduzir</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="102"/>
+        <source>Next track</source>
+        <translation>Próxima faixa</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="114"/>
+        <source>Stop music</source>
+        <translation>Parar música</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="155"/>
+        <source>Shuffle</source>
+        <translation>Aleatório</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillMusicPopover.qml" line="174"/>
+        <source>Fade Out</source>
+        <translation>Fade Out</translation>
+    </message>
+</context>
+<context>
+    <name>PillObsPopover</name>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="53"/>
+        <source>Connected</source>
+        <translation>Conectado</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="54"/>
+        <source>Detected</source>
+        <translation>Detectado</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="54"/>
+        <source>Offline</source>
+        <translation>Offline</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="101"/>
+        <source>No scenes returned by OBS WebSocket.</source>
+        <translation>Nenhuma cena retornada pelo OBS WebSocket.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="102"/>
+        <source>Connect to switch OBS scenes live.</source>
+        <translation>Conecte para alternar cenas do OBS ao vivo.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="115"/>
+        <source>Disconnect</source>
+        <translation>Desconectar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="115"/>
+        <source>Connect</source>
+        <translation>Conectar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="130"/>
+        <source>Stop Rec</source>
+        <translation>Parar Grav.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="130"/>
+        <source>Record</source>
+        <translation>Gravar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillObsPopover.qml" line="148"/>
+        <source>OBS settings</source>
+        <translation>Configurações do OBS</translation>
+    </message>
+</context>
+<context>
+    <name>PillTimerPopover</name>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="27"/>
+        <source>Meeting Timer</source>
+        <translation>Cronômetro da Reunião</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="36"/>
+        <source>Overtime</source>
+        <translation>Tempo Excedido</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="36"/>
+        <source>On Schedule</source>
+        <translation>No Horário</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="64"/>
+        <source>Elapsed</source>
+        <translation>Decorrido</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="84"/>
+        <source>Over</source>
+        <translation>Excedido</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="84"/>
+        <source>Remaining</source>
+        <translation>Restante</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="110"/>
+        <source>Pause</source>
+        <translation>Pausar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="110"/>
+        <source>Start</source>
+        <translation>Iniciar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="118"/>
+        <source>Reset</source>
+        <translation>Zerar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="128"/>
+        <source>Target: %1 min</source>
+        <translation>Meta: %1 min</translation>
+    </message>
+</context>
+<context>
+    <name>PillZoomPopover</name>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="43"/>
+        <source>ID: %1</source>
+        <translation>ID: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="44"/>
+        <source>Meeting ID not set</source>
+        <translation>ID da reunião não definido</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="53"/>
+        <source>Running</source>
+        <translation>Ativo</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="53"/>
+        <source>Standby</source>
+        <translation>Em espera</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="80"/>
+        <source>Share Shortcut:</source>
+        <translation>Atalho de Compartilhamento:</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="101"/>
+        <source>Audio Output:</source>
+        <translation>Saída de Áudio:</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="110"/>
+        <source>System default</source>
+        <translation>Padrão do sistema</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="129"/>
+        <source>Join Meeting</source>
+        <translation>Entrar na Reunião</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="133"/>
+        <source>Set a valid Zoom Meeting ID in Settings first</source>
+        <translation>Defina um ID de reunião Zoom válido nas Configurações primeiro</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillZoomPopover.qml" line="147"/>
+        <source>Zoom settings</source>
+        <translation>Configurações do Zoom</translation>
     </message>
 </context>
 <context>

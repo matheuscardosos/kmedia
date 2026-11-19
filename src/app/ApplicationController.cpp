@@ -1,6 +1,7 @@
 #include "ApplicationController.h"
 
 #include "core/DatabaseManager.h"
+#include "core/MeetingTimer.h"
 #include "core/NetworkManager.h"
 #include "core/ProfileManager.h"
 #include "core/RuntimeInfo.h"
@@ -59,7 +60,8 @@ ApplicationController::ApplicationController(QObject* parent)
       m_processMonitor(std::make_unique<kmedia::ProcessMonitor>()),
       m_obsClient(std::make_unique<kmedia::ObsWebSocketClient>()),
       m_zoomBridge(std::make_unique<kmedia::ZoomBridge>()),
-      m_playlistModel(std::make_unique<kmedia::PlaylistModel>())
+      m_playlistModel(std::make_unique<kmedia::PlaylistModel>()),
+      m_meetingTimer(std::make_unique<kmedia::MeetingTimer>())
 {
     m_playbackController->attachPdfController(m_pdfController.get());
     m_playlistModel->attachPlaybackController(m_playbackController.get());
@@ -250,6 +252,11 @@ kmedia::ZoomBridge* ApplicationController::zoomBridge() const
 kmedia::PlaylistModel* ApplicationController::playlist() const
 {
     return m_playlistModel.get();
+}
+
+kmedia::MeetingTimer* ApplicationController::meetingTimer() const
+{
+    return m_meetingTimer.get();
 }
 
 void ApplicationController::bindPresentationMpv(MpvRendererItem* mpvItem)

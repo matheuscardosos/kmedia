@@ -17,9 +17,10 @@ O KMedia se adapta automaticamente a telas largas de cabine, divisão 50/50 ou j
 ![Layout Compacto Lado a Lado do KMedia](../assets/kmedia-compact-preview.png)
 
 1. **Barra Lateral / Abas Compactas:** Alterne perfis de congregação e o tema Claro/Escuro, navegue entre *Reunião*, *Mídias*, *Playlists*, *Downloads* e *Configurações*, e acompanhe em tempo real o status de OBS, 2ª Tela, Zoom e armazenamento livre em disco.
-2. **Divisão por Seções e Área Central:** Os itens são agrupados sob cabeçalhos coloridos por seção (*Tesouros da Palavra de Deus*, *Faça Seu Melhor no Ministério*, *Nossa Vida Cristã*, *Discurso Público*, *A Sentinela* e *Visita do Superintendente*), com alça de arrastar-e-soltar, seletor rápido de reuniões/semanas (`< [ Midweek Meeting v ] >`), barra em pílula com atalhos e controles completos de reprodução e música ambiente.
-3. **Paleta de Comandos (`Ctrl+K`) e Notificações:** Pressione `Ctrl+K` em qualquer tela para executar comandos rápidos sem tirar as mãos do teclado.
-4. **Painel Direito de Prévia e Inspetor:** Acompanhe o quadro ao vivo com selo *ON AIR / READY / STANDBY* e botões de vidro *Standby* / *Blackout*, metadados do arquivo, status das saídas e precisão de corte não destrutivo (`00:00.000`).
+2. **Divisão por Seções e Área Central:** Os itens são agrupados sob cabeçalhos coloridos por seção (*Tesouros da Palavra de Deus*, *Faça Seu Melhor no Ministério*, *Nossa Vida Cristã*, *Discurso Público*, *A Sentinela* e *Visita do Superintendente*), com alça de arrastar-e-soltar, seletor rápido de reuniões/semanas (`< [ Midweek Meeting v ] >`) e controles completos de reprodução e música ambiente.
+3. **Barra Flutuante em Pílula (`ActionPillBar`):** Conta com botões ampliados guiados por ícones (incluindo os emblemas de OBS Studio e Zoom nas cores do sistema), indicadores de status em LED, alternância imediata de *Espera / Blackout* e *Legendas* (`libmpv`), além de popovers ancorados para escolher o monitor de exibição, controlar música ambiente, acompanhar o cronômetro da reunião (`Decorrido` / `Restante` / `Excedido`), trocar cenas do OBS ao vivo, abrir o Zoom e gerenciar downloads.
+4. **Paleta de Comandos (`Ctrl+K`) e Notificações:** Pressione `Ctrl+K` em qualquer tela para executar comandos rápidos sem tirar as mãos do teclado.
+5. **Painel Direito de Prévia e Inspetor:** Acompanhe o quadro ao vivo com selo *ON AIR / READY / STANDBY* e botões de vidro *Standby* / *Blackout*, metadados do arquivo, status das saídas e precisão de corte não destrutivo (`00:00.000`).
 
 ## Reprodução, Cortes, Zoom e Apresentação de PDFs
 
