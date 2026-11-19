@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/MeetingCalendarModel.h"
 #include "core/MeetingTimer.h"
 #include "integrations/DisplayManager.h"
 #include "integrations/ObsWebSocketClient.h"
@@ -116,5 +117,13 @@ struct MeetingCatalogServiceForeign
     Q_GADGET
     QML_FOREIGN(kmedia::MeetingCatalogService)
     QML_NAMED_ELEMENT(MeetingCatalogService)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct MeetingCalendarModelForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::MeetingCalendarModel)
+    QML_NAMED_ELEMENT(MeetingCalendarModel)
     QML_UNCREATABLE("Provided by ApplicationController")
 };

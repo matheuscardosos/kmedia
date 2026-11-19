@@ -64,24 +64,13 @@ ScrollView {
                         color: Theme.textSecondary
                     }
 
-                    ColumnLayout {
+                    Text {
+                        text: qsTr("Dark Booth Theme (Studio Carbon)")
+                        color: Theme.textPrimary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeSm
+                        font.weight: Font.Medium
                         Layout.fillWidth: true
-                        spacing: 1
-
-                        Text {
-                            text: qsTr("Dark Booth Theme (Studio Carbon)")
-                            color: Theme.textPrimary
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeSm
-                            font.weight: Font.Medium
-                        }
-
-                        Text {
-                            text: qsTr("Reduces screen glare in darkened auditorium booths")
-                            color: Theme.textSecondary
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSizeXs
-                        }
                     }
 
                     StudioSwitch {

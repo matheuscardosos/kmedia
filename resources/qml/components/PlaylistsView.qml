@@ -76,7 +76,7 @@ ScrollView {
                         id: newPlaylistField
 
                         Layout.fillWidth: true
-                        placeholderText: qsTr("New playlist name (e.g. Circuit Assembly)")
+                        placeholderText: qsTr("New playlist name...")
                         color: Theme.textPrimary
                         placeholderTextColor: Theme.textMuted
                         font.family: Theme.fontFamily

@@ -18,6 +18,7 @@ Rectangle {
     signal openCommandPalette()
     signal openBoothSettings()
     signal openDownloadsTab()
+    signal openMeetingRequested()
 
     function openAddMediaDialog() {
         root.addMediaRequested()
@@ -75,6 +76,11 @@ Rectangle {
                 previewOpen: root.previewOpen
                 onAddMediaRequested: root.addMediaRequested()
                 onPreviewToggled: root.previewToggled()
+            }
+
+            CalendarView {
+                compactMode: root.compactMode
+                onOpenMeetingRequested: root.openMeetingRequested()
             }
 
             MediaLibraryView {

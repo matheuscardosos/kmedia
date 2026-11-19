@@ -444,11 +444,16 @@ void MeetingCatalogService::nextWeek()
 
 void MeetingCatalogService::goToCurrentWeek()
 {
-    const QDate current = weekMondayForDate(QDate::currentDate());
-    if (m_targetWeekMonday == current) {
+    setTargetWeekDate(QDate::currentDate());
+}
+
+void MeetingCatalogService::setTargetWeekDate(const QDate& date)
+{
+    const QDate target = weekMondayForDate(date);
+    if (m_targetWeekMonday == target) {
         return;
     }
-    m_targetWeekMonday = current;
+    m_targetWeekMonday = target;
     emit weekChanged();
 }
 
