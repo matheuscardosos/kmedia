@@ -174,21 +174,145 @@
     </message>
 </context>
 <context>
+    <name>ApplicationController</name>
+    <message>
+        <location filename="../../src/app/ApplicationController.cpp" line="529"/>
+        <source>Synced %1 week item(s) into playlist</source>
+        <translation>Synced %1 week item(s) into playlist</translation>
+    </message>
+</context>
+<context>
+    <name>CatalogBrowserCard</name>
+    <message>
+        <location filename="../qml/components/CatalogBrowserCard.qml" line="36"/>
+        <source>Meeting &amp; Publication Media (%1)</source>
+        <translation>Meeting &amp; Publication Media (%1)</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogBrowserCard.qml" line="58"/>
+        <source>Fetching publication catalog...</source>
+        <translation>Fetching publication catalog...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogBrowserCard.qml" line="59"/>
+        <source>Select a week and click Fetch &amp; Auto-Fill to load meeting media.</source>
+        <translation>Select a week and click Fetch &amp; Auto-Fill to load meeting media.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogBrowserCard.qml" line="127"/>
+        <source>Import</source>
+        <translation>Import</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogBrowserCard.qml" line="127"/>
+        <source>Download</source>
+        <translation>Download</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CatalogBrowserCard.qml" line="134"/>
+        <source>Imported cached package to playlist</source>
+        <translation>Imported cached package to playlist</translation>
+    </message>
+</context>
+<context>
+    <name>DownloadQueueCard</name>
+    <message>
+        <location filename="../qml/components/DownloadQueueCard.qml" line="51"/>
+        <source>Transfers (%1 active, %2 queued)</source>
+        <translation>Transfers (%1 active, %2 queued)</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadQueueCard.qml" line="66"/>
+        <source>Pause All</source>
+        <translation>Pause All</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadQueueCard.qml" line="77"/>
+        <source>Clear</source>
+        <translation>Clear</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadQueueCard.qml" line="122"/>
+        <source>No active or recent transfers.</source>
+        <translation>No active or recent transfers.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadQueueCard.qml" line="189"/>
+        <source>Pause</source>
+        <translation>Pause</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadQueueCard.qml" line="202"/>
+        <source>Resume</source>
+        <translation>Resume</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadQueueCard.qml" line="215"/>
+        <source>Retry</source>
+        <translation>Retry</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadQueueCard.qml" line="228"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+</context>
+<context>
     <name>DownloadsView</name>
     <message>
-        <location filename="../qml/components/DownloadsView.qml" line="47"/>
-        <source>Network Transfer Queue</source>
-        <translation>Network Transfer Queue</translation>
+        <location filename="../qml/components/DownloadsView.qml" line="72"/>
+        <source>Previous week</source>
+        <translation>Previous week</translation>
     </message>
     <message>
-        <location filename="../qml/components/DownloadsView.qml" line="58"/>
-        <source>Active transfers: %1 | Queued: %2 | Max concurrency: %3</source>
-        <translation>Active transfers: %1 | Queued: %2 | Max concurrency: %3</translation>
+        <location filename="../qml/components/DownloadsView.qml" line="82"/>
+        <source>Jump to current week</source>
+        <translation>Jump to current week</translation>
     </message>
     <message>
-        <location filename="../qml/components/DownloadsView.qml" line="81"/>
-        <source>Limit: %1</source>
-        <translation>Limit: %1</translation>
+        <location filename="../qml/components/DownloadsView.qml" line="94"/>
+        <source>Next week</source>
+        <translation>Next week</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadsView.qml" line="138"/>
+        <source>Filter languages...</source>
+        <translation>Filter languages...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadsView.qml" line="158"/>
+        <source>Fetch full JW language list</source>
+        <translation>Fetch full JW language list</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadsView.qml" line="235"/>
+        <source>Sync Week</source>
+        <translation>Sync Week</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadsView.qml" line="235"/>
+        <source>Fetch &amp; Auto-Fill Week</source>
+        <translation>Fetch &amp; Auto-Fill Week</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadsView.qml" line="243"/>
+        <source>Browse</source>
+        <translation>Browse</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadsView.qml" line="243"/>
+        <source>Browse Week</source>
+        <translation>Browse Week</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadsView.qml" line="253"/>
+        <source>Publication (e.g. sjjm, lff, mwb)</source>
+        <translation>Publication (e.g. sjjm, lff, mwb)</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/DownloadsView.qml" line="273"/>
+        <source>Lookup</source>
+        <translation>Lookup</translation>
     </message>
 </context>
 <context>
@@ -593,6 +717,21 @@
         <location filename="../qml/components/MeetingPlaylistView.qml" line="297"/>
         <source>%1 duration</source>
         <translation>%1 duration</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="312"/>
+        <source>Sync</source>
+        <translation>Sync</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="312"/>
+        <source>Sync Week</source>
+        <translation>Sync Week</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="317"/>
+        <source>Fetch weekly workbook and Watchtower media automatically</source>
+        <translation>Fetch weekly workbook and Watchtower media automatically</translation>
     </message>
     <message>
         <location filename="../qml/components/MeetingPlaylistView.qml" line="312"/>

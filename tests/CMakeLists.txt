@@ -15,6 +15,7 @@ qt_add_executable(kmedia_tests
     test_jwpub_and_s34.cpp
     test_jwlplaylist_parser.cpp
     test_download_service.cpp
+    test_meeting_catalog.cpp
     test_cloud_sync_watcher.cpp
     test_process_monitor.cpp
     test_obs_and_zoom.cpp

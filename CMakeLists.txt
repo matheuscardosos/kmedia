@@ -81,6 +81,8 @@ qt_add_library(kmedia_core STATIC
     src/network/CatalogClient.cpp
     src/network/DownloadService.h
     src/network/DownloadService.cpp
+    src/network/MeetingCatalogService.h
+    src/network/MeetingCatalogService.cpp
     src/parsers/CloudSyncWatcher.h
     src/parsers/CloudSyncWatcher.cpp
     src/parsers/JwlPlaylistParser.h
@@ -191,6 +193,8 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/MediaLibraryView.qml
     resources/qml/components/PlaylistsView.qml
     resources/qml/components/DownloadsView.qml
+    resources/qml/components/DownloadQueueCard.qml
+    resources/qml/components/CatalogBrowserCard.qml
     resources/qml/components/SettingsView.qml
     resources/qml/components/CenterWorkspace.qml
     resources/qml/components/InspectorPanel.qml

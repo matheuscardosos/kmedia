@@ -37,7 +37,8 @@ This document defines the behavioral contracts and architectural invariants that
 
 ## 6. Network Politeness and Archive Safety
 
-- All catalog and meeting media requests identify `KMedia/<version>` in `User-Agent`, enable HTTP/2, limit concurrent transfers to at most `3` by default (never above `6`), honor `ETag` (`If-None-Match`) and `Last-Modified` (`If-Modified-Since`), stream payloads to `.part` files before atomic rename, verify SHA-256 checksums, and use exponential backoff only on transient statuses (`408`, `429`, `5xx`).
+- All catalog and meeting media requests identify `KMedia/<version>` in `User-Agent`, enable HTTP/2, limit concurrent transfers to at most `3` by default (never above `6`), honor `ETag` (`If-None-Match`) and `Last-Modified` (`If-Modified-Since`) with disk-cached catalog JSON payloads so HTTP `304` responses preserve full language and publication metadata across sessions, stream payloads to `.part` files before atomic rename, verify SHA-256 checksums, and use exponential backoff only on transient statuses (`408`, `429`, `5xx`).
+- Weekly meeting auto-sync (`MeetingCatalogService`) derives bi-monthly `mwb` and monthly `w` issue tags cleanly from the active week's Monday date, deduplicates redundant video resolutions (preferring balanced `720p` > `480p`), automatically imports completed `.jwpub` packages and linked external videos into `PlaylistModel`, and caps secondary linked-media queries per sync.
 - Archive extractors (`.jwpub`, `.jwlplaylist`, `S-34 / S-34mp`) must validate every archive path and entry size cap against directory traversal (Zip-Slip) and decompression bombs before reading or writing data, and convert JW Library 100-nanosecond ticks into non-destructive millisecond trim bounds (`10000 ticks/ms`).
 
 ## 7. Cloud Folder Synchronization Rules

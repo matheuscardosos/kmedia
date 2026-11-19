@@ -307,6 +307,17 @@ Item {
                     }
 
                     StudioButton {
+                        variant: "secondary"
+                        iconName: "refresh-cw"
+                        text: root.compactMode ? qsTr("Sync") : qsTr("Sync Week")
+                        implicitHeight: 34
+                        enabled: !ApplicationController.catalog.busy
+                        onClicked: ApplicationController.catalog.syncCurrentWeekToPlaylist()
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("Fetch weekly workbook and Watchtower media automatically")
+                    }
+
+                    StudioButton {
                         variant: "primary"
                         iconName: "plus"
                         text: root.compactMode ? qsTr("Add") : qsTr("Add Media")

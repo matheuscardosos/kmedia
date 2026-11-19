@@ -2,12 +2,17 @@
 
 #include "core/DatabaseManager.h"
 #include "core/NetworkManager.h"
+#include "core/SystemUtils.h"
 
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QSaveFile>
 #include <QUrlQuery>
 
 #include <utility>
@@ -63,6 +68,8 @@ CatalogClient::CatalogClient(NetworkManager* networkManager, DatabaseManager* da
         m_network = m_ownedNetwork.get();
     }
 }
+
+CatalogClient::~CatalogClient() = default;
 
 void CatalogClient::setDatabaseManager(DatabaseManager* databaseManager)
 {
@@ -186,19 +193,22 @@ void CatalogClient::fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult
 
     QString etag;
     QString lastModified;
+    QString cachedBodyPath;
     if (m_database != nullptr) {
         if (const std::optional<DownloadCacheRecord> cached =
                 m_database->findDownloadCache(endpoint.toString());
-            cached.has_value()) {
+            cached.has_value() && !cached->localPath.isEmpty() &&
+            QFileInfo::exists(cached->localPath)) {
             etag = cached->etag;
             lastModified = cached->lastModified;
+            cachedBodyPath = cached->localPath;
         }
     }
 
     QNetworkReply* reply =
         m_network->accessManager()->get(m_network->buildRequest(endpoint, etag, lastModified));
     connect(reply, &QNetworkReply::finished, this,
-            [this, reply, endpoint, handler = std::forward<Callback>(onResult)]() {
+            [this, reply, endpoint, cachedBodyPath, handler = std::forward<Callback>(onResult)]() {
                 const HttpCacheHeaders headers = NetworkManager::extractCacheHeaders(reply);
                 const QByteArray body = reply->readAll();
                 const QNetworkReply::NetworkError netErr = reply->error();
@@ -206,7 +216,14 @@ void CatalogClient::fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult
                 reply->deleteLater();
 
                 if (headers.notModified) {
-                    handler(QByteArray{}, true);
+                    QByteArray cachedJson;
+                    if (!cachedBodyPath.isEmpty()) {
+                        QFile cachedFile(cachedBodyPath);
+                        if (cachedFile.open(QIODevice::ReadOnly)) {
+                            cachedJson = cachedFile.readAll();
+                        }
+                    }
+                    handler(cachedJson, true);
                     return;
                 }
                 if (netErr != QNetworkReply::NoError || headers.statusCode >= 400) {
@@ -214,10 +231,24 @@ void CatalogClient::fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult
                     return;
                 }
                 if (m_database != nullptr) {
+                    const QString cacheDir =
+                        SystemUtils::standardCacheDir() + QStringLiteral("/catalog");
+                    QDir().mkpath(cacheDir);
+                    const QString cachePath = QDir(cacheDir).filePath(
+                        SystemUtils::sha256Hex(endpoint.toString().toUtf8()) +
+                        QStringLiteral(".json"));
+                    QSaveFile saveFile(cachePath);
+                    bool saved = false;
+                    if (saveFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                        saveFile.write(body);
+                        saved = saveFile.commit();
+                    }
+
                     DownloadCacheRecord rec;
                     rec.url = endpoint.toString();
                     rec.etag = headers.etag;
                     rec.lastModified = headers.lastModified;
+                    rec.localPath = saved ? cachePath : QString{};
                     (void)m_database->upsertDownloadCache(rec);
                 }
                 handler(body, false);
@@ -227,22 +258,22 @@ void CatalogClient::fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult
 void CatalogClient::fetchLanguages(const QUrl& endpoint)
 {
     fetchWithEtagCache(endpoint, [this](const QByteArray& body, bool fromCache) {
-        if (fromCache) {
+        if (body.isEmpty() && fromCache) {
             emit languagesLoaded({}, true);
             return;
         }
-        emit languagesLoaded(parseLanguagesJson(body), false);
+        emit languagesLoaded(parseLanguagesJson(body), fromCache);
     });
 }
 
 void CatalogClient::fetchPubMediaLinks(const QUrl& endpoint, const QString& preferredLangCode)
 {
     fetchWithEtagCache(endpoint, [this, preferredLangCode](const QByteArray& body, bool fromCache) {
-        if (fromCache) {
+        if (body.isEmpty() && fromCache) {
             emit pubMediaAssetsLoaded({}, true);
             return;
         }
-        emit pubMediaAssetsLoaded(parsePubMediaLinksJson(body, preferredLangCode), false);
+        emit pubMediaAssetsLoaded(parsePubMediaLinksJson(body, preferredLangCode), fromCache);
     });
 }
 

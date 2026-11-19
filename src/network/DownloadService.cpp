@@ -6,6 +6,7 @@
 
 #include <QCryptographicHash>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QNetworkAccessManager>
@@ -14,6 +15,7 @@
 #include <QPointer>
 #include <QTimer>
 #include <QUuid>
+#include <QVariantMap>
 
 #include <algorithm>
 #include <limits>
@@ -60,6 +62,35 @@ bool replaceTargetAtomically(const QString& tempPath, const QString& destination
     return true;
 }
 
+QString statusLabelFor(DownloadService::Status status)
+{
+    switch (status) {
+    case DownloadService::Status::Queued:
+        return QStringLiteral("Queued");
+    case DownloadService::Status::Downloading:
+        return QStringLiteral("Downloading");
+    case DownloadService::Status::Paused:
+        return QStringLiteral("Paused");
+    case DownloadService::Status::Completed:
+        return QStringLiteral("Completed");
+    case DownloadService::Status::CachedNotModified:
+        return QStringLiteral("Cached");
+    case DownloadService::Status::Cancelled:
+        return QStringLiteral("Cancelled");
+    case DownloadService::Status::Failed:
+        return QStringLiteral("Failed");
+    }
+    return QStringLiteral("Queued");
+}
+
+bool isTerminalStatus(DownloadService::Status status)
+{
+    return status == DownloadService::Status::Completed ||
+           status == DownloadService::Status::CachedNotModified ||
+           status == DownloadService::Status::Cancelled ||
+           status == DownloadService::Status::Failed;
+}
+
 } // namespace
 
 struct DownloadService::InternalTask
@@ -68,6 +99,7 @@ struct DownloadService::InternalTask
     QPointer<QNetworkReply> reply;
     std::unique_ptr<QFile> partFile;
     QCryptographicHash hasher{QCryptographicHash::Sha256};
+    QElapsedTimer progressNotifyClock;
     AbortIntent abortIntent{AbortIntent::None};
     bool resumedFromPartial{false};
     qint64 resumeOffset{0};
@@ -144,7 +176,7 @@ void DownloadService::setRetryBaseDelayMs(int baseDelayMs)
 
 QString DownloadService::enqueue(const QUrl& url, const QString& destinationPath,
                                  const QString& expectedSha256, Priority priority,
-                                 const QString& customId)
+                                 const QString& customId, const QString& displayTitle)
 {
     const QString id = customId.trimmed().isEmpty()
                            ? QUuid::createUuid().toString(QUuid::WithoutBraces)
@@ -152,11 +184,13 @@ QString DownloadService::enqueue(const QUrl& url, const QString& destinationPath
 
     auto task = std::make_shared<InternalTask>();
     task->info.id = id;
+    task->info.displayTitle = displayTitle.trimmed();
     task->info.url = url;
     task->info.destinationPath = destinationPath;
     task->info.expectedSha256 = expectedSha256.trimmed().toLower();
     task->info.priority = priority;
     task->info.status = Status::Queued;
+    task->progressNotifyClock.start();
 
     if (!url.isValid() || destinationPath.trimmed().isEmpty()) {
         task->info.status = Status::Failed;
@@ -165,6 +199,7 @@ QString DownloadService::enqueue(const QUrl& url, const QString& destinationPath
         m_insertionOrder.push_back(id);
         emit taskAdded(id);
         emit taskStateChanged(id, Status::Failed);
+        emit tasksChanged();
         emit taskFinished(id, false);
         return id;
     }
@@ -174,6 +209,7 @@ QString DownloadService::enqueue(const QUrl& url, const QString& destinationPath
     emit taskAdded(id);
     emit taskStateChanged(id, Status::Queued);
     emit countsChanged();
+    emit tasksChanged();
 
     dispatchNext();
     return id;
@@ -251,6 +287,25 @@ bool DownloadService::cancel(const QString& taskId)
     return true;
 }
 
+bool DownloadService::retryTask(const QString& taskId)
+{
+    const auto it = m_tasks.find(taskId);
+    if (it == m_tasks.end()) {
+        return false;
+    }
+    const std::shared_ptr<InternalTask>& task = it.value();
+    if (task->info.status != Status::Failed && task->info.status != Status::Cancelled) {
+        return false;
+    }
+    task->info.retryCount = 0;
+    task->info.errorMessage.clear();
+    task->info.bytesReceived = 0;
+    task->abortIntent = AbortIntent::None;
+    updateStatus(task, Status::Queued);
+    dispatchNext();
+    return true;
+}
+
 void DownloadService::pauseAll()
 {
     for (const QString& id : m_insertionOrder) {
@@ -263,6 +318,91 @@ void DownloadService::cancelAll()
     for (const QString& id : m_insertionOrder) {
         cancel(id);
     }
+}
+
+void DownloadService::clearFinished()
+{
+    std::vector<QString> kept;
+    kept.reserve(m_insertionOrder.size());
+    bool removedAny = false;
+    for (const QString& id : m_insertionOrder) {
+        const auto it = m_tasks.find(id);
+        if (it == m_tasks.end()) {
+            continue;
+        }
+        if (isTerminalStatus(it.value()->info.status)) {
+            m_tasks.erase(it);
+            removedAny = true;
+        } else {
+            kept.push_back(id);
+        }
+    }
+    if (!removedAny) {
+        return;
+    }
+    m_insertionOrder = std::move(kept);
+    emit countsChanged();
+    emit tasksChanged();
+}
+
+int DownloadService::finishedCount() const
+{
+    int count = 0;
+    for (const auto& task : m_tasks) {
+        if (isTerminalStatus(task->info.status)) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+QVariantList DownloadService::tasksVariant() const
+{
+    QVariantList list;
+    list.reserve(static_cast<qsizetype>(m_insertionOrder.size()));
+    for (auto it = m_insertionOrder.rbegin(); it != m_insertionOrder.rend(); ++it) {
+        const auto taskIt = m_tasks.find(*it);
+        if (taskIt == m_tasks.end()) {
+            continue;
+        }
+        const TaskInfo& info = taskIt.value()->info;
+        QVariantMap map;
+        map.insert(QStringLiteral("taskId"), info.id);
+        map.insert(QStringLiteral("title"), info.displayTitle.isEmpty()
+                                                ? QFileInfo(info.destinationPath).fileName()
+                                                : info.displayTitle);
+        map.insert(QStringLiteral("status"), static_cast<int>(info.status));
+        map.insert(QStringLiteral("statusLabel"), statusLabelFor(info.status));
+        map.insert(QStringLiteral("bytesReceived"), info.bytesReceived);
+        map.insert(QStringLiteral("bytesTotal"), info.bytesTotal);
+        map.insert(QStringLiteral("errorMessage"), info.errorMessage);
+        map.insert(QStringLiteral("destinationPath"), info.destinationPath);
+
+        double ratio = 0.0;
+        if (info.status == Status::Completed || info.status == Status::CachedNotModified) {
+            ratio = 1.0;
+        } else if (info.bytesTotal > 0) {
+            ratio = qBound(
+                0.0, static_cast<double>(info.bytesReceived) / static_cast<double>(info.bytesTotal),
+                1.0);
+        }
+        map.insert(QStringLiteral("progress"), ratio);
+
+        const QString recvText = SystemUtils::formatFileSize(info.bytesReceived);
+        const QString sizeText = (info.bytesTotal > 0)
+                                     ? QStringLiteral("%1 / %2").arg(
+                                           recvText, SystemUtils::formatFileSize(info.bytesTotal))
+                                     : recvText;
+        map.insert(QStringLiteral("sizeText"), sizeText);
+        map.insert(QStringLiteral("canPause"),
+                   info.status == Status::Downloading || info.status == Status::Queued);
+        map.insert(QStringLiteral("canResume"), info.status == Status::Paused);
+        map.insert(QStringLiteral("canCancel"), !isTerminalStatus(info.status));
+        map.insert(QStringLiteral("canRetry"),
+                   info.status == Status::Failed || info.status == Status::Cancelled);
+        list.append(map);
+    }
+    return list;
 }
 
 std::optional<DownloadService::TaskInfo> DownloadService::taskInfo(const QString& taskId) const
@@ -418,6 +558,11 @@ void DownloadService::startTask(const std::shared_ptr<InternalTask>& task)
                 task->info.bytesReceived = base + received;
                 task->info.bytesTotal = (total > 0) ? (base + total) : 0;
                 emit taskProgress(task->info.id, task->info.bytesReceived, task->info.bytesTotal);
+                if (!task->progressNotifyClock.isValid() ||
+                    task->progressNotifyClock.elapsed() >= 200) {
+                    task->progressNotifyClock.restart();
+                    emit tasksChanged();
+                }
             });
 
     connect(reply, &QNetworkReply::readyRead, this, [this, task]() {
@@ -643,6 +788,7 @@ void DownloadService::updateStatus(const std::shared_ptr<InternalTask>& task, St
     task->info.status = nextStatus;
     emit taskStateChanged(task->info.id, nextStatus);
     emit countsChanged();
+    emit tasksChanged();
 }
 
 } // namespace kmedia

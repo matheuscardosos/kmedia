@@ -11,6 +11,7 @@
 #include "media/PlaybackController.h"
 #include "models/PlaylistModel.h"
 #include "network/DownloadService.h"
+#include "network/MeetingCatalogService.h"
 #include "parsers/CloudSyncWatcher.h"
 
 #include <QtQmlIntegration/qqmlintegration.h>
@@ -107,5 +108,13 @@ struct MeetingTimerForeign
     Q_GADGET
     QML_FOREIGN(kmedia::MeetingTimer)
     QML_NAMED_ELEMENT(MeetingTimer)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct MeetingCatalogServiceForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::MeetingCatalogService)
+    QML_NAMED_ELEMENT(MeetingCatalogService)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
