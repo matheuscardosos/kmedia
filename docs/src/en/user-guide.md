@@ -16,6 +16,12 @@ KMedia adapts automatically across desktop, split-screen booth laptops, and comp
 
 ![KMedia Compact Side-by-Side Layout](../assets/kmedia-compact-preview.png)
 
+![KMedia Monthly Meeting Calendar](../assets/kmedia-calendar-preview.png)
+
+![KMedia Visual Media Library Grid](../assets/kmedia-media-preview.png)
+
+![KMedia Searchable Two-Pane Settings](../assets/kmedia-settings-preview.png)
+
 1. **Left Navigation Rail / Compact Tabs:** Switch congregations cleanly, toggle Dark/Light theme, navigate between *Meeting*, *Calendar*, *Media*, *Playlists*, *Downloads*, and *Settings*, and inspect live OBS Studio, 2nd Display, Zoom, and free disk space.
 2. **Meeting Sections, Section Glyphs, Readiness Checklists & Visual Media Library:** Items in the active meeting group automatically under colored workbook section headers (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*, *Public Talk*, *Watchtower Study*, *Circuit Overseer*, or custom sections) with dedicated monochrome vector glyphs in normal operator mode (falling back to generic list glyphs in `--demo` mode). Click **Checklist** (`BoothChecklistPopup`) for pre-meeting and post-meeting booth verification checks, **Section** (`CustomSectionPopup`) to create/rename/recolor/reorder sections, and drag items smoothly across section boundaries (`moveItem`). Switch to *Media* for a 16:9 visual thumbnail grid (or compact list mode) with live keyword search, type filter pills (*All*, *Video*, *Audio*, *Image*, *PDF*), and a compact cloud-watch indicator pill.
 3. **Meeting Calendar & Special Events (`CalendarView`):** Inspect a Monday-first monthly calendar highlighting your congregation's configured midweek and weekend meeting days (`MWB` and *Watchtower* issue tags with green local-cache readiness badges), tag special event weeks (*Circuit Overseer Visit*, *Memorial*, *Circuit Assembly*, *Regional Convention*) via **Event** (`CalendarEventPopup`) to automatically inject the *Circuit Overseer* section or skip regular study sync on assembly/Memorial weeks, customize meeting days and start times (`Schedule` popup, persisted per congregation profile and applied automatically to background music fade-outs), preview the next four weeks, and click **Open Week** or **Sync Week** to jump straight into that week's meeting workspace.

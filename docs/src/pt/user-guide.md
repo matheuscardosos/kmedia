@@ -16,6 +16,12 @@ O KMedia se adapta automaticamente a telas largas de cabine, divisão 50/50 ou j
 
 ![Layout Compacto Lado a Lado do KMedia](../assets/kmedia-compact-preview.png)
 
+![Calendário Mensal de Reuniões do KMedia](../assets/kmedia-calendar-preview.png)
+
+![Grade Visual da Biblioteca de Mídias do KMedia](../assets/kmedia-media-preview.png)
+
+![Configurações em Duas Colunas com Busca do KMedia](../assets/kmedia-settings-preview.png)
+
 1. **Barra Lateral / Abas Compactas:** Alterne perfis de congregação e o tema Claro/Escuro, navegue entre *Reunião*, *Calendário*, *Mídias*, *Playlists*, *Downloads* e *Configurações*, e acompanhe em tempo real o status de OBS, 2ª Tela, Zoom e armazenamento livre em disco.
 2. **Seções Personalizadas, Ícones, Checklists e Biblioteca Visual:** Os itens da reunião ativa são agrupados sob cabeçalhos coloridos (*Tesouros da Palavra de Deus*, *Faça Seu Melhor no Ministério*, *Nossa Vida Cristã*, *Discurso Público*, *A Sentinela*, *Superintendente de Circuito* ou seções personalizadas), exibindo ícones vetoriais próprios no modo operador normal (e ícones genéricos no modo `--demo`). Clique em **Checklist** (`BoothChecklistPopup`) para conferência rápida pré e pós-reunião, **Section** (`CustomSectionPopup`) para criar/renomear/colorir/reordenar seções e arraste itens livremente entre divisores. Na aba *Mídias*, alterne entre grade visual de miniaturas 16:9 e lista compacta, filtre por tipo (*Tudo*, *Vídeo*, *Áudio*, *Imagem*, *PDF*) ou pesquise por nome com indicador compacto de pastas na nuvem.
 3. **Calendário de Reuniões e Eventos Especiais (`CalendarView`):** Visualize a grade mensal iniciando na segunda-feira com os dias configurados para reuniões de meio e fim de semana (`MWB` e *A Sentinela* com indicadores verdes de mídia em cache local), marque semanas especiais (*Visita do Superintendente*, *Celebração*, *Assembleia de Circuito*, *Congresso Regional*) via **Event** (`CalendarEventPopup`) para injetar automaticamente a seção *Circuit Overseer* ou ignorar a sincronização semanal padrão em eventos especiais, personalize os dias e horários da congregação (`Schedule`), acompanhe as próximas quatro semanas e use **Open Week** ou **Sync Week** para abrir ou sincronizar a semana escolhida.
