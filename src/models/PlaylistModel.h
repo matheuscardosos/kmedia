@@ -3,6 +3,7 @@
 #include <QAbstractListModel>
 #include <QList>
 #include <QPointer>
+#include <QSet>
 #include <QString>
 #include <QStringList>
 #include <QUrl>
@@ -16,11 +17,16 @@ struct PlaylistSectionEntry
 {
     QString name;
     QString colorHex;
+    bool repeatable{false};
+    bool collapsed{false};
 };
 
 class DatabaseManager;
 class PlaybackController;
 class ThumbnailCache;
+struct JwpubExtractRef;
+struct JwpubMediaItem;
+struct JwpubWeekFilterOptions;
 
 struct PlaylistEntryView
 {
@@ -46,6 +52,20 @@ struct PlaylistEntryView
     bool repeatable{false};
     bool fileExists{true};
     QString sourceKind{QStringLiteral("local")};
+    QString groupKey;
+    QString itemKind{QStringLiteral("media")};
+    bool hidden{false};
+    QString tagType;
+    QString tagValue;
+    QString pubMediaId;
+    QString streamUrl;
+    double playbackRate{1.0};
+    bool isCbs{false};
+    QString originalSection;
+    int sortOrderOriginal{0};
+    QString dividerColor;
+    int slideIntervalMs{0};
+    QString pairedAudioPath;
 };
 
 /**
@@ -82,6 +102,12 @@ class PlaylistModel : public QAbstractListModel
     Q_PROPERTY(
         int activePlaylistIndex READ activePlaylistIndex NOTIFY availablePlaylistsChanged FINAL)
     Q_PROPERTY(QVariantList sections READ sections NOTIFY sectionsChanged FINAL)
+    Q_PROPERTY(QString currentDateIso READ currentDateIso NOTIFY workspaceDateChanged FINAL)
+    Q_PROPERTY(QString currentMeetingKind READ currentMeetingKind NOTIFY workspaceDateChanged FINAL)
+    Q_PROPERTY(bool showHidden READ showHidden WRITE setShowHidden NOTIFY showHiddenChanged FINAL)
+    Q_PROPERTY(
+        QString searchQuery READ searchQuery WRITE setSearchQuery NOTIFY searchQueryChanged FINAL)
+    Q_PROPERTY(int hiddenCount READ hiddenCount NOTIFY countChanged FINAL)
 
 public:
     enum Roles {
@@ -108,6 +134,22 @@ public:
         FileExistsRole,
         SourceKindRole,
         ActiveRole,
+        GroupKeyRole,
+        GroupExpandedRole,
+        IsGroupStartRole,
+        GroupItemCountRole,
+        ItemKindRole,
+        HiddenRole,
+        TagTypeRole,
+        TagValueRole,
+        PubMediaIdRole,
+        StreamUrlRole,
+        PlaybackRateRole,
+        IsCbsRole,
+        DividerColorRole,
+        SlideIntervalMsRole,
+        PairedAudioPathRole,
+        RowVisibleRole,
     };
     Q_ENUM(Roles)
 
@@ -153,6 +195,11 @@ public:
                                const QString& defaultSection = QStringLiteral("Meeting"));
     Q_INVOKABLE bool importLocalFile(const QString& filePath,
                                      const QString& sectionTitle = QStringLiteral("Meeting"));
+    int importJwpubForWeek(const QString& filePath, const JwpubWeekFilterOptions& options,
+                           const QString& fallbackSection, bool isCoVisit,
+                           QString* outWatchtowerSubtitle = nullptr,
+                           std::vector<JwpubMediaItem>* outUnresolvedLinked = nullptr,
+                           std::vector<JwpubExtractRef>* outExtracts = nullptr);
     Q_INVOKABLE bool appendEntry(const PlaylistEntryView& entry);
     Q_INVOKABLE bool moveItem(int fromIndex, int toIndex);
     Q_INVOKABLE bool removeAt(int index);
@@ -178,6 +225,31 @@ public:
     Q_INVOKABLE bool moveSection(const QString& sectionName, int delta);
     Q_INVOKABLE bool assignItemToSection(int index, const QString& targetSection);
 
+    [[nodiscard]] QString currentDateIso() const;
+    [[nodiscard]] QString currentMeetingKind() const;
+    [[nodiscard]] bool showHidden() const;
+    void setShowHidden(bool showHidden);
+    [[nodiscard]] QString searchQuery() const;
+    void setSearchQuery(const QString& query);
+    [[nodiscard]] int hiddenCount() const;
+
+    Q_INVOKABLE bool openWorkspaceForDate(const QString& dateIso, const QString& meetingKind,
+                                          const QString& displayTitle = {}, bool isCoVisit = false);
+    Q_INVOKABLE bool addDivider(const QString& title, const QString& sectionTitle,
+                                const QString& colorHex = QStringLiteral("#D47B2A"),
+                                int afterIndex = -1);
+    Q_INVOKABLE bool setItemHidden(int index, bool hidden);
+    Q_INVOKABLE bool toggleItemHidden(int index);
+    Q_INVOKABLE bool updateItemTag(int index, const QString& tagType, const QString& tagValue);
+    Q_INVOKABLE bool setItemTitle(int index, const QString& title);
+    Q_INVOKABLE bool setItemPlaybackRate(int index, double rate);
+    Q_INVOKABLE bool setItemSlideInterval(int index, int intervalMs);
+    Q_INVOKABLE bool pairAudioWithItem(int index, const QString& audioFilePath);
+    Q_INVOKABLE bool toggleGroupExpanded(const QString& groupKey);
+    Q_INVOKABLE bool setSectionRepeatable(const QString& sectionName, bool repeatable);
+    Q_INVOKABLE bool toggleSectionCollapsed(const QString& sectionName);
+    Q_INVOKABLE bool resetSortOrder();
+
     [[nodiscard]] static QString defaultColorForSection(const QString& sectionTitle);
     [[nodiscard]] static QString normalizeHexColor(const QString& raw, const QString& fallback);
 
@@ -190,6 +262,10 @@ signals:
     void playlistSubtitleChanged();
     void availablePlaylistsChanged();
     void sectionsChanged();
+    void workspaceDateChanged();
+    void showHiddenChanged();
+    void searchQueryChanged();
+    void groupStateChanged();
     void activeItemEdited();
     void importNotice(const QString& message);
 
@@ -197,10 +273,15 @@ private:
     void refreshAvailablePlaylists();
     void loadFromDatabase();
     void persistReorder();
+    void persistEntryAt(int index) const;
     void loadSectionsForPlaylist();
     void saveSectionsForPlaylist() const;
     void syncSectionsFromItems();
+    void ensureFixedMeetingSections(const QString& meetingKind, bool isCoVisit);
     [[nodiscard]] int findSectionIndex(const QString& name) const;
+    [[nodiscard]] bool isRowVisible(int row) const;
+    [[nodiscard]] int groupItemCount(const QString& groupKey) const;
+    [[nodiscard]] bool isGroupStart(int row) const;
     static void enrichEntryMetadata(PlaylistEntryView& entry);
     [[nodiscard]] QString extractSubdirForPackage(const QString& archivePath) const;
     [[nodiscard]] static QString kindLabelForMediaKind(int kind);
@@ -213,6 +294,11 @@ private:
 
     QString m_playlistName{QStringLiteral("Midweek Meeting")};
     QString m_playlistSubtitle;
+    QString m_currentDateIso;
+    QString m_currentMeetingKind{QStringLiteral("midweek")};
+    bool m_showHidden{false};
+    QString m_searchQuery;
+    QSet<QString> m_collapsedGroups;
     std::vector<qint64> m_playlistIds;
     QStringList m_playlistNames;
     std::vector<PlaylistEntryView> m_items;

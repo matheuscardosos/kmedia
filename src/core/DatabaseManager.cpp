@@ -15,7 +15,7 @@ namespace {
 
 std::atomic<quint64> g_connectionCounter{0};
 
-constexpr int kLatestSchemaVersion = 1;
+constexpr int kLatestSchemaVersion = 2;
 
 QString utcIsoTimestamp()
 {
@@ -129,6 +129,96 @@ bool applyMigrationV1(QSqlDatabase& db, QString& errorOut)
     }
 
     return true;
+}
+
+bool tableHasColumn(QSqlDatabase& db, const QString& tableName, const QString& columnName)
+{
+    QSqlQuery infoQuery(db);
+    if (!infoQuery.exec(QStringLiteral("PRAGMA table_info(%1)").arg(tableName))) {
+        return false;
+    }
+    while (infoQuery.next()) {
+        if (infoQuery.value(1).toString() == columnName) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool applyMigrationV2(QSqlDatabase& db, QString& errorOut)
+{
+    struct ColumnDef
+    {
+        const char* table;
+        const char* column;
+        const char* definition;
+    };
+
+    static constexpr ColumnDef kColumns[] = {
+        {"playlists", "sections_json", "TEXT NOT NULL DEFAULT ''"},
+        {"playlists", "sort_locked", "INTEGER NOT NULL DEFAULT 0"},
+        {"playlist_items", "group_key", "TEXT NOT NULL DEFAULT ''"},
+        {"playlist_items", "item_kind", "TEXT NOT NULL DEFAULT 'media'"},
+        {"playlist_items", "hidden", "INTEGER NOT NULL DEFAULT 0"},
+        {"playlist_items", "tag_type", "TEXT NOT NULL DEFAULT ''"},
+        {"playlist_items", "tag_value", "TEXT NOT NULL DEFAULT ''"},
+        {"playlist_items", "pub_media_id", "TEXT NOT NULL DEFAULT ''"},
+        {"playlist_items", "stream_url", "TEXT NOT NULL DEFAULT ''"},
+        {"playlist_items", "marker_ranges_json", "TEXT NOT NULL DEFAULT ''"},
+        {"playlist_items", "playback_rate", "REAL NOT NULL DEFAULT 1.0"},
+        {"playlist_items", "is_cbs", "INTEGER NOT NULL DEFAULT 0"},
+        {"playlist_items", "original_section", "TEXT NOT NULL DEFAULT ''"},
+        {"playlist_items", "sort_order_original", "INTEGER NOT NULL DEFAULT 0"},
+        {"playlist_items", "divider_color", "TEXT NOT NULL DEFAULT ''"},
+        {"playlist_items", "slide_interval_ms", "INTEGER NOT NULL DEFAULT 0"},
+        {"playlist_items", "paired_audio_path", "TEXT NOT NULL DEFAULT ''"},
+    };
+
+    QSqlQuery query(db);
+    for (const ColumnDef& col : kColumns) {
+        const QString table = QString::fromLatin1(col.table);
+        const QString column = QString::fromLatin1(col.column);
+        if (tableHasColumn(db, table, column)) {
+            continue;
+        }
+        const QString sql = QStringLiteral("ALTER TABLE %1 ADD COLUMN %2 %3")
+                                .arg(table, column, QString::fromLatin1(col.definition));
+        if (!query.exec(sql)) {
+            errorOut = query.lastError().text();
+            return false;
+        }
+    }
+
+    if (!query.exec(QStringLiteral("CREATE INDEX IF NOT EXISTS idx_playlists_date_type "
+                                   "ON playlists(meeting_date, meeting_type)"))) {
+        errorOut = query.lastError().text();
+        return false;
+    }
+
+    query.prepare(QStringLiteral("INSERT OR REPLACE INTO schema_migrations (version, applied_at) "
+                                 "VALUES (:version, :applied_at)"));
+    query.bindValue(QStringLiteral(":version"), 2);
+    query.bindValue(QStringLiteral(":applied_at"), utcIsoTimestamp());
+    if (!query.exec()) {
+        errorOut = query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+PlaylistRecord readPlaylistRow(const QSqlQuery& query)
+{
+    PlaylistRecord record;
+    record.id = query.value(0).toLongLong();
+    record.name = query.value(1).toString();
+    record.meetingDate = query.value(2).toString();
+    record.meetingType = query.value(3).toString();
+    record.isSpecialEvent = query.value(4).toInt() != 0;
+    record.accentColor = query.value(5).toString();
+    record.sectionsJson = query.value(6).toString();
+    record.sortLocked = query.value(7).toInt() != 0;
+    return record;
 }
 
 } // namespace
@@ -465,14 +555,16 @@ qint64 DatabaseManager::createPlaylist(const PlaylistRecord& playlist)
     query.prepare(
         QStringLiteral("INSERT INTO playlists "
                        "(name, meeting_date, meeting_type, is_special_event, accent_color, "
-                       "created_at, updated_at) "
+                       "sections_json, sort_locked, created_at, updated_at) "
                        "VALUES (:name, :meeting_date, :meeting_type, :is_special_event, "
-                       ":accent_color, :created_at, :updated_at)"));
+                       ":accent_color, :sections_json, :sort_locked, :created_at, :updated_at)"));
     query.bindValue(QStringLiteral(":name"), playlist.name.trimmed());
     query.bindValue(QStringLiteral(":meeting_date"), nonNullText(playlist.meetingDate));
     query.bindValue(QStringLiteral(":meeting_type"), nonNullText(playlist.meetingType));
     query.bindValue(QStringLiteral(":is_special_event"), playlist.isSpecialEvent ? 1 : 0);
     query.bindValue(QStringLiteral(":accent_color"), nonNullText(playlist.accentColor));
+    query.bindValue(QStringLiteral(":sections_json"), nonNullText(playlist.sectionsJson));
+    query.bindValue(QStringLiteral(":sort_locked"), playlist.sortLocked ? 1 : 0);
     query.bindValue(QStringLiteral(":created_at"), now);
     query.bindValue(QStringLiteral(":updated_at"), now);
     if (!query.exec()) {
@@ -489,20 +581,96 @@ std::optional<PlaylistRecord> DatabaseManager::findPlaylistById(qint64 id) const
     }
     QSqlQuery query(databaseHandle());
     query.prepare(QStringLiteral(
-        "SELECT id, name, meeting_date, meeting_type, is_special_event, accent_color "
+        "SELECT id, name, meeting_date, meeting_type, is_special_event, accent_color, "
+        "sections_json, sort_locked "
         "FROM playlists WHERE id = :id"));
     query.bindValue(QStringLiteral(":id"), id);
     if (!query.exec() || !query.next()) {
         return std::nullopt;
     }
-    PlaylistRecord record;
-    record.id = query.value(0).toLongLong();
-    record.name = query.value(1).toString();
-    record.meetingDate = query.value(2).toString();
-    record.meetingType = query.value(3).toString();
-    record.isSpecialEvent = query.value(4).toInt() != 0;
-    record.accentColor = query.value(5).toString();
-    return record;
+    return readPlaylistRow(query);
+}
+
+std::optional<PlaylistRecord>
+DatabaseManager::findPlaylistByDateAndType(const QString& meetingDate,
+                                           const QString& meetingType) const
+{
+    if (!m_isOpen || meetingDate.trimmed().isEmpty()) {
+        return std::nullopt;
+    }
+    QSqlQuery query(databaseHandle());
+    if (meetingType.trimmed().isEmpty()) {
+        query.prepare(QStringLiteral(
+            "SELECT id, name, meeting_date, meeting_type, is_special_event, accent_color, "
+            "sections_json, sort_locked "
+            "FROM playlists WHERE meeting_date = :meeting_date ORDER BY id DESC LIMIT 1"));
+    } else {
+        query.prepare(QStringLiteral(
+            "SELECT id, name, meeting_date, meeting_type, is_special_event, accent_color, "
+            "sections_json, sort_locked "
+            "FROM playlists WHERE meeting_date = :meeting_date AND meeting_type = :meeting_type "
+            "ORDER BY id DESC LIMIT 1"));
+        query.bindValue(QStringLiteral(":meeting_type"), meetingType.trimmed());
+    }
+    query.bindValue(QStringLiteral(":meeting_date"), meetingDate.trimmed());
+    if (!query.exec() || !query.next()) {
+        return std::nullopt;
+    }
+    return readPlaylistRow(query);
+}
+
+PlaylistRecord DatabaseManager::findOrCreatePlaylistForDate(const QString& meetingDate,
+                                                            const QString& meetingType,
+                                                            const QString& displayName,
+                                                            bool isSpecialEvent,
+                                                            const QString& accentColor)
+{
+    const QString cleanDate = meetingDate.trimmed();
+    const QString cleanType =
+        meetingType.trimmed().isEmpty() ? QStringLiteral("custom") : meetingType.trimmed();
+    if (const auto existing = findPlaylistByDateAndType(cleanDate, cleanType);
+        existing.has_value()) {
+        return *existing;
+    }
+
+    PlaylistRecord created;
+    created.name = displayName.trimmed().isEmpty()
+                       ? QStringLiteral("%1 (%2)").arg(cleanDate, cleanType)
+                       : displayName.trimmed();
+    created.meetingDate = cleanDate;
+    created.meetingType = cleanType;
+    created.isSpecialEvent = isSpecialEvent;
+    created.accentColor = accentColor;
+    created.id = createPlaylist(created);
+    return created;
+}
+
+bool DatabaseManager::updatePlaylistMetadata(const PlaylistRecord& playlist)
+{
+    if (!m_isOpen || playlist.id <= 0) {
+        return false;
+    }
+    QSqlQuery query(databaseHandle());
+    query.prepare(QStringLiteral(
+        "UPDATE playlists SET "
+        "name = :name, meeting_date = :meeting_date, meeting_type = :meeting_type, "
+        "is_special_event = :is_special_event, accent_color = :accent_color, "
+        "sections_json = :sections_json, sort_locked = :sort_locked, updated_at = :updated_at "
+        "WHERE id = :id"));
+    query.bindValue(QStringLiteral(":name"), playlist.name.trimmed());
+    query.bindValue(QStringLiteral(":meeting_date"), nonNullText(playlist.meetingDate));
+    query.bindValue(QStringLiteral(":meeting_type"), nonNullText(playlist.meetingType));
+    query.bindValue(QStringLiteral(":is_special_event"), playlist.isSpecialEvent ? 1 : 0);
+    query.bindValue(QStringLiteral(":accent_color"), nonNullText(playlist.accentColor));
+    query.bindValue(QStringLiteral(":sections_json"), nonNullText(playlist.sectionsJson));
+    query.bindValue(QStringLiteral(":sort_locked"), playlist.sortLocked ? 1 : 0);
+    query.bindValue(QStringLiteral(":updated_at"), utcIsoTimestamp());
+    query.bindValue(QStringLiteral(":id"), playlist.id);
+    if (!query.exec()) {
+        setLastError(query.lastError().text());
+        return false;
+    }
+    return true;
 }
 
 std::vector<PlaylistRecord> DatabaseManager::listPlaylists() const
@@ -513,20 +681,14 @@ std::vector<PlaylistRecord> DatabaseManager::listPlaylists() const
     }
     QSqlQuery query(databaseHandle());
     if (!query.exec(QStringLiteral(
-            "SELECT id, name, meeting_date, meeting_type, is_special_event, accent_color "
+            "SELECT id, name, meeting_date, meeting_type, is_special_event, accent_color, "
+            "sections_json, sort_locked "
             "FROM playlists ORDER BY meeting_date DESC, id DESC"))) {
         m_lastError = query.lastError().text();
         return result;
     }
     while (query.next()) {
-        PlaylistRecord record;
-        record.id = query.value(0).toLongLong();
-        record.name = query.value(1).toString();
-        record.meetingDate = query.value(2).toString();
-        record.meetingType = query.value(3).toString();
-        record.isSpecialEvent = query.value(4).toInt() != 0;
-        record.accentColor = query.value(5).toString();
-        result.push_back(std::move(record));
+        result.push_back(readPlaylistRow(query));
     }
     return result;
 }
@@ -555,10 +717,16 @@ qint64 DatabaseManager::addPlaylistEntry(const PlaylistEntryRecord& entry)
     query.prepare(QStringLiteral(
         "INSERT INTO playlist_items "
         "(playlist_id, media_item_id, section_title, custom_title, sort_order, "
-        "trim_start_ms, trim_end_ms, zoom_scale, pan_x, pan_y, pdf_page, is_repeatable) "
+        "trim_start_ms, trim_end_ms, zoom_scale, pan_x, pan_y, pdf_page, is_repeatable, "
+        "group_key, item_kind, hidden, tag_type, tag_value, pub_media_id, stream_url, "
+        "marker_ranges_json, playback_rate, is_cbs, original_section, sort_order_original, "
+        "divider_color, slide_interval_ms, paired_audio_path) "
         "VALUES "
         "(:playlist_id, :media_item_id, :section_title, :custom_title, :sort_order, "
-        ":trim_start_ms, :trim_end_ms, :zoom_scale, :pan_x, :pan_y, :pdf_page, :is_repeatable)"));
+        ":trim_start_ms, :trim_end_ms, :zoom_scale, :pan_x, :pan_y, :pdf_page, :is_repeatable, "
+        ":group_key, :item_kind, :hidden, :tag_type, :tag_value, :pub_media_id, :stream_url, "
+        ":marker_ranges_json, :playback_rate, :is_cbs, :original_section, :sort_order_original, "
+        ":divider_color, :slide_interval_ms, :paired_audio_path)"));
     query.bindValue(QStringLiteral(":playlist_id"), entry.playlistId);
     query.bindValue(QStringLiteral(":media_item_id"),
                     entry.mediaItemId > 0 ? QVariant(entry.mediaItemId) : QVariant());
@@ -572,6 +740,23 @@ qint64 DatabaseManager::addPlaylistEntry(const PlaylistEntryRecord& entry)
     query.bindValue(QStringLiteral(":pan_y"), entry.panY);
     query.bindValue(QStringLiteral(":pdf_page"), entry.pdfPage);
     query.bindValue(QStringLiteral(":is_repeatable"), entry.isRepeatable ? 1 : 0);
+    query.bindValue(QStringLiteral(":group_key"), nonNullText(entry.groupKey));
+    query.bindValue(QStringLiteral(":item_kind"),
+                    entry.itemKind.trimmed().isEmpty() ? QStringLiteral("media") : entry.itemKind);
+    query.bindValue(QStringLiteral(":hidden"), entry.hidden ? 1 : 0);
+    query.bindValue(QStringLiteral(":tag_type"), nonNullText(entry.tagType));
+    query.bindValue(QStringLiteral(":tag_value"), nonNullText(entry.tagValue));
+    query.bindValue(QStringLiteral(":pub_media_id"), nonNullText(entry.pubMediaId));
+    query.bindValue(QStringLiteral(":stream_url"), nonNullText(entry.streamUrl));
+    query.bindValue(QStringLiteral(":marker_ranges_json"), nonNullText(entry.markerRangesJson));
+    query.bindValue(QStringLiteral(":playback_rate"),
+                    entry.playbackRate > 0.0 ? entry.playbackRate : 1.0);
+    query.bindValue(QStringLiteral(":is_cbs"), entry.isCbs ? 1 : 0);
+    query.bindValue(QStringLiteral(":original_section"), nonNullText(entry.originalSection));
+    query.bindValue(QStringLiteral(":sort_order_original"), entry.sortOrderOriginal);
+    query.bindValue(QStringLiteral(":divider_color"), nonNullText(entry.dividerColor));
+    query.bindValue(QStringLiteral(":slide_interval_ms"), entry.slideIntervalMs);
+    query.bindValue(QStringLiteral(":paired_audio_path"), nonNullText(entry.pairedAudioPath));
     if (!query.exec()) {
         setLastError(query.lastError().text());
         return 0;
@@ -589,7 +774,10 @@ std::vector<PlaylistEntryRecord> DatabaseManager::listPlaylistEntries(qint64 pla
     query.prepare(
         QStringLiteral("SELECT id, playlist_id, COALESCE(media_item_id, 0), section_title, "
                        "custom_title, sort_order, trim_start_ms, trim_end_ms, zoom_scale, "
-                       "pan_x, pan_y, pdf_page, is_repeatable "
+                       "pan_x, pan_y, pdf_page, is_repeatable, group_key, item_kind, hidden, "
+                       "tag_type, tag_value, pub_media_id, stream_url, marker_ranges_json, "
+                       "playback_rate, is_cbs, original_section, sort_order_original, "
+                       "divider_color, slide_interval_ms, paired_audio_path "
                        "FROM playlist_items WHERE playlist_id = :playlist_id "
                        "ORDER BY sort_order ASC, id ASC"));
     query.bindValue(QStringLiteral(":playlist_id"), playlistId);
@@ -612,9 +800,96 @@ std::vector<PlaylistEntryRecord> DatabaseManager::listPlaylistEntries(qint64 pla
         entry.panY = query.value(10).toDouble();
         entry.pdfPage = query.value(11).toInt();
         entry.isRepeatable = query.value(12).toInt() != 0;
+        entry.groupKey = query.value(13).toString();
+        entry.itemKind = query.value(14).toString().isEmpty() ? QStringLiteral("media")
+                                                              : query.value(14).toString();
+        entry.hidden = query.value(15).toInt() != 0;
+        entry.tagType = query.value(16).toString();
+        entry.tagValue = query.value(17).toString();
+        entry.pubMediaId = query.value(18).toString();
+        entry.streamUrl = query.value(19).toString();
+        entry.markerRangesJson = query.value(20).toString();
+        entry.playbackRate = query.value(21).toDouble() > 0.0 ? query.value(21).toDouble() : 1.0;
+        entry.isCbs = query.value(22).toInt() != 0;
+        entry.originalSection = query.value(23).toString();
+        entry.sortOrderOriginal = query.value(24).toInt();
+        entry.dividerColor = query.value(25).toString();
+        entry.slideIntervalMs = query.value(26).toInt();
+        entry.pairedAudioPath = query.value(27).toString();
         entries.push_back(std::move(entry));
     }
     return entries;
+}
+
+bool DatabaseManager::updatePlaylistEntryFull(const PlaylistEntryRecord& entry)
+{
+    if (!m_isOpen || entry.id <= 0 || entry.playlistId <= 0) {
+        return false;
+    }
+    QSqlQuery query(databaseHandle());
+    query.prepare(QStringLiteral(
+        "UPDATE playlist_items SET "
+        "section_title = :section_title, custom_title = :custom_title, "
+        "trim_start_ms = :trim_start_ms, trim_end_ms = :trim_end_ms, "
+        "zoom_scale = :zoom_scale, pan_x = :pan_x, pan_y = :pan_y, pdf_page = :pdf_page, "
+        "is_repeatable = :is_repeatable, group_key = :group_key, item_kind = :item_kind, "
+        "hidden = :hidden, tag_type = :tag_type, tag_value = :tag_value, "
+        "pub_media_id = :pub_media_id, stream_url = :stream_url, "
+        "marker_ranges_json = :marker_ranges_json, playback_rate = :playback_rate, "
+        "is_cbs = :is_cbs, original_section = :original_section, "
+        "sort_order_original = :sort_order_original, divider_color = :divider_color, "
+        "slide_interval_ms = :slide_interval_ms, paired_audio_path = :paired_audio_path "
+        "WHERE id = :id AND playlist_id = :playlist_id"));
+    query.bindValue(QStringLiteral(":section_title"), nonNullText(entry.sectionTitle));
+    query.bindValue(QStringLiteral(":custom_title"), nonNullText(entry.customTitle));
+    query.bindValue(QStringLiteral(":trim_start_ms"), entry.trimStartMs);
+    query.bindValue(QStringLiteral(":trim_end_ms"), entry.trimEndMs);
+    query.bindValue(QStringLiteral(":zoom_scale"), entry.zoomScale);
+    query.bindValue(QStringLiteral(":pan_x"), entry.panX);
+    query.bindValue(QStringLiteral(":pan_y"), entry.panY);
+    query.bindValue(QStringLiteral(":pdf_page"), entry.pdfPage);
+    query.bindValue(QStringLiteral(":is_repeatable"), entry.isRepeatable ? 1 : 0);
+    query.bindValue(QStringLiteral(":group_key"), nonNullText(entry.groupKey));
+    query.bindValue(QStringLiteral(":item_kind"),
+                    entry.itemKind.trimmed().isEmpty() ? QStringLiteral("media") : entry.itemKind);
+    query.bindValue(QStringLiteral(":hidden"), entry.hidden ? 1 : 0);
+    query.bindValue(QStringLiteral(":tag_type"), nonNullText(entry.tagType));
+    query.bindValue(QStringLiteral(":tag_value"), nonNullText(entry.tagValue));
+    query.bindValue(QStringLiteral(":pub_media_id"), nonNullText(entry.pubMediaId));
+    query.bindValue(QStringLiteral(":stream_url"), nonNullText(entry.streamUrl));
+    query.bindValue(QStringLiteral(":marker_ranges_json"), nonNullText(entry.markerRangesJson));
+    query.bindValue(QStringLiteral(":playback_rate"),
+                    entry.playbackRate > 0.0 ? entry.playbackRate : 1.0);
+    query.bindValue(QStringLiteral(":is_cbs"), entry.isCbs ? 1 : 0);
+    query.bindValue(QStringLiteral(":original_section"), nonNullText(entry.originalSection));
+    query.bindValue(QStringLiteral(":sort_order_original"), entry.sortOrderOriginal);
+    query.bindValue(QStringLiteral(":divider_color"), nonNullText(entry.dividerColor));
+    query.bindValue(QStringLiteral(":slide_interval_ms"), entry.slideIntervalMs);
+    query.bindValue(QStringLiteral(":paired_audio_path"), nonNullText(entry.pairedAudioPath));
+    query.bindValue(QStringLiteral(":id"), entry.id);
+    query.bindValue(QStringLiteral(":playlist_id"), entry.playlistId);
+    if (!query.exec()) {
+        setLastError(query.lastError().text());
+        return false;
+    }
+    return true;
+}
+
+bool DatabaseManager::deletePlaylistEntry(qint64 entryId, qint64 playlistId)
+{
+    if (!m_isOpen || entryId <= 0 || playlistId <= 0) {
+        return false;
+    }
+    QSqlQuery query(databaseHandle());
+    query.prepare(
+        QStringLiteral("DELETE FROM playlist_items WHERE id = :id AND playlist_id = :playlist_id"));
+    query.bindValue(QStringLiteral(":id"), entryId);
+    query.bindValue(QStringLiteral(":playlist_id"), playlistId);
+    if (!query.exec()) {
+        setLastError(query.lastError().text());
+        return false;
+    }
+    return true;
 }
 
 bool DatabaseManager::updatePlaylistEntrySection(qint64 entryId, qint64 playlistId,
@@ -771,6 +1046,9 @@ bool DatabaseManager::runMigrations(QSqlDatabase& db)
     bool ok = true;
     if (currentVersion < 1) {
         ok = applyMigrationV1(db, migrationError);
+    }
+    if (ok && currentVersion < 2) {
+        ok = applyMigrationV2(db, migrationError);
     }
 
     if (!ok) {

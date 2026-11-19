@@ -58,7 +58,8 @@ MeetingCatalogService::MeetingCatalogService(CatalogClient* catalogClient,
                                              DownloadService* downloadService,
                                              PlaylistModel* playlistModel, QObject* parent)
     : QObject(parent), m_catalogClient(catalogClient), m_downloadService(downloadService),
-      m_playlistModel(playlistModel), m_targetWeekMonday(weekMondayForDate(QDate::currentDate()))
+      m_playlistModel(playlistModel), m_targetWeekMonday(weekMondayForDate(QDate::currentDate())),
+      m_targetDate(QDate::currentDate())
 {
     seedDefaultLanguages();
 
@@ -67,6 +68,10 @@ MeetingCatalogService::MeetingCatalogService(CatalogClient* catalogClient,
                 &MeetingCatalogService::onLanguagesLoaded);
         connect(m_catalogClient, &CatalogClient::pubMediaAssetsLoaded, this,
                 &MeetingCatalogService::onPubMediaAssetsLoaded);
+        connect(m_catalogClient, &CatalogClient::mediatorAssetsLoaded, this,
+                &MeetingCatalogService::onMediatorAssetsLoaded);
+        connect(m_catalogClient, &CatalogClient::congregationsLoaded, this,
+                &MeetingCatalogService::onCongregationsLoaded);
         connect(m_catalogClient, &CatalogClient::requestFailed, this,
                 &MeetingCatalogService::onRequestFailed);
     }
@@ -168,6 +173,135 @@ QDate MeetingCatalogService::targetWeekMonday() const
     return m_targetWeekMonday;
 }
 
+QDate MeetingCatalogService::targetDate() const
+{
+    return m_targetDate.isValid() ? m_targetDate : m_targetWeekMonday;
+}
+
+QString MeetingCatalogService::targetMeetingKind() const
+{
+    return m_targetMeetingKind;
+}
+
+QString MeetingCatalogService::fallbackLanguageCode() const
+{
+    return m_fallbackLanguageCode;
+}
+
+void MeetingCatalogService::setFallbackLanguageCode(const QString& code)
+{
+    const QString clean = code.trimmed().isEmpty() ? QStringLiteral("E") : code.trimmed();
+    if (m_fallbackLanguageCode == clean) {
+        return;
+    }
+    m_fallbackLanguageCode = clean;
+    emit fallbackLanguageChanged();
+}
+
+bool MeetingCatalogService::includePrinted() const
+{
+    return m_includePrinted;
+}
+
+void MeetingCatalogService::setIncludePrinted(bool includePrinted)
+{
+    if (m_includePrinted == includePrinted) {
+        return;
+    }
+    m_includePrinted = includePrinted;
+    emit filtersChanged();
+}
+
+bool MeetingCatalogService::excludeFootnotes() const
+{
+    return m_excludeFootnotes;
+}
+
+void MeetingCatalogService::setExcludeFootnotes(bool excludeFootnotes)
+{
+    if (m_excludeFootnotes == excludeFootnotes) {
+        return;
+    }
+    m_excludeFootnotes = excludeFootnotes;
+    emit filtersChanged();
+}
+
+bool MeetingCatalogService::excludeWtParagraphVideos() const
+{
+    return m_excludeWtParagraphVideos;
+}
+
+void MeetingCatalogService::setExcludeWtParagraphVideos(bool exclude)
+{
+    if (m_excludeWtParagraphVideos == exclude) {
+        return;
+    }
+    m_excludeWtParagraphVideos = exclude;
+    emit filtersChanged();
+}
+
+bool MeetingCatalogService::excludeTh() const
+{
+    return m_excludeTh;
+}
+
+void MeetingCatalogService::setExcludeTh(bool excludeTh)
+{
+    if (m_excludeTh == excludeTh) {
+        return;
+    }
+    m_excludeTh = excludeTh;
+    emit filtersChanged();
+}
+
+bool MeetingCatalogService::excludeCbsPubs() const
+{
+    return m_excludeCbsPubs;
+}
+
+void MeetingCatalogService::setExcludeCbsPubs(bool excludeCbsPubs)
+{
+    if (m_excludeCbsPubs == excludeCbsPubs) {
+        return;
+    }
+    m_excludeCbsPubs = excludeCbsPubs;
+    emit filtersChanged();
+}
+
+bool MeetingCatalogService::autoLoadWeekMedia() const
+{
+    return m_autoLoadWeekMedia;
+}
+
+void MeetingCatalogService::setAutoLoadWeekMedia(bool autoLoad)
+{
+    if (m_autoLoadWeekMedia == autoLoad) {
+        return;
+    }
+    m_autoLoadWeekMedia = autoLoad;
+    emit filtersChanged();
+}
+
+QVariantList MeetingCatalogService::congregationResults() const
+{
+    QVariantList out;
+    out.reserve(static_cast<qsizetype>(m_congregationResults.size()));
+    for (int i = 0; i < static_cast<int>(m_congregationResults.size()); ++i) {
+        const CatalogCongregationResult& c = m_congregationResults.at(static_cast<size_t>(i));
+        QVariantMap map;
+        map.insert(QStringLiteral("index"), i);
+        map.insert(QStringLiteral("orgName"), c.orgName);
+        map.insert(QStringLiteral("address"), c.address);
+        map.insert(QStringLiteral("languageCode"), c.languageCode);
+        map.insert(QStringLiteral("midweekDay"), c.midweekDay);
+        map.insert(QStringLiteral("midweekTime"), c.midweekTime);
+        map.insert(QStringLiteral("weekendDay"), c.weekendDay);
+        map.insert(QStringLiteral("weekendTime"), c.weekendTime);
+        out.append(map);
+    }
+    return out;
+}
+
 QString MeetingCatalogService::weekLabel() const
 {
     return formatWeekRange(m_targetWeekMonday);
@@ -238,6 +372,21 @@ int MeetingCatalogService::watchtowerIssueTagForDate(const QDate& date)
 {
     const QDate issueMonth = weekMondayForDate(date).addMonths(-2);
     return (issueMonth.year() * 100) + issueMonth.month();
+}
+
+std::vector<int> MeetingCatalogService::watchtowerCandidateIssueTags(const QDate& date)
+{
+    const QDate base = date.isValid() ? date : QDate::currentDate();
+    std::vector<int> tags;
+    static constexpr int kWeeksBack[] = {8, 6, 10, 12};
+    for (const int weeks : kWeeksBack) {
+        const QDate candidate = base.addDays(-7 * weeks);
+        const int tag = (candidate.year() * 100) + candidate.month();
+        if (std::find(tags.begin(), tags.end(), tag) == tags.end()) {
+            tags.push_back(tag);
+        }
+    }
+    return tags;
 }
 
 QString MeetingCatalogService::formatWeekRange(const QDate& weekMonday)
@@ -358,9 +507,34 @@ void MeetingCatalogService::fetchWeekCatalog()
 
     m_assets.clear();
     m_assetTaskIds.clear();
+    m_mediatorFallbackTried.clear();
+    m_pendingStreamMeta.clear();
     emit assetsChanged();
 
-    m_pendingCatalogRequests = 2;
+    const QDate effectiveDate = targetDate();
+    if (m_targetMeetingKind == QStringLiteral("memorial")) {
+        const QString miSymbol =
+            QStringLiteral("mi%1").arg(QString::number(effectiveDate.year()).right(2));
+        m_pendingCatalogRequests = 3;
+        setBusy(true);
+        setStatusMessage(QStringLiteral("Fetching Memorial package (%1, Songs 18 & 25)...")
+                             .arg(miSymbol.toUpper()));
+        m_catalogClient->fetchPubMediaLinks(
+            CatalogClient::pubMediaLinksUrl(miSymbol, m_selectedLanguageCode),
+            m_selectedLanguageCode);
+        m_catalogClient->fetchPubMediaLinks(
+            CatalogClient::pubMediaLinksUrl(QStringLiteral("sjjm"), m_selectedLanguageCode, 0,
+                                            QStringLiteral("MP3"), 18),
+            m_selectedLanguageCode);
+        m_catalogClient->fetchPubMediaLinks(
+            CatalogClient::pubMediaLinksUrl(QStringLiteral("sjjm"), m_selectedLanguageCode, 0,
+                                            QStringLiteral("MP3"), 25),
+            m_selectedLanguageCode);
+        return;
+    }
+
+    const std::vector<int> wtTags = watchtowerCandidateIssueTags(effectiveDate);
+    m_pendingCatalogRequests = 1 + static_cast<int>(wtTags.size());
     setBusy(true);
     setStatusMessage(
         QStringLiteral("Fetching week %1 (%2)...").arg(weekLabel(), m_selectedLanguageCode));
@@ -370,10 +544,11 @@ void MeetingCatalogService::fetchWeekCatalog()
                                                                         midweekIssueTag()),
                                         m_selectedLanguageCode);
 
-    m_catalogClient->fetchPubMediaLinks(CatalogClient::pubMediaLinksUrl(QStringLiteral("w"),
-                                                                        m_selectedLanguageCode,
-                                                                        watchtowerIssueTag()),
-                                        m_selectedLanguageCode);
+    for (const int wtTag : wtTags) {
+        m_catalogClient->fetchPubMediaLinks(
+            CatalogClient::pubMediaLinksUrl(QStringLiteral("w"), m_selectedLanguageCode, wtTag),
+            m_selectedLanguageCode);
+    }
 }
 
 void MeetingCatalogService::fetchPublication(const QString& pubSymbol, int issueTag,
@@ -403,8 +578,10 @@ void MeetingCatalogService::syncCurrentWeekToPlaylist()
 {
     applyWeekEventSection();
     const QString evType = weekEventType();
-    if (evType == QStringLiteral("memorial") || evType == QStringLiteral("circuit_assembly") ||
-        evType == QStringLiteral("regional_convention")) {
+    if (evType == QStringLiteral("circuit_assembly") ||
+        evType == QStringLiteral("regional_convention") ||
+        (evType == QStringLiteral("memorial") &&
+         (m_targetMeetingKind != QStringLiteral("memorial") || m_catalogClient == nullptr))) {
         m_autoSyncPending = false;
         setBusy(false);
         setStatusMessage(
@@ -417,6 +594,38 @@ void MeetingCatalogService::syncCurrentWeekToPlaylist()
     m_autoImportedCount = 0;
     m_resolvedExternalKeys.clear();
     fetchWeekCatalog();
+}
+
+void MeetingCatalogService::syncDateToPlaylist(const QDate& date, const QString& meetingKind)
+{
+    setTargetMeetingContext(date, meetingKind);
+    syncCurrentWeekToPlaylist();
+}
+
+void MeetingCatalogService::searchCongregations(const QString& queryText)
+{
+    if (m_catalogClient == nullptr || queryText.trimmed().isEmpty()) {
+        return;
+    }
+    setBusy(true);
+    setStatusMessage(
+        QStringLiteral("Searching congregations matching \"%1\"...").arg(queryText.trimmed()));
+    m_catalogClient->searchCongregations(queryText);
+}
+
+bool MeetingCatalogService::applyCongregationResult(int index)
+{
+    if (index < 0 || index >= static_cast<int>(m_congregationResults.size())) {
+        return false;
+    }
+    const CatalogCongregationResult& chosen = m_congregationResults.at(static_cast<size_t>(index));
+    if (!chosen.languageCode.isEmpty()) {
+        setSelectedLanguageCode(chosen.languageCode);
+    }
+    emit congregationScheduleApplied(chosen.orgName, chosen.languageCode, chosen.midweekDay,
+                                     chosen.midweekTime, chosen.weekendDay, chosen.weekendTime);
+    setStatusMessage(QStringLiteral("Applied schedule for %1").arg(chosen.orgName));
+    return true;
 }
 
 void MeetingCatalogService::applyWeekEventSection()
@@ -445,12 +654,40 @@ QString MeetingCatalogService::downloadAssetAt(int index)
     }
 
     const CatalogMediaAsset& asset = m_assets.at(static_cast<size_t>(index));
+    if (asset.streamOnly || asset.durationSeconds > CatalogClient::kLongMediaDurationSeconds) {
+        if (m_playlistModel != nullptr) {
+            PlaylistEntryView streamEntry;
+            streamEntry.title = asset.title.isEmpty() ? asset.keySymbol.toUpper() : asset.title;
+            streamEntry.subtitle = QStringLiteral("Stream (>35m)");
+            streamEntry.sectionTitle =
+                inferMeetingSection(asset.keySymbol, asset.title, asset.label);
+            streamEntry.streamUrl = asset.url;
+            streamEntry.pubMediaId = asset.pubMediaId;
+            streamEntry.durationMs = static_cast<qint64>(asset.durationSeconds * 1000.0);
+            streamEntry.sourceKind = QStringLiteral("stream");
+            (void)m_playlistModel->appendEntry(streamEntry);
+        }
+        return {};
+    }
+
     const QString localPath = localPathForAsset(asset);
     const QFileInfo fi(localPath);
     if (fi.exists() && fi.size() > 0) {
         if (m_playlistModel != nullptr) {
-            (void)m_playlistModel->importLocalFile(
-                localPath, inferMeetingSection(asset.keySymbol, asset.title, asset.label));
+            const QString pubHint = asset.keySymbol.trimmed().toLower();
+            if (asset.fileFormat.compare(QStringLiteral("JWPUB"), Qt::CaseInsensitive) == 0) {
+                QString wtSub;
+                (void)m_playlistModel->importJwpubForWeek(
+                    localPath, buildFilterOptions(pubHint),
+                    inferMeetingSection(asset.keySymbol, asset.title, asset.label),
+                    weekEventType() == QStringLiteral("co_visit"), &wtSub);
+                if (!wtSub.isEmpty() && m_targetMeetingKind == QStringLiteral("weekend")) {
+                    m_playlistModel->setPlaylistSubtitle(wtSub);
+                }
+            } else {
+                (void)m_playlistModel->importLocalFile(
+                    localPath, inferMeetingSection(asset.keySymbol, asset.title, asset.label));
+            }
         }
         emit assetsChanged();
         return {};
@@ -476,6 +713,10 @@ QString MeetingCatalogService::downloadAssetAt(int index)
                                   localPath,
                                   inferMeetingSection(asset.keySymbol, asset.title, asset.label),
                                   asset.fileFormat.toUpper(),
+                                  {},
+                                  {},
+                                  {},
+                                  false,
                               });
     emit assetsChanged();
     return taskId;
@@ -484,12 +725,22 @@ QString MeetingCatalogService::downloadAssetAt(int index)
 void MeetingCatalogService::previousWeek()
 {
     m_targetWeekMonday = m_targetWeekMonday.addDays(-7);
+    if (m_targetDate.isValid()) {
+        m_targetDate = m_targetDate.addDays(-7);
+    } else {
+        m_targetDate = m_targetWeekMonday;
+    }
     emit weekChanged();
 }
 
 void MeetingCatalogService::nextWeek()
 {
     m_targetWeekMonday = m_targetWeekMonday.addDays(7);
+    if (m_targetDate.isValid()) {
+        m_targetDate = m_targetDate.addDays(7);
+    } else {
+        m_targetDate = m_targetWeekMonday;
+    }
     emit weekChanged();
 }
 
@@ -500,11 +751,29 @@ void MeetingCatalogService::goToCurrentWeek()
 
 void MeetingCatalogService::setTargetWeekDate(const QDate& date)
 {
-    const QDate target = weekMondayForDate(date);
-    if (m_targetWeekMonday == target) {
+    const QDate effective = date.isValid() ? date : QDate::currentDate();
+    const QDate target = weekMondayForDate(effective);
+    if (m_targetWeekMonday == target && m_targetDate == effective) {
         return;
     }
     m_targetWeekMonday = target;
+    m_targetDate = effective;
+    emit weekChanged();
+}
+
+void MeetingCatalogService::setTargetMeetingContext(const QDate& date, const QString& meetingKind)
+{
+    const QDate effective = date.isValid() ? date : QDate::currentDate();
+    const QDate target = weekMondayForDate(effective);
+    const QString cleanKind = meetingKind.trimmed().isEmpty() ? QStringLiteral("midweek")
+                                                              : meetingKind.trimmed().toLower();
+    if (m_targetWeekMonday == target && m_targetDate == effective &&
+        m_targetMeetingKind == cleanKind) {
+        return;
+    }
+    m_targetWeekMonday = target;
+    m_targetDate = effective;
+    m_targetMeetingKind = cleanKind;
     emit weekChanged();
 }
 
@@ -551,6 +820,108 @@ void MeetingCatalogService::onPubMediaAssetsLoaded(const std::vector<CatalogMedi
     }
 }
 
+void MeetingCatalogService::onMediatorAssetsLoaded(const QString& pubMediaKey,
+                                                   const std::vector<CatalogMediaAsset>& assets,
+                                                   bool)
+{
+    if (m_pendingCatalogRequests > 0) {
+        --m_pendingCatalogRequests;
+    }
+
+    const PendingDownloadTarget meta = m_pendingStreamMeta.take(pubMediaKey);
+    if (assets.empty()) {
+        // Fallback chain: retry once with secondary fallback language before GETPUBMEDIALINKS.
+        if (m_catalogClient != nullptr && !m_fallbackLanguageCode.isEmpty() &&
+            m_fallbackLanguageCode.compare(m_selectedLanguageCode, Qt::CaseInsensitive) != 0 &&
+            !m_mediatorFallbackTried.contains(pubMediaKey)) {
+            m_mediatorFallbackTried.insert(pubMediaKey, m_fallbackLanguageCode);
+            m_pendingStreamMeta.insert(pubMediaKey, meta);
+            ++m_pendingCatalogRequests;
+            m_catalogClient->fetchMediatorMedia(
+                CatalogClient::mediatorMediaUrl(pubMediaKey, m_fallbackLanguageCode), pubMediaKey);
+            return;
+        }
+    } else {
+        const CatalogMediaAsset* best = nullptr;
+        for (const CatalogMediaAsset& item : assets) {
+            if (best == nullptr || videoResolutionScore(item) > videoResolutionScore(*best)) {
+                best = &item;
+            }
+        }
+        if (best != nullptr) {
+            if (best->streamOnly ||
+                best->durationSeconds > CatalogClient::kLongMediaDurationSeconds) {
+                if (m_playlistModel != nullptr) {
+                    PlaylistEntryView entry;
+                    entry.title = best->title.isEmpty() ? pubMediaKey : best->title;
+                    entry.subtitle = QStringLiteral("Stream (>35m)");
+                    entry.sectionTitle =
+                        meta.sectionTitle.isEmpty()
+                            ? inferMeetingSection(best->keySymbol, best->title, best->label)
+                            : meta.sectionTitle;
+                    entry.streamUrl = best->url;
+                    entry.pubMediaId = pubMediaKey;
+                    entry.durationMs = static_cast<qint64>(best->durationSeconds * 1000.0);
+                    entry.sourceKind = QStringLiteral("stream");
+                    entry.groupKey = meta.groupKey;
+                    entry.tagType = meta.tagType;
+                    entry.tagValue = meta.tagValue;
+                    entry.isCbs = meta.isCbs;
+                    if (m_playlistModel->appendEntry(entry)) {
+                        ++m_autoImportedCount;
+                    }
+                }
+            } else if (m_downloadService != nullptr) {
+                const QString localPath = localPathForAsset(*best);
+                if (QFileInfo::exists(localPath) && QFileInfo(localPath).size() > 0) {
+                    if (m_playlistModel != nullptr) {
+                        PlaylistEntryView entry;
+                        entry.title = best->title;
+                        entry.sectionTitle = meta.sectionTitle;
+                        entry.filePath = localPath;
+                        entry.pubMediaId = pubMediaKey;
+                        entry.groupKey = meta.groupKey;
+                        entry.tagType = meta.tagType;
+                        entry.tagValue = meta.tagValue;
+                        entry.isCbs = meta.isCbs;
+                        entry.sourceKind = QStringLiteral("jwpub");
+                        if (m_playlistModel->appendEntry(entry)) {
+                            ++m_autoImportedCount;
+                        }
+                    }
+                } else {
+                    const QString taskId = m_downloadService->enqueue(
+                        QUrl(best->url), localPath, best->sha256, DownloadService::Priority::Normal,
+                        {}, best->title.isEmpty() ? pubMediaKey : best->title);
+                    PendingDownloadTarget dl = meta;
+                    dl.localPath = localPath;
+                    dl.fileFormat = best->fileFormat;
+                    m_pendingDownloads.insert(taskId, dl);
+                }
+            }
+        }
+    }
+
+    if (m_pendingCatalogRequests == 0 && m_pendingDownloads.isEmpty()) {
+        setBusy(false);
+        if (m_autoImportedCount > 0) {
+            emit weekSynced(m_autoImportedCount);
+            setStatusMessage(
+                QStringLiteral("Synced %1 week item(s) to playlist").arg(m_autoImportedCount));
+        }
+    }
+}
+
+void MeetingCatalogService::onCongregationsLoaded(
+    const std::vector<CatalogCongregationResult>& results, bool)
+{
+    m_congregationResults = results;
+    setBusy(false);
+    emit congregationsChanged();
+    setStatusMessage(
+        QStringLiteral("Found %1 congregation(s)").arg(static_cast<int>(results.size())));
+}
+
 void MeetingCatalogService::onRequestFailed(const QString&, const QString& errorMessage)
 {
     if (m_pendingCatalogRequests > 0) {
@@ -579,13 +950,34 @@ void MeetingCatalogService::onDownloadFinished(const QString& taskId, bool succe
     m_pendingDownloads.erase(it);
 
     if (success && QFileInfo::exists(target.localPath)) {
-        if (m_playlistModel != nullptr) {
-            if (m_playlistModel->importLocalFile(target.localPath, target.sectionTitle)) {
+        if (target.fileFormat == QStringLiteral("JWPUB")) {
+            if (m_playlistModel != nullptr) {
+                QString wtSub;
+                const QString pubHint = QFileInfo(target.localPath)
+                                            .completeBaseName()
+                                            .section(QLatin1Char('_'), 0, 0)
+                                            .toLower();
+                m_autoImportedCount += m_playlistModel->importJwpubForWeek(
+                    target.localPath, buildFilterOptions(pubHint), target.sectionTitle,
+                    weekEventType() == QStringLiteral("co_visit"), &wtSub);
+                if (!wtSub.isEmpty() && m_targetMeetingKind == QStringLiteral("weekend")) {
+                    m_playlistModel->setPlaylistSubtitle(wtSub);
+                }
+            }
+            resolveLinkedJwpubMedia(target.localPath);
+        } else if (m_playlistModel != nullptr) {
+            PlaylistEntryView entry;
+            entry.title = QFileInfo(target.localPath).completeBaseName();
+            entry.sectionTitle = target.sectionTitle;
+            entry.filePath = target.localPath;
+            entry.groupKey = target.groupKey;
+            entry.tagType = target.tagType;
+            entry.tagValue = target.tagValue;
+            entry.isCbs = target.isCbs;
+            entry.sourceKind = QStringLiteral("catalog");
+            if (m_playlistModel->appendEntry(entry)) {
                 ++m_autoImportedCount;
             }
-        }
-        if (target.fileFormat == QStringLiteral("JWPUB")) {
-            resolveLinkedJwpubMedia(target.localPath);
         }
     }
 
@@ -673,29 +1065,65 @@ QString MeetingCatalogService::localPathForAsset(const CatalogMediaAsset& asset)
     return QDir(dirPath).filePath(safeName);
 }
 
+JwpubWeekFilterOptions MeetingCatalogService::buildFilterOptions(const QString& pubSymbolHint) const
+{
+    JwpubWeekFilterOptions opts;
+    opts.targetDate = targetDate();
+    opts.pubSymbolHint = pubSymbolHint.trimmed().toLower();
+    opts.includePrinted = m_includePrinted;
+    opts.excludeFootnotes = m_excludeFootnotes;
+    opts.excludeWtParagraphVideos = m_excludeWtParagraphVideos;
+    opts.excludeTh = m_excludeTh;
+    opts.excludeCbsPubs = m_excludeCbsPubs;
+    return opts;
+}
+
 void MeetingCatalogService::enqueueMissingAutoSyncAssets()
 {
     m_autoSyncPending = false;
     bool startedDownloads = false;
+    const bool isCoVisit = (weekEventType() == QStringLiteral("co_visit"));
+    const QString kindLower = m_targetMeetingKind.trimmed().toLower();
 
     for (int i = 0; i < static_cast<int>(m_assets.size()); ++i) {
         const CatalogMediaAsset& asset = m_assets.at(static_cast<size_t>(i));
         const QString fmt = asset.fileFormat.trimmed().toUpper();
-        if (fmt != QStringLiteral("JWPUB") && fmt != QStringLiteral("MP4")) {
+        if (fmt != QStringLiteral("JWPUB") && fmt != QStringLiteral("MP4") &&
+            fmt != QStringLiteral("MP3")) {
             continue;
         }
+        const QString symLower = asset.keySymbol.trimmed().toLower();
+        // When explicitly syncing midweek or weekend day, import only the relevant JWPUB package.
+        if (fmt == QStringLiteral("JWPUB")) {
+            if (kindLower == QStringLiteral("midweek") && symLower == QStringLiteral("w")) {
+                continue;
+            }
+            if (kindLower == QStringLiteral("weekend") && symLower == QStringLiteral("mwb")) {
+                continue;
+            }
+        }
+
         const QString localPath = localPathForAsset(asset);
         const QFileInfo fi(localPath);
         if (fi.exists() && fi.size() > 0) {
-            if (m_playlistModel != nullptr) {
+            if (fmt == QStringLiteral("JWPUB")) {
+                if (m_playlistModel != nullptr) {
+                    QString wtSub;
+                    m_autoImportedCount += m_playlistModel->importJwpubForWeek(
+                        localPath, buildFilterOptions(symLower),
+                        inferMeetingSection(asset.keySymbol, asset.title, asset.label), isCoVisit,
+                        &wtSub);
+                    if (!wtSub.isEmpty() && kindLower == QStringLiteral("weekend")) {
+                        m_playlistModel->setPlaylistSubtitle(wtSub);
+                    }
+                }
+                resolveLinkedJwpubMedia(localPath);
+            } else if (m_playlistModel != nullptr) {
                 if (m_playlistModel->importLocalFile(
                         localPath,
                         inferMeetingSection(asset.keySymbol, asset.title, asset.label))) {
                     ++m_autoImportedCount;
                 }
-            }
-            if (fmt == QStringLiteral("JWPUB")) {
-                resolveLinkedJwpubMedia(localPath);
             }
             continue;
         }
@@ -715,13 +1143,63 @@ void MeetingCatalogService::enqueueMissingAutoSyncAssets()
     }
 }
 
+void MeetingCatalogService::resolveSingleLinkedMedia(const QString& pubSymbol, int issueTag,
+                                                     qint64 docId, int track, const QString& title,
+                                                     const QString& sectionTitle,
+                                                     const QString& groupKey,
+                                                     const QString& tagType,
+                                                     const QString& tagValue, bool isCbs)
+{
+    if (m_catalogClient == nullptr) {
+        return;
+    }
+    const QString extKey = QStringLiteral("%1|%2|%3|%4")
+                               .arg(pubSymbol.toLower(), QString::number(issueTag),
+                                    QString::number(track), QString::number(docId));
+    if (m_resolvedExternalKeys.contains(extKey) ||
+        m_resolvedExternalKeys.size() >= kMaxSecondaryCatalogQueries) {
+        return;
+    }
+    m_resolvedExternalKeys.insert(extKey);
+
+    const bool isAudio = (pubSymbol.compare(QStringLiteral("sjjm"), Qt::CaseInsensitive) == 0 ||
+                          pubSymbol.compare(QStringLiteral("sjj"), Qt::CaseInsensitive) == 0);
+    const QString effectiveSym =
+        (pubSymbol.compare(QStringLiteral("sjj"), Qt::CaseInsensitive) == 0)
+            ? QStringLiteral("sjjm")
+            : pubSymbol;
+    const QString mediaKey =
+        CatalogClient::buildPubMediaKey(effectiveSym, issueTag, docId, track, !isAudio);
+
+    PendingDownloadTarget target;
+    target.sectionTitle = sectionTitle.isEmpty() ? title : sectionTitle;
+    target.groupKey = groupKey;
+    target.tagType = tagType;
+    target.tagValue = tagValue;
+    target.isCbs = isCbs;
+    m_pendingStreamMeta.insert(mediaKey, target);
+
+    ++m_pendingCatalogRequests;
+    m_autoSyncPending = true;
+    m_catalogClient->fetchMediatorMedia(
+        CatalogClient::mediatorMediaUrl(mediaKey, m_selectedLanguageCode), mediaKey);
+    const QString fmt = isAudio ? QStringLiteral("MP3") : QStringLiteral("MP4");
+    ++m_pendingCatalogRequests;
+    m_catalogClient->fetchPubMediaLinks(
+        CatalogClient::pubMediaLinksUrl(effectiveSym, m_selectedLanguageCode, issueTag, fmt, track,
+                                        docId > 0 ? QString::number(docId) : QString()),
+        m_selectedLanguageCode);
+}
+
 void MeetingCatalogService::resolveLinkedJwpubMedia(const QString& jwpubPath)
 {
     if (m_catalogClient == nullptr) {
         return;
     }
 
-    const JwpubPackage pkg = JwpubParser::parse(jwpubPath);
+    const QString symHint =
+        QFileInfo(jwpubPath).completeBaseName().section(QLatin1Char('_'), 0, 0).toLower();
+    const JwpubPackage pkg = JwpubParser::parseForWeek(jwpubPath, buildFilterOptions(symHint));
     if (!pkg.valid) {
         return;
     }
@@ -731,26 +1209,24 @@ void MeetingCatalogService::resolveLinkedJwpubMedia(const QString& jwpubPath)
             (mm.issueTagNumber <= 0 && mm.track <= 0)) {
             continue;
         }
-        if (m_resolvedExternalKeys.size() >= kMaxSecondaryCatalogQueries) {
-            break;
-        }
-        const QString extKey = QStringLiteral("%1|%2|%3|%4")
-                                   .arg(mm.keySymbol.toLower(), QString::number(mm.issueTagNumber),
-                                        QString::number(mm.track), QString::number(mm.documentId));
-        if (m_resolvedExternalKeys.contains(extKey)) {
-            continue;
-        }
-        m_resolvedExternalKeys.insert(extKey);
+        resolveSingleLinkedMedia(mm.keySymbol, mm.issueTagNumber, mm.documentId, mm.track, mm.label,
+                                 inferMeetingSection(mm.keySymbol, mm.documentTitle, mm.label),
+                                 mm.groupCaption, mm.tagType, mm.tagValue, mm.isCbsCandidate);
+    }
 
-        ++m_pendingCatalogRequests;
-        m_autoSyncPending = true;
-        const QString fmt = (mm.keySymbol.compare(QStringLiteral("sjjm"), Qt::CaseInsensitive) == 0)
-                                ? QStringLiteral("MP3")
-                                : QStringLiteral("MP4");
-        m_catalogClient->fetchPubMediaLinks(
-            CatalogClient::pubMediaLinksUrl(mm.keySymbol, m_selectedLanguageCode, mm.issueTagNumber,
-                                            fmt, mm.track),
-            m_selectedLanguageCode);
+    for (const JwpubExtractRef& ref : pkg.extracts) {
+        if (ref.songNumber > 0) {
+            resolveSingleLinkedMedia(
+                QStringLiteral("sjjm"), 0, 0, ref.songNumber,
+                QStringLiteral("Song %1").arg(ref.songNumber),
+                inferMeetingSection(pkg.publication.undatedSymbol, ref.caption, QString()),
+                ref.caption, QStringLiteral("song"), QStringLiteral("Song %1").arg(ref.songNumber),
+                false);
+        } else if (ref.isCbsSource && ref.refMepsDocumentId > 0) {
+            resolveSingleLinkedMedia(ref.refPubSymbol, ref.refIssueTagNumber, ref.refMepsDocumentId,
+                                     0, ref.caption, QStringLiteral("Living as Christians"),
+                                     ref.caption, QString(), QString(), true);
+        }
     }
 }
 

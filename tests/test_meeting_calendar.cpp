@@ -147,4 +147,27 @@ TEST_CASE(
 
     restored.clearWeekSpecialEvent(QStringLiteral("2026-06-24"));
     REQUIRE(restored.selectedWeekEventType().isEmpty());
+
+    // CO visit shifts midweek meeting to Tuesday; Memorial Mon-Fri suppresses regular midweek.
+    restored.setScheduleDays(3, QStringLiteral("19:30"), 7, QStringLiteral("09:30"));
+    restored.setWeekSpecialEvent(QStringLiteral("2026-11-18"), QStringLiteral("co_visit"));
+    REQUIRE(restored.meetingKindForDate(QStringLiteral("2026-11-17")) == QStringLiteral("midweek"));
+    REQUIRE(restored.meetingKindForDate(QStringLiteral("2026-11-18")) == QStringLiteral("custom"));
+
+    restored.setWeekSpecialEvent(QStringLiteral("2026-04-02"), QStringLiteral("memorial"),
+                                 QStringLiteral("Memorial"), QStringLiteral("2026-04-02"));
+    REQUIRE(restored.meetingKindForDate(QStringLiteral("2026-04-02")) ==
+            QStringLiteral("memorial"));
+    REQUIRE(restored.meetingKindForDate(QStringLiteral("2026-04-01")) == QStringLiteral("custom"));
+    REQUIRE(restored.meetingKindForDate(QStringLiteral("2026-04-05")) == QStringLiteral("weekend"));
+
+    restored.setTempWeekSchedule(QStringLiteral("2026-12-09"), 4, QStringLiteral("20:00"), 6,
+                                 QStringLiteral("17:00"));
+    REQUIRE(restored.meetingKindForDate(QStringLiteral("2026-12-10")) == QStringLiteral("midweek"));
+    REQUIRE(restored.meetingKindForDate(QStringLiteral("2026-12-12")) == QStringLiteral("weekend"));
+    const QString exportedTemp = restored.exportTempSchedulesJson();
+    kmedia::MeetingCalendarModel reloadedTemp;
+    reloadedTemp.loadTempSchedulesJson(exportedTemp);
+    REQUIRE(reloadedTemp.meetingKindForDate(QStringLiteral("2026-12-10")) ==
+            QStringLiteral("midweek"));
 }

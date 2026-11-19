@@ -4,6 +4,7 @@
 
 #include <QSignalSpy>
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("MeetingCatalogService resolves weekly dates, issue tags, sections, and video quality",
@@ -96,4 +97,39 @@ TEST_CASE(
     downloads.clearFinished();
     REQUIRE(downloads.finishedCount() == 0);
     REQUIRE(downloads.tasksVariant().isEmpty());
+}
+
+TEST_CASE("CatalogClient & MeetingCatalogService support Mediator, Pinyin, Watchtower probe, and "
+          "hub congregations",
+          "[network][catalog]")
+{
+    const std::vector<int> wtTags =
+        kmedia::MeetingCatalogService::watchtowerCandidateIssueTags(QDate(2026, 11, 22));
+    REQUIRE(wtTags.size() >= 2);
+    REQUIRE(std::find(wtTags.begin(), wtTags.end(), 202609) != wtTags.end());
+
+    REQUIRE(kmedia::CatalogClient::pinyinSongFilename(18, 720) ==
+            QStringLiteral("sjjm_s-Pi_CHS_018_r720P.mp4"));
+
+    const QUrl mediatorUrl = kmedia::CatalogClient::mediatorMediaUrl(
+        QStringLiteral("pub-mwbv_202611_1_VIDEO"), QStringLiteral("T"));
+    REQUIRE(mediatorUrl.toString().contains(
+        QStringLiteral("v1/media-items/T/pub-mwbv_202611_1_VIDEO")));
+
+    const QByteArray mediatorJson = QByteArrayLiteral(
+        R"({"media":[{"title":"Full Convention Session","naturalKey":"pub-co-r26_1_VIDEO","duration":2400.0,"files":[{"progressiveDownloadURL":"https://cdn.example/long.mp4","label":"720p","mimetype":"video/mp4","filesize":500000000}]}]})");
+    const auto medAssets = kmedia::CatalogClient::parseMediatorMediaJson(mediatorJson);
+    REQUIRE(medAssets.size() == 1);
+    REQUIRE(medAssets.at(0).streamOnly);
+    REQUIRE(medAssets.at(0).fileFormat == QStringLiteral("MP4"));
+
+    const QByteArray hubJson = QByteArrayLiteral(
+        R"({"geoLocationList":[{"properties":{"orgName":"Central English","address":"100 Main St","lang":"E","schedule":{"midweek":{"weekday":3,"time":"19:00"},"weekend":{"weekday":7,"time":"10:00"}}}}]})");
+    const auto congs = kmedia::CatalogClient::parseCongregationSearchJson(hubJson);
+    REQUIRE(congs.size() == 1);
+    REQUIRE(congs.at(0).orgName == QStringLiteral("Central English"));
+    REQUIRE(congs.at(0).midweekDay == 3);
+    REQUIRE(congs.at(0).midweekTime == QStringLiteral("19:00"));
+    REQUIRE(congs.at(0).weekendDay == 7);
+    REQUIRE(congs.at(0).weekendTime == QStringLiteral("10:00"));
 }

@@ -10,6 +10,7 @@ Popup {
     id: popupRoot
 
     property string selectedType: ""
+    property string memorialDateIso: ""
 
     readonly property var eventOptions: [
         { type: "", label: qsTr("Regular Week"), icon: "calendar" },
@@ -19,7 +20,7 @@ Popup {
         { type: "regional_convention", label: qsTr("Regional Convention"), icon: "globe" }
     ]
 
-    width: Math.min(360, parent ? parent.width - 24 : 360)
+    width: Math.min(390, parent ? parent.width - 24 : 390)
     padding: 16
     modal: true
     focus: true
@@ -33,6 +34,9 @@ Popup {
     onAboutToShow: {
         popupRoot.selectedType = ApplicationController.calendar.selectedWeekEventType
         customLabelField.text = ApplicationController.calendar.selectedWeekEventLabel
+        popupRoot.memorialDateIso = ApplicationController.calendar.selectedDateIso
+        tempMidTimeField.text = ApplicationController.calendar.midweekTime
+        tempEndTimeField.text = ApplicationController.calendar.weekendTime
     }
 
     background: StudioCard {
@@ -120,6 +124,137 @@ Popup {
             }
         }
 
+        ColumnLayout {
+            visible: popupRoot.selectedType === "memorial"
+            Layout.fillWidth: true
+            spacing: 4
+
+            Text {
+                text: qsTr("Memorial Date (YYYY-MM-DD)")
+                color: Theme.textSecondary
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeXs
+                font.weight: Font.DemiBold
+            }
+
+            TextField {
+                id: memorialDateField
+
+                Layout.fillWidth: true
+                text: popupRoot.memorialDateIso
+                placeholderText: qsTr("YYYY-MM-DD")
+                color: Theme.textPrimary
+                placeholderTextColor: Theme.textMuted
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeSm
+                background: StudioCard {
+                    surfaceColor: Theme.windowBase
+                    cornerRadius: Theme.radiusSmall
+                }
+            }
+        }
+
+        StudioCard {
+            Layout.fillWidth: true
+            implicitHeight: tempSchedCol.implicitHeight + 16
+            surfaceColor: Theme.windowBase
+
+            ColumnLayout {
+                id: tempSchedCol
+
+                anchors.fill: parent
+                anchors.margins: 8
+                spacing: 6
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Text {
+                        text: qsTr("Temporary Schedule Override (This Week)")
+                        color: Theme.textPrimary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeXs
+                        font.weight: Font.DemiBold
+                        Layout.fillWidth: true
+                    }
+
+                    StudioButton {
+                        variant: "ghost"
+                        text: qsTr("Clear")
+                        visible: ApplicationController.calendar.selectedWeekHasTempSchedule
+                        onClicked: {
+                            ApplicationController.calendar.clearTempWeekSchedule(
+                                ApplicationController.calendar.selectedDateIso)
+                            popupRoot.close()
+                        }
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Text {
+                        text: qsTr("MW")
+                        color: Theme.textSecondary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeXs
+                    }
+
+                    TextField {
+                        id: tempMidTimeField
+
+                        Layout.preferredWidth: 70
+                        placeholderText: "19:30"
+                        color: Theme.textPrimary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeXs
+                        background: StudioCard {
+                            surfaceColor: Theme.cardSurface
+                            cornerRadius: Theme.radiusSmall
+                        }
+                    }
+
+                    Text {
+                        text: qsTr("WE")
+                        color: Theme.textSecondary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeXs
+                    }
+
+                    TextField {
+                        id: tempEndTimeField
+
+                        Layout.preferredWidth: 70
+                        placeholderText: "09:30"
+                        color: Theme.textPrimary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeXs
+                        background: StudioCard {
+                            surfaceColor: Theme.cardSurface
+                            cornerRadius: Theme.radiusSmall
+                        }
+                    }
+
+                    StudioButton {
+                        variant: "secondary"
+                        text: qsTr("Apply Times")
+                        onClicked: {
+                            ApplicationController.calendar.setTempWeekSchedule(
+                                ApplicationController.calendar.selectedDateIso,
+                                ApplicationController.calendar.midweekDay,
+                                tempMidTimeField.text,
+                                ApplicationController.calendar.weekendDay,
+                                tempEndTimeField.text
+                            )
+                            ApplicationController.showToast(qsTr("Temporary week schedule saved"), "success")
+                        }
+                    }
+                }
+            }
+        }
+
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
@@ -153,7 +288,8 @@ Popup {
                     ApplicationController.calendar.setWeekSpecialEvent(
                         ApplicationController.calendar.selectedDateIso,
                         popupRoot.selectedType,
-                        customLabelField.text
+                        customLabelField.text,
+                        memorialDateField.text
                     )
                     popupRoot.close()
                 }

@@ -234,7 +234,8 @@ ScrollView {
 
                                     Text {
                                         text: dayCell.modelData.meetingKind === "midweek"
-                                              ? qsTr("MWB") : qsTr("W")
+                                              ? qsTr("MWB")
+                                              : (dayCell.modelData.meetingKind === "memorial" ? qsTr("MEM") : qsTr("W"))
                                         color: dayCell.modelData.mediaReady
                                                ? Theme.statusReady : Theme.accentPrimary
                                         font.family: Theme.fontFamily
@@ -263,9 +264,9 @@ ScrollView {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: ApplicationController.calendar.selectDate(dayCell.modelData.dateIso)
+                                onClicked: ApplicationController.openDateWorkspace(dayCell.modelData.dateIso, false)
                                 onDoubleClicked: {
-                                    ApplicationController.calendar.openWeekForDate(dayCell.modelData.dateIso, false)
+                                    ApplicationController.openDateWorkspace(dayCell.modelData.dateIso, false)
                                     root.openMeetingRequested()
                                 }
                             }
@@ -340,7 +341,7 @@ ScrollView {
                         text: qsTr("Open Week")
                         Layout.preferredHeight: 30
                         onClicked: {
-                            ApplicationController.calendar.openWeekForDate(
+                            ApplicationController.openDateWorkspace(
                                 ApplicationController.calendar.selectedDateIso, false)
                             root.openMeetingRequested()
                         }
@@ -442,7 +443,7 @@ ScrollView {
                                 ToolTip.visible: openRowBtn.hovered
                                 ToolTip.text: qsTr("Load meeting week")
                                 onClicked: {
-                                    ApplicationController.calendar.openWeekForDate(upRow.modelData.dateIso, false)
+                                    ApplicationController.openDateWorkspace(upRow.modelData.dateIso, false)
                                     root.openMeetingRequested()
                                 }
                             }

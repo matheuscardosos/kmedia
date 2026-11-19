@@ -54,6 +54,115 @@ Item {
         id: checklistPopup
     }
 
+    Popup {
+        id: tagEditPopup
+
+        property int targetIndex: -1
+        property string selectedTagType: "para"
+
+        function openFor(idx, currentType, currentVal) {
+            tagEditPopup.targetIndex = idx
+            tagEditPopup.selectedTagType = currentType.length > 0 ? currentType : "para"
+            tagValueField.text = currentVal
+            tagEditPopup.open()
+        }
+
+        width: 280
+        padding: 12
+        modal: true
+        focus: true
+        anchors.centerIn: Overlay.overlay
+
+        background: StudioCard {
+            surfaceColor: Theme.cardElevated
+            strokeColor: Theme.borderStrong
+        }
+
+        contentItem: ColumnLayout {
+            spacing: 8
+
+            Text {
+                text: qsTr("Edit Media Tag")
+                color: Theme.textPrimary
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeMd
+                font.weight: Font.DemiBold
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 4
+
+                Repeater {
+                    model: [
+                        { type: "song", label: qsTr("Song") },
+                        { type: "para", label: qsTr("Para.") },
+                        { type: "footnote", label: "*" },
+                        { type: "custom", label: qsTr("Custom") }
+                    ]
+
+                    delegate: StudioButton {
+                        id: tBtn
+
+                        required property var modelData
+
+                        variant: tagEditPopup.selectedTagType === tBtn.modelData.type ? "primary" : "secondary"
+                        text: tBtn.modelData.label
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 28
+                        onClicked: tagEditPopup.selectedTagType = tBtn.modelData.type
+                    }
+                }
+            }
+
+            TextField {
+                id: tagValueField
+
+                Layout.fillWidth: true
+                placeholderText: qsTr("e.g. Song 126, Para. 4, *")
+                color: Theme.textPrimary
+                placeholderTextColor: Theme.textMuted
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeSm
+                background: StudioCard {
+                    surfaceColor: Theme.windowBase
+                    cornerRadius: Theme.radiusSmall
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+
+                StudioButton {
+                    variant: "ghost"
+                    text: qsTr("Clear")
+                    onClicked: {
+                        ApplicationController.playlist.updateItemTag(tagEditPopup.targetIndex, "", "")
+                        tagEditPopup.close()
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                StudioButton {
+                    variant: "primary"
+                    text: qsTr("Save")
+                    onClicked: {
+                        ApplicationController.playlist.updateItemTag(
+                            tagEditPopup.targetIndex,
+                            tagEditPopup.selectedTagType,
+                            tagValueField.text
+                        )
+                        tagEditPopup.close()
+                    }
+                }
+            }
+        }
+    }
+
     function formatMsToClock(ms) {
         if (ms <= 0) {
             return "--:--"
@@ -132,42 +241,46 @@ Item {
                         }
                     }
 
-                    // Playlist / Week switcher
+                    // Date-keyed Congregation Workspace Strip
                     RowLayout {
                         visible: !root.compactMode
                         spacing: 4
 
                         StudioButton {
+                            id: prevDayBtn
+
                             variant: "secondary"
                             iconName: "chevron-left"
                             iconSize: 15
-                            implicitWidth: 32
-                            implicitHeight: 32
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 32
                             leftPadding: 0
                             rightPadding: 0
-                            enabled: ApplicationController.playlist.availablePlaylistNames.length > 1
-                            onClicked: ApplicationController.playlist.switchAdjacentPlaylist(-1)
-                            ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Previous meeting playlist")
+                            onClicked: {
+                                ApplicationController.calendar.shiftSelectedDate(-1)
+                                ApplicationController.openDateWorkspace(ApplicationController.calendar.selectedDateIso, false)
+                            }
+                            ToolTip.visible: prevDayBtn.hovered
+                            ToolTip.text: qsTr("Previous day workspace")
                         }
 
                         StudioButton {
                             id: playlistSwitchBtn
 
                             variant: "secondary"
-                            text: ApplicationController.playlist.playlistName
+                            text: ApplicationController.calendar.selectedDateIso + " (" + ApplicationController.calendar.selectedMeetingKind.toUpperCase() + ")"
                             trailingIconName: "chevron-down"
                             iconSize: 13
-                            implicitHeight: 32
+                            Layout.preferredHeight: 32
                             onClicked: playlistMenuPopup.open()
 
                             Popup {
                                 id: playlistMenuPopup
 
                                 x: 0
-                                y: parent.height + 4
-                                width: Math.max(210, parent.width)
-                                padding: 4
+                                y: playlistSwitchBtn.height + 4
+                                width: Math.max(240, playlistSwitchBtn.width)
+                                padding: 6
 
                                 background: StudioCard {
                                     surfaceColor: Theme.cardElevated
@@ -175,7 +288,54 @@ Item {
                                 }
 
                                 contentItem: ColumnLayout {
-                                    spacing: 2
+                                    spacing: 4
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 4
+
+                                        StudioButton {
+                                            variant: ApplicationController.calendar.selectedMeetingKind === "midweek" ? "primary" : "secondary"
+                                            text: qsTr("Midweek")
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 28
+                                            onClicked: {
+                                                ApplicationController.openDateWorkspace(
+                                                    ApplicationController.calendar.meetingDateInWeek(
+                                                        ApplicationController.calendar.selectedDateIso, "midweek"), false)
+                                                playlistMenuPopup.close()
+                                            }
+                                        }
+
+                                        StudioButton {
+                                            variant: ApplicationController.calendar.selectedMeetingKind === "weekend" ? "primary" : "secondary"
+                                            text: qsTr("Weekend")
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 28
+                                            onClicked: {
+                                                ApplicationController.openDateWorkspace(
+                                                    ApplicationController.calendar.meetingDateInWeek(
+                                                        ApplicationController.calendar.selectedDateIso, "weekend"), false)
+                                                playlistMenuPopup.close()
+                                            }
+                                        }
+
+                                        StudioButton {
+                                            variant: "ghost"
+                                            text: qsTr("Today")
+                                            Layout.preferredHeight: 28
+                                            onClicked: {
+                                                ApplicationController.calendar.goToToday()
+                                                playlistMenuPopup.close()
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 1
+                                        color: Theme.borderHairline
+                                    }
 
                                     Repeater {
                                         model: ApplicationController.playlist.availablePlaylistNames
@@ -189,7 +349,7 @@ Item {
                                             readonly property bool isCurrent: index === ApplicationController.playlist.activePlaylistIndex
 
                                             Layout.fillWidth: true
-                                            implicitHeight: 32
+                                            Layout.preferredHeight: 32
                                             radius: Theme.radiusSmall
                                             color: plHover.containsMouse ? Theme.cardHover
                                                  : (plOption.isCurrent ? Theme.accentSoft : "transparent")
@@ -235,17 +395,21 @@ Item {
                         }
 
                         StudioButton {
+                            id: nextDayBtn
+
                             variant: "secondary"
                             iconName: "chevron-right"
                             iconSize: 15
-                            implicitWidth: 32
-                            implicitHeight: 32
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 32
                             leftPadding: 0
                             rightPadding: 0
-                            enabled: ApplicationController.playlist.availablePlaylistNames.length > 1
-                            onClicked: ApplicationController.playlist.switchAdjacentPlaylist(1)
-                            ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Next meeting playlist")
+                            onClicked: {
+                                ApplicationController.calendar.shiftSelectedDate(1)
+                                ApplicationController.openDateWorkspace(ApplicationController.calendar.selectedDateIso, false)
+                            }
+                            ToolTip.visible: nextDayBtn.hovered
+                            ToolTip.text: qsTr("Next day workspace")
                         }
                     }
 
@@ -254,7 +418,7 @@ Item {
                         variant: root.previewOpen ? "primary" : "secondary"
                         iconName: "monitor"
                         text: root.compactMode ? "" : (root.previewOpen ? qsTr("Hide Preview") : qsTr("Preview"))
-                        implicitHeight: 32
+                        Layout.preferredHeight: 32
                         leftPadding: root.compactMode ? 8 : 10
                         rightPadding: root.compactMode ? 8 : 10
                         onClicked: root.previewToggled()
@@ -269,10 +433,10 @@ Item {
                     color: Theme.borderHairline
                 }
 
-                // Row 2: Media count + total duration + Broadcast Orange primary CTA
+                // Row 2: Media count + duration + Search + Hidden toggle + Organization CTAs
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: root.compactMode ? 6 : 12
+                    spacing: root.compactMode ? 6 : 8
 
                     RowLayout {
                         spacing: root.compactMode ? 4 : 6
@@ -331,8 +495,100 @@ Item {
                         hasBorder: true
                     }
 
-                    Item {
+                    StudioCard {
+                        visible: !root.compactMode
                         Layout.fillWidth: true
+                        Layout.minimumWidth: 120
+                        Layout.maximumWidth: 220
+                        Layout.preferredHeight: 32
+                        surfaceColor: Theme.windowBase
+                        cornerRadius: Theme.radiusSmall
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
+                            spacing: 6
+
+                            StudioIcon {
+                                name: "search"
+                                size: 13
+                                color: Theme.textMuted
+                            }
+
+                            TextField {
+                                id: playlistSearchField
+
+                                Layout.fillWidth: true
+                                placeholderText: qsTr("Filter items...")
+                                text: ApplicationController.playlist.searchQuery
+                                onTextChanged: ApplicationController.playlist.searchQuery = playlistSearchField.text
+                                color: Theme.textPrimary
+                                placeholderTextColor: Theme.textMuted
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeXs
+                                leftPadding: 0
+                                rightPadding: 0
+                                background: Item {}
+
+                                Shortcut {
+                                    sequence: "Ctrl+F"
+                                    onActivated: playlistSearchField.forceActiveFocus()
+                                }
+                            }
+                        }
+                    }
+
+                    Item {
+                        visible: root.compactMode
+                        Layout.fillWidth: true
+                    }
+
+                    StudioButton {
+                        id: showHiddenBtn
+
+                        visible: !root.compactMode && (ApplicationController.playlist.hiddenCount > 0 || ApplicationController.playlist.showHidden)
+                        variant: ApplicationController.playlist.showHidden ? "primary" : "secondary"
+                        iconName: ApplicationController.playlist.showHidden ? "eye" : "eye-off"
+                        text: qsTr("Hidden (%1)").arg(ApplicationController.playlist.hiddenCount)
+                        Layout.preferredHeight: 32
+                        onClicked: ApplicationController.playlist.showHidden = !ApplicationController.playlist.showHidden
+                        ToolTip.visible: showHiddenBtn.hovered
+                        ToolTip.text: qsTr("Show or conceal hidden meeting items")
+                    }
+
+                    StudioButton {
+                        id: dividerBtn
+
+                        visible: !root.compactMode
+                        variant: "secondary"
+                        iconName: "minus"
+                        text: qsTr("Divider")
+                        Layout.preferredHeight: 32
+                        onClicked: ApplicationController.playlist.addDivider(
+                            qsTr("Part Transition"),
+                            ApplicationController.playlist.sections.length > 0
+                                ? ApplicationController.playlist.sections[0].name
+                                : qsTr("Meeting"),
+                            "#D47B2A",
+                            ApplicationController.playlist.activeIndex)
+                        ToolTip.visible: dividerBtn.hovered
+                        ToolTip.text: qsTr("Insert colored visual separator")
+                    }
+
+                    StudioButton {
+                        id: resetOrderBtn
+
+                        visible: !root.compactMode && ApplicationController.playlist.count > 1
+                        variant: "ghost"
+                        iconName: "rotate-ccw"
+                        Layout.preferredWidth: 32
+                        Layout.preferredHeight: 32
+                        leftPadding: 0
+                        rightPadding: 0
+                        onClicked: ApplicationController.playlist.resetSortOrder()
+                        ToolTip.visible: resetOrderBtn.hovered
+                        ToolTip.text: qsTr("Reset original synced order")
                     }
 
                     StudioButton {
@@ -376,7 +632,11 @@ Item {
                         Layout.preferredWidth: root.compactMode ? 34 : syncWeekBtn.implicitWidth
                         Layout.preferredHeight: 34
                         enabled: !ApplicationController.catalog.busy
-                        onClicked: ApplicationController.catalog.syncCurrentWeekToPlaylist()
+                        onClicked: ApplicationController.catalog.syncDateToPlaylist(
+                            ApplicationController.calendar.selectedDateIso.length > 0
+                                ? new Date(ApplicationController.calendar.selectedDateIso + "T12:00:00")
+                                : new Date(),
+                            ApplicationController.calendar.selectedMeetingKind)
                         ToolTip.visible: syncWeekBtn.hovered
                         ToolTip.text: qsTr("Fetch weekly workbook and Watchtower media automatically")
                     }
@@ -551,6 +811,15 @@ Item {
 
                         required property string section
 
+                        readonly property var secMeta: {
+                            const list = ApplicationController.playlist.sections
+                            for (let i = 0; i < list.length; ++i) {
+                                if (list[i].name.toLowerCase() === sectionHeader.section.toLowerCase()) {
+                                    return list[i]
+                                }
+                            }
+                            return { name: sectionHeader.section, color: "#945EB5", repeatable: false, collapsed: false, itemCount: 0 }
+                        }
                         readonly property string resolvedColorHex: {
                             const _watch = ApplicationController.playlist.sections
                             return ApplicationController.playlist.colorForSection(sectionHeader.section)
@@ -566,7 +835,20 @@ Item {
                             anchors.rightMargin: 8
                             anchors.topMargin: 6
                             anchors.bottomMargin: 4
-                            spacing: 10
+                            spacing: 8
+
+                            StudioButton {
+                                id: secCollapseBtn
+
+                                variant: "ghost"
+                                iconName: sectionHeader.secMeta.collapsed ? "chevron-right" : "chevron-down"
+                                iconSize: 13
+                                leftPadding: 0
+                                rightPadding: 0
+                                Layout.preferredWidth: 22
+                                Layout.preferredHeight: 22
+                                onClicked: ApplicationController.playlist.toggleSectionCollapsed(sectionHeader.section)
+                            }
 
                             Rectangle {
                                 Layout.preferredWidth: 24
@@ -595,6 +877,22 @@ Item {
                                 font.letterSpacing: 0.6
                                 font.capitalization: Font.AllUppercase
                                 elide: Text.ElideRight
+                            }
+
+                            StudioButton {
+                                id: repeatSecBtn
+
+                                variant: sectionHeader.secMeta.repeatable ? "primary" : "ghost"
+                                iconName: "repeat"
+                                iconSize: 12
+                                leftPadding: 0
+                                rightPadding: 0
+                                Layout.preferredWidth: 24
+                                Layout.preferredHeight: 24
+                                onClicked: ApplicationController.playlist.setSectionRepeatable(
+                                    sectionHeader.section, !sectionHeader.secMeta.repeatable)
+                                ToolTip.visible: repeatSecBtn.hovered
+                                ToolTip.text: qsTr("Toggle section repeat / slideshow")
                             }
 
                             StudioButton {
@@ -693,22 +991,45 @@ Item {
                         required property int trimEnd
                         required property bool fileExists
                         required property bool isActive
+                        required property string groupKey
+                        required property bool groupExpanded
+                        required property bool isGroupStart
+                        required property int groupItemCount
+                        required property string itemKind
+                        required property bool hidden
+                        required property string tagType
+                        required property string tagValue
+                        required property string streamUrl
+                        required property real playbackRate
+                        required property bool isCbs
+                        required property string dividerColor
+                        required property int slideIntervalMs
+                        required property string pairedAudioPath
+                        required property bool rowVisible
 
+                        readonly property bool isDivider: itemKind === "divider"
                         readonly property bool isVideoVisual: kindLabel === "VID" || subtitle.indexOf("Visual") >= 0
+                        readonly property bool hasGroupHeader: isGroupStart && groupItemCount > 1
                         readonly property string typeIconName: {
+                            if (isDivider) return "minus"
                             if (kindLabel === "AUD") return "audio-lines"
                             if (kindLabel === "PDF") return "file-text"
                             if (isVideoVisual) return "film"
+                            if (kindLabel === "STRM") return "globe"
                             return "image"
                         }
 
+                        visible: rowDelegate.rowVisible
                         width: playlistView.width - 10
-                        height: root.compactMode ? 54 : 60
+                        height: !rowDelegate.rowVisible ? 0
+                              : (rowDelegate.isDivider ? 36 : (rowDelegate.hasGroupHeader ? (root.compactMode ? 78 : 84) : (root.compactMode ? 54 : 60)))
                         radius: Theme.radiusMedium
-                        color: isActive ? Theme.rowSelected
-                             : (rowHover.containsMouse ? Theme.cardHover : "transparent")
-                        border.width: isActive ? 1 : 0
-                        border.color: isActive ? Theme.accentPrimary : "transparent"
+                        opacity: rowDelegate.hidden ? 0.52 : 1.0
+                        color: rowDelegate.isDivider ? "transparent"
+                             : (rowDelegate.isActive ? Theme.rowSelected
+                                : (rowHover.containsMouse ? Theme.cardHover : "transparent"))
+                        border.width: (!rowDelegate.isDivider && rowDelegate.isActive) ? 1 : 0
+                        border.color: (!rowDelegate.isDivider && rowDelegate.isActive) ? Theme.accentPrimary : "transparent"
 
                         Behavior on color {
                             ColorAnimation {
@@ -716,188 +1037,363 @@ Item {
                             }
                         }
 
+                        // Colored divider bar variant
                         RowLayout {
+                            visible: rowDelegate.isDivider
                             anchors.fill: parent
-                            anchors.leftMargin: 8
-                            anchors.rightMargin: 8
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 12
                             spacing: 10
 
-                            // Column 1: Drag handle
-                            Item {
-                                visible: !root.compactMode
-                                Layout.preferredWidth: 16
-                                Layout.preferredHeight: 32
+                            Rectangle {
+                                Layout.preferredWidth: 28
+                                Layout.preferredHeight: 3
+                                radius: 2
+                                color: rowDelegate.dividerColor.length > 0 ? rowDelegate.dividerColor : Theme.accentPrimary
+                            }
 
-                                StudioIcon {
-                                    anchors.centerIn: parent
-                                    name: "grip-vertical"
-                                    size: 14
-                                    color: dragMouse.pressed ? Theme.accentPrimary : Theme.textMuted
+                            Text {
+                                text: rowDelegate.title
+                                color: rowDelegate.dividerColor.length > 0 ? rowDelegate.dividerColor : Theme.accentPrimary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeXs
+                                font.weight: Font.Bold
+                                font.capitalization: Font.AllUppercase
+                                elide: Text.ElideRight
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 2
+                                radius: 1
+                                opacity: 0.45
+                                color: rowDelegate.dividerColor.length > 0 ? rowDelegate.dividerColor : Theme.accentPrimary
+                            }
+
+                            StudioButton {
+                                variant: "ghost"
+                                iconName: "trash-2"
+                                iconSize: 12
+                                leftPadding: 0
+                                rightPadding: 0
+                                Layout.preferredWidth: 24
+                                Layout.preferredHeight: 24
+                                onClicked: ApplicationController.playlist.removeAt(rowDelegate.index)
+                            }
+                        }
+
+                        ColumnLayout {
+                            visible: !rowDelegate.isDivider
+                            anchors.fill: parent
+                            spacing: 2
+
+                            // Optional collapsible extract MediaGroup banner above first group member
+                            Rectangle {
+                                visible: rowDelegate.hasGroupHeader
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 22
+                                Layout.leftMargin: 8
+                                Layout.rightMargin: 8
+                                radius: Theme.radiusSmall
+                                color: Theme.cardSurface
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 8
+                                    anchors.rightMargin: 8
+                                    spacing: 6
+
+                                    StudioIcon {
+                                        name: rowDelegate.groupExpanded ? "chevron-down" : "chevron-right"
+                                        size: 12
+                                        color: Theme.accentPrimary
+                                    }
+
+                                    Text {
+                                        text: rowDelegate.groupKey
+                                        color: Theme.textPrimary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeXs
+                                        font.weight: Font.DemiBold
+                                        elide: Text.ElideRight
+                                        Layout.fillWidth: true
+                                    }
+
+                                    Text {
+                                        text: qsTr("%1 items").arg(rowDelegate.groupItemCount)
+                                        color: Theme.textMuted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 10
+                                    }
                                 }
 
                                 MouseArea {
-                                    id: dragMouse
-
-                                    property int startRow: -1
-                                    property real pressSceneY: 0
-
                                     anchors.fill: parent
-                                    cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
-                                    onPressed: (mouse) => {
-                                        startRow = rowDelegate.index
-                                        pressSceneY = mapToItem(playlistView, 0, mouse.y).y
-                                        mouse.accepted = true
-                                    }
-                                    onPositionChanged: (mouse) => {
-                                        if (!pressed || startRow < 0) {
-                                            return
-                                        }
-                                        const curY = mapToItem(playlistView, 0, mouse.y).y
-                                        const rowStep = rowDelegate.height + playlistView.spacing
-                                        const delta = Math.round((curY - pressSceneY) / rowStep)
-                                        const target = Math.max(0, Math.min(playlistView.count - 1, startRow + delta))
-                                        if (target !== rowDelegate.index) {
-                                            ApplicationController.playlist.moveItem(rowDelegate.index, target)
-                                            startRow = target
-                                            pressSceneY = curY
-                                        }
-                                    }
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: ApplicationController.playlist.toggleGroupExpanded(rowDelegate.groupKey)
                                 }
                             }
 
-                            // Column 2: 1-based item index
-                            Text {
-                                Layout.preferredWidth: 22
-                                text: "" + (rowDelegate.index + 1)
-                                color: rowDelegate.isActive ? Theme.accentPrimary : Theme.textSecondary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
-                                font.weight: rowDelegate.isActive ? Font.Bold : Font.Medium
-                                horizontalAlignment: Text.AlignHCenter
-                            }
-
-                            // Column 3: 16:9 Thumbnail + Title & Subtitle
                             RowLayout {
                                 Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                Layout.leftMargin: 8
+                                Layout.rightMargin: 8
                                 spacing: 10
 
-                                Rectangle {
-                                    Layout.preferredWidth: root.compactMode ? 54 : 72
-                                    Layout.preferredHeight: root.compactMode ? 32 : 42
-                                    radius: Theme.radiusSmall
-                                    color: Theme.cardSurface
-                                    border.width: 1
-                                    border.color: rowDelegate.isActive ? Theme.accentBorder : Theme.borderHairline
-                                    clip: true
-
-                                    Image {
-                                        anchors.fill: parent
-                                        source: rowDelegate.thumbUrl
-                                        visible: rowDelegate.thumbUrl.length > 0
-                                        fillMode: Image.PreserveAspectCrop
-                                        asynchronous: true
-                                        smooth: true
-                                        mipmap: true
-                                    }
+                                // Column 1: Drag handle
+                                Item {
+                                    visible: !root.compactMode
+                                    Layout.preferredWidth: 16
+                                    Layout.preferredHeight: 32
 
                                     StudioIcon {
                                         anchors.centerIn: parent
-                                        visible: rowDelegate.thumbUrl.length === 0
-                                        name: rowDelegate.typeIconName
-                                        size: 16
-                                        color: Theme.textSecondary
+                                        name: "grip-vertical"
+                                        size: 14
+                                        color: dragMouse.pressed ? Theme.accentPrimary : Theme.textMuted
                                     }
 
+                                    MouseArea {
+                                        id: dragMouse
+
+                                        property int startRow: -1
+                                        property real pressSceneY: 0
+
+                                        anchors.fill: parent
+                                        cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                                        onPressed: (mouse) => {
+                                            startRow = rowDelegate.index
+                                            pressSceneY = mapToItem(playlistView, 0, mouse.y).y
+                                            mouse.accepted = true
+                                        }
+                                        onPositionChanged: (mouse) => {
+                                            if (!pressed || startRow < 0) {
+                                                return
+                                            }
+                                            const curY = mapToItem(playlistView, 0, mouse.y).y
+                                            const rowStep = rowDelegate.height + playlistView.spacing
+                                            const delta = Math.round((curY - pressSceneY) / rowStep)
+                                            const target = Math.max(0, Math.min(playlistView.count - 1, startRow + delta))
+                                            if (target !== rowDelegate.index) {
+                                                ApplicationController.playlist.moveItem(rowDelegate.index, target)
+                                                startRow = target
+                                                pressSceneY = curY
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Column 2: 1-based item index
+                                Text {
+                                    Layout.preferredWidth: 22
+                                    text: "" + (rowDelegate.index + 1)
+                                    color: rowDelegate.isActive ? Theme.accentPrimary : Theme.textSecondary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeSm
+                                    font.weight: rowDelegate.isActive ? Font.Bold : Font.Medium
+                                    horizontalAlignment: Text.AlignHCenter
+                                }
+
+                                // Column 3: 16:9 Thumbnail + Title & Tags/Subtitle
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 10
+
                                     Rectangle {
-                                        visible: rowDelegate.thumbUrl.length > 0 && rowDelegate.isVideoVisual
-                                        anchors.centerIn: parent
-                                        width: 20
-                                        height: 20
-                                        radius: 10
-                                        color: "#8A0D0F12"
+                                        Layout.preferredWidth: root.compactMode ? 54 : 72
+                                        Layout.preferredHeight: root.compactMode ? 32 : 42
+                                        radius: Theme.radiusSmall
+                                        color: Theme.cardSurface
+                                        border.width: 1
+                                        border.color: rowDelegate.isActive ? Theme.accentBorder : Theme.borderHairline
+                                        clip: true
+
+                                        Image {
+                                            anchors.fill: parent
+                                            source: rowDelegate.thumbUrl
+                                            visible: rowDelegate.thumbUrl.length > 0
+                                            fillMode: Image.PreserveAspectCrop
+                                            asynchronous: true
+                                            smooth: true
+                                            mipmap: true
+                                        }
 
                                         StudioIcon {
                                             anchors.centerIn: parent
-                                            anchors.horizontalCenterOffset: 1
-                                            name: "play"
-                                            size: 9
-                                            color: "#FFFFFF"
-                                        }
-                                    }
-                                }
-
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 2
-
-                                    RowLayout {
-                                        Layout.fillWidth: true
-                                        spacing: 6
-
-                                        Text {
-                                            text: rowDelegate.title
-                                            color: Theme.textPrimary
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: Theme.fontSizeMd
-                                            font.weight: rowDelegate.isActive ? Font.DemiBold : Font.Medium
-                                            elide: Text.ElideRight
-                                            Layout.fillWidth: true
-                                        }
-
-                                        StudioBadge {
-                                            visible: rowDelegate.trimEnd > rowDelegate.trimStart && !root.compactMode
-                                            implicitHeight: 18
-                                            text: qsTr("TRIM")
-                                            badgeColor: Theme.accentSoft
-                                            textColor: Theme.accentPrimary
-                                            hasBorder: true
-                                            strokeColor: Theme.accentBorder
-                                        }
-                                    }
-
-                                    RowLayout {
-                                        Layout.fillWidth: true
-                                        spacing: 5
-
-                                        StudioIcon {
+                                            visible: rowDelegate.thumbUrl.length === 0
                                             name: rowDelegate.typeIconName
-                                            size: 11
-                                            color: Theme.textMuted
+                                            size: 16
+                                            color: Theme.textSecondary
                                         }
 
-                                        Text {
-                                            text: rowDelegate.subtitle.length > 0 ? rowDelegate.subtitle : rowDelegate.section
-                                            color: Theme.textSecondary
-                                            font.family: Theme.fontFamily
-                                            font.pixelSize: Theme.fontSizeXs
-                                            elide: Text.ElideRight
+                                        Rectangle {
+                                            visible: rowDelegate.thumbUrl.length > 0 && rowDelegate.isVideoVisual
+                                            anchors.centerIn: parent
+                                            width: 20
+                                            height: 20
+                                            radius: 10
+                                            color: "#8A0D0F12"
+
+                                            StudioIcon {
+                                                anchors.centerIn: parent
+                                                anchors.horizontalCenterOffset: 1
+                                                name: "play"
+                                                size: 9
+                                                color: "#FFFFFF"
+                                            }
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 2
+
+                                        RowLayout {
                                             Layout.fillWidth: true
+                                            spacing: 6
+
+                                            Text {
+                                                text: rowDelegate.title
+                                                color: Theme.textPrimary
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: Theme.fontSizeMd
+                                                font.weight: rowDelegate.isActive ? Font.DemiBold : Font.Medium
+                                                font.strikeout: rowDelegate.hidden
+                                                elide: Text.ElideRight
+                                                Layout.fillWidth: true
+                                            }
+
+                                            Rectangle {
+                                                visible: !root.compactMode && rowDelegate.tagValue.length > 0
+                                                Layout.preferredHeight: 18
+                                                Layout.preferredWidth: tagText.implicitWidth + 12
+                                                radius: 9
+                                                color: rowDelegate.tagType === "song" ? "#2E6F5E"
+                                                     : (rowDelegate.tagType === "footnote" ? Theme.cardSurface : Theme.accentSoft)
+                                                border.width: 1
+                                                border.color: rowDelegate.tagType === "song" ? "#3B8D78" : Theme.accentBorder
+
+                                                Text {
+                                                    id: tagText
+
+                                                    anchors.centerIn: parent
+                                                    text: rowDelegate.tagValue
+                                                    color: rowDelegate.tagType === "song" ? "#FFFFFF" : Theme.accentPrimary
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: 10
+                                                    font.weight: Font.DemiBold
+                                                }
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: tagEditPopup.openFor(rowDelegate.index, rowDelegate.tagType, rowDelegate.tagValue)
+                                                }
+                                            }
+
+                                            StudioBadge {
+                                                visible: rowDelegate.isCbs && !root.compactMode
+                                                Layout.preferredHeight: 18
+                                                text: qsTr("CBS")
+                                                badgeColor: Theme.panelSurface
+                                                textColor: Theme.textSecondary
+                                                hasBorder: true
+                                            }
+
+                                            StudioBadge {
+                                                visible: rowDelegate.kindLabel === "STRM" && !root.compactMode
+                                                Layout.preferredHeight: 18
+                                                text: qsTr("STREAM")
+                                                badgeColor: Theme.accentSoft
+                                                textColor: Theme.accentPrimary
+                                                hasBorder: true
+                                            }
+
+                                            StudioBadge {
+                                                visible: rowDelegate.trimEnd > rowDelegate.trimStart && !root.compactMode
+                                                Layout.preferredHeight: 18
+                                                text: qsTr("TRIM")
+                                                badgeColor: Theme.accentSoft
+                                                textColor: Theme.accentPrimary
+                                                hasBorder: true
+                                                strokeColor: Theme.accentBorder
+                                            }
+
+                                            StudioBadge {
+                                                visible: rowDelegate.slideIntervalMs > 0 && !root.compactMode
+                                                Layout.preferredHeight: 18
+                                                text: (rowDelegate.slideIntervalMs / 1000) + "s"
+                                                badgeColor: Theme.cardSurface
+                                                textColor: Theme.textSecondary
+                                                hasBorder: true
+                                            }
+                                        }
+
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 5
+
+                                            StudioIcon {
+                                                name: rowDelegate.typeIconName
+                                                size: 11
+                                                color: Theme.textMuted
+                                            }
+
+                                            Text {
+                                                text: rowDelegate.subtitle.length > 0 ? rowDelegate.subtitle : rowDelegate.section
+                                                color: Theme.textSecondary
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: Theme.fontSizeXs
+                                                elide: Text.ElideRight
+                                                Layout.fillWidth: true
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                            // Column 4: Tabular Duration
-                            Text {
-                                Layout.preferredWidth: 56
-                                text: rowDelegate.formattedDuration
-                                color: rowDelegate.isActive ? Theme.textPrimary : Theme.textSecondary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
-                                font.weight: rowDelegate.isActive ? Font.DemiBold : Font.Normal
-                                horizontalAlignment: Text.AlignRight
-                            }
+                                // Column 4: Tabular Duration
+                                Text {
+                                    Layout.preferredWidth: 56
+                                    text: rowDelegate.formattedDuration
+                                    color: rowDelegate.isActive ? Theme.textPrimary : Theme.textSecondary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeSm
+                                    font.weight: rowDelegate.isActive ? Font.DemiBold : Font.Normal
+                                    horizontalAlignment: Text.AlignRight
+                                }
 
-                            // Column 5: Readiness Status Icon
-                            Item {
-                                Layout.preferredWidth: 46
-                                Layout.preferredHeight: 28
+                                // Column 5: Hide toggle + Readiness Status Icon
+                                RowLayout {
+                                    Layout.preferredWidth: 54
+                                    Layout.preferredHeight: 28
+                                    spacing: 4
 
-                                StudioIcon {
-                                    anchors.centerIn: parent
-                                    name: rowDelegate.fileExists ? "circle-check" : "triangle-exclamation-point"
-                                    size: 16
-                                    color: rowDelegate.fileExists ? Theme.statusReady : Theme.statusStandby
+                                    StudioButton {
+                                        id: hideRowBtn
+
+                                        visible: !root.compactMode && (rowHover.containsMouse || rowDelegate.hidden)
+                                        variant: "ghost"
+                                        iconName: rowDelegate.hidden ? "eye" : "eye-off"
+                                        iconSize: 13
+                                        leftPadding: 0
+                                        rightPadding: 0
+                                        Layout.preferredWidth: 24
+                                        Layout.preferredHeight: 24
+                                        onClicked: ApplicationController.playlist.toggleItemHidden(rowDelegate.index)
+                                        ToolTip.visible: hideRowBtn.hovered
+                                        ToolTip.text: rowDelegate.hidden ? qsTr("Unhide item") : qsTr("Hide item")
+                                    }
+
+                                    Item {
+                                        Layout.fillWidth: true
+                                    }
+
+                                    StudioIcon {
+                                        name: rowDelegate.fileExists ? "circle-check" : "triangle-exclamation-point"
+                                        size: 16
+                                        color: rowDelegate.fileExists ? Theme.statusReady : Theme.statusStandby
+                                    }
                                 }
                             }
                         }
@@ -907,10 +1403,18 @@ Item {
 
                             anchors.fill: parent
                             anchors.leftMargin: root.compactMode ? 0 : 24
+                            anchors.rightMargin: 54
+                            anchors.topMargin: rowDelegate.hasGroupHeader ? 24 : 0
                             hoverEnabled: true
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
                             cursorShape: Qt.PointingHandCursor
                             onClicked: (mouse) => {
+                                if (rowDelegate.isDivider) {
+                                    if (mouse.button === Qt.RightButton) {
+                                        rowContextMenu.popup()
+                                    }
+                                    return
+                                }
                                 if (mouse.button === Qt.RightButton) {
                                     ApplicationController.playlist.activateIndex(rowDelegate.index)
                                     rowContextMenu.popup()
@@ -919,8 +1423,10 @@ Item {
                                 }
                             }
                             onDoubleClicked: {
-                                ApplicationController.playlist.activateIndex(rowDelegate.index)
-                                ApplicationController.playback.play()
+                                if (!rowDelegate.isDivider) {
+                                    ApplicationController.playlist.activateIndex(rowDelegate.index)
+                                    ApplicationController.playback.play()
+                                }
                             }
                         }
 
@@ -929,11 +1435,56 @@ Item {
 
                             MenuItem {
                                 text: qsTr("Play Now")
+                                visible: !rowDelegate.isDivider
                                 onTriggered: {
                                     ApplicationController.playlist.activateIndex(rowDelegate.index)
                                     ApplicationController.playback.play()
                                 }
                             }
+                            MenuItem {
+                                text: rowDelegate.hidden ? qsTr("Show Item") : qsTr("Hide Item")
+                                onTriggered: ApplicationController.playlist.toggleItemHidden(rowDelegate.index)
+                            }
+                            MenuItem {
+                                text: qsTr("Edit Tag...")
+                                visible: !rowDelegate.isDivider
+                                onTriggered: tagEditPopup.openFor(rowDelegate.index, rowDelegate.tagType, rowDelegate.tagValue)
+                            }
+                            Menu {
+                                title: qsTr("Slide Interval")
+                                enabled: !rowDelegate.isDivider
+
+                                MenuItem {
+                                    text: qsTr("Manual (Off)")
+                                    onTriggered: ApplicationController.playlist.setItemSlideInterval(rowDelegate.index, 0)
+                                }
+                                MenuItem {
+                                    text: qsTr("10 seconds")
+                                    onTriggered: ApplicationController.playlist.setItemSlideInterval(rowDelegate.index, 10000)
+                                }
+                                MenuItem {
+                                    text: qsTr("30 seconds")
+                                    onTriggered: ApplicationController.playlist.setItemSlideInterval(rowDelegate.index, 30000)
+                                }
+                                MenuItem {
+                                    text: qsTr("1 minute")
+                                    onTriggered: ApplicationController.playlist.setItemSlideInterval(rowDelegate.index, 60000)
+                                }
+                                MenuItem {
+                                    text: qsTr("5 minutes")
+                                    onTriggered: ApplicationController.playlist.setItemSlideInterval(rowDelegate.index, 300000)
+                                }
+                                MenuItem {
+                                    text: qsTr("10 minutes")
+                                    onTriggered: ApplicationController.playlist.setItemSlideInterval(rowDelegate.index, 600000)
+                                }
+                            }
+                            MenuItem {
+                                text: qsTr("Insert Divider Below")
+                                onTriggered: ApplicationController.playlist.addDivider(
+                                    qsTr("Section Break"), rowDelegate.section, "#D47B2A", rowDelegate.index)
+                            }
+                            MenuSeparator {}
                             MenuItem {
                                 text: qsTr("Move Up")
                                 enabled: rowDelegate.index > 0

@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Implemented date-keyed daily meeting workspaces (`DatabaseManager` V2 schema + `PlaylistModel`) isolating `midweek`, `weekend`, `memorial`, and custom non-meeting days per congregation profile with collapsible extract groups, colored dividers, editable media tags, hidden item toggles, per-section repeat, slide intervals, search filter (`Ctrl+F`), and sort-order reset.
+- Upgraded `JwpubParser`, `CatalogClient`, `MeetingCalendarModel`, and `MeetingCatalogService` with `DatedText` week matching, `[6, 8, 10, 12]`-week *Watchtower* `Class = 40` resolution, `DocumentExtract` song/reference parsing, `SuppressZoom` / `LinkMultimediaId` filtering, Mediator `v1/media-items` + `GETPUBMEDIALINKS` + secondary language fallback, `2100 s` stream-only threshold, CO Tuesday shift + hidden CBS/closing song rules, Memorial suppression + `mi<YY>` support, temporary schedule overrides, extraction filter toggles, and `hub.jw.org` Congregation Lookup UI.
+
 ### Fixed
 
 - Fixed OBS/Zoom actions in `SettingsView` (`connectToObs()` and `joinMeeting()`), kept static Image/PDF presentations mapped to the OBS play scene instead of `pauseScene`, routed `ZoomBridge::dedicatedAudioDevice` through `PlaybackController` and `BackgroundMusicEngine`, isolated `--demo` writes in `saveCloudFolder()` and `saveObsAndZoomSettings()`, and wired focus-safe local keyboard shortcuts (`Space`, `B`, `Ctrl+M`, `Escape`, `Delete`, `1`-`6`) in `Main.qml`.
