@@ -22,15 +22,21 @@ jobs:
           - os: ubuntu-latest
             preset: linux-release
             qt_arch: linux_gcc_64
+            artifact_id: kmedia-linux-x64
             artifact_name: kmedia-linux-x64.tar.gz
+            artifact_glob: kmedia-linux-x64.tar.gz
           - os: windows-latest
             preset: windows-msvc-release
             qt_arch: win64_msvc2022_64
+            artifact_id: kmedia-windows-x64
             artifact_name: kmedia-windows-x64.zip
+            artifact_glob: kmedia-windows-x64*
           - os: macos-latest
             preset: macos-release
             qt_arch: clang_64
+            artifact_id: kmedia-macos-arm64
             artifact_name: kmedia-macos-arm64.dmg
+            artifact_glob: kmedia-macos-arm64.dmg
 
     steps:
       - name: Checkout repository
@@ -119,7 +125,7 @@ jobs:
           cmake --preset ${{ matrix.preset }}
           cmake --build --preset ${{ matrix.preset }}
 
-      - name: Package Windows bundle
+      - name: Package Windows bundle and installer
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
@@ -127,8 +133,51 @@ jobs:
           New-Item -ItemType Directory -Force -Path $dist | Out-Null
           Copy-Item "build/${{ matrix.preset }}/kmedia.exe" "$dist/"
           Copy-Item "build/${{ matrix.preset }}/*.dll" "$dist/" -ErrorAction SilentlyContinue
+          Copy-Item "LICENSE", "README.md", "THIRD-PARTY-NOTICES.md" "$dist/"
+
           windeployqt --qmldir resources/qml --no-compiler-runtime "$dist/kmedia.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          # Bundle app-local MSVC CRT DLLs so portable and per-user installs run without VC++ Redistributable.
+          if ($env:VCToolsRedistDir) {
+            $crtDir = Get-ChildItem -Path (Join-Path $env:VCToolsRedistDir "x64") -Directory -Filter "Microsoft.VC*.CRT" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($crtDir) {
+              Copy-Item (Join-Path $crtDir.FullName "*.dll") "$dist/" -Force
+            }
+          }
+
           Compress-Archive -Path "$dist/*" -DestinationPath "dist/${{ matrix.artifact_name }}" -Force
+
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          if (-not (Test-Path $iscc)) {
+            Write-Error "Inno Setup compiler (ISCC.exe) was not found."
+            exit 1
+          }
+
+          $cmakeText = Get-Content -Path "CMakeLists.txt" -Raw
+          if ($cmakeText -match 'VERSION\s+([0-9]+\.[0-9]+\.[0-9]+)') {
+            $appVersion = $Matches[1]
+          } else {
+            $appVersion = "0.1.0"
+          }
+          $numericVersion = "$appVersion.0"
+          $repoRoot = (Resolve-Path ".").Path
+          $distAbs = (Resolve-Path $dist).Path
+          $outAbs = (Resolve-Path "dist").Path
+
+          & $iscc `
+            "/DAppVersion=$appVersion" `
+            "/DNumericVersion=$numericVersion" `
+            "/DSourceDir=$repoRoot" `
+            "/DDistDir=$distAbs" `
+            "/DOutputDir=$outAbs" `
+            "/DOutputBaseFilename=kmedia-windows-x64-setup" `
+            "packaging/windows/kmedia.iss"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Package macOS DMG
         if: runner.os == 'macOS'
@@ -143,14 +192,14 @@ jobs:
         run: |
           mkdir -p dist/kmedia-linux-x64/bin dist/kmedia-linux-x64/share
           cp "build/${{ matrix.preset }}/kmedia" dist/kmedia-linux-x64/bin/
-          cp LICENSE README.md dist/kmedia-linux-x64/share/
+          cp LICENSE README.md THIRD-PARTY-NOTICES.md dist/kmedia-linux-x64/share/
           tar -czf "dist/${{ matrix.artifact_name }}" -C dist kmedia-linux-x64
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.artifact_name }}
-          path: dist/${{ matrix.artifact_name }}
+          name: ${{ matrix.artifact_id }}
+          path: dist/${{ matrix.artifact_glob }}
 
   publish:
     name: Publish GitHub Release

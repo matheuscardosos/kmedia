@@ -47,9 +47,9 @@ onMounted(() => {
   if (/Windows/i.test(ua)) {
     recommended.value = { href: downloads.win64, label: msg.value.windows64Bit };
   } else if (/Macintosh|Mac OS X/i.test(ua)) {
-    recommended.value = { href: downloads.macUniversal, label: msg.value.macUniversal };
+    recommended.value = { href: downloads.macDmg, label: msg.value.macDmg };
   } else if (/Linux/i.test(ua)) {
-    recommended.value = { href: downloads.linuxAppImage, label: msg.value.linuxAppImage };
+    recommended.value = { href: downloads.linuxTarGz, label: msg.value.linuxTarGz };
   }
 });
 </script>
@@ -75,16 +75,16 @@ onMounted(() => {
 
 ### Windows
 
-- **Windows 64-bit Installer (.exe):** <a :href="downloads.win64">Download</a>
+- **Windows 64-bit Installer (.exe):** <a v-if="downloads.hasWinInstaller" :href="downloads.win64">Download</a><span v-else>Available starting with the next release (<a :href="downloads.releaseUrl" target="_blank" rel="noopener noreferrer">GitHub Releases</a>)</span> (installs per-user cleanly without administrator rights by default, with optional Start Menu and Desktop shortcuts and full Windows uninstaller support)
 - **Windows 64-bit Portable (.zip):** <a :href="downloads.winPortable">Download</a>
 
 ### macOS
 
-- **macOS Universal (.dmg):** <a :href="downloads.macUniversal">Download</a>
+- **macOS Apple Silicon (.dmg):** <a :href="downloads.macDmg">Download</a>
 
 ### Linux
 
-- **Linux x86_64 (.AppImage):** <a :href="downloads.linuxAppImage">Download</a>
+- **Linux x64 (.tar.gz):** <a :href="downloads.linuxTarGz">Download</a>
 
 ## Building from Source
 

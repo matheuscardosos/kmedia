@@ -47,9 +47,9 @@ onMounted(() => {
   if (/Windows/i.test(ua)) {
     recommended.value = { href: downloads.win64, label: msg.value.windows64Bit };
   } else if (/Macintosh|Mac OS X/i.test(ua)) {
-    recommended.value = { href: downloads.macUniversal, label: msg.value.macUniversal };
+    recommended.value = { href: downloads.macDmg, label: msg.value.macDmg };
   } else if (/Linux/i.test(ua)) {
-    recommended.value = { href: downloads.linuxAppImage, label: msg.value.linuxAppImage };
+    recommended.value = { href: downloads.linuxTarGz, label: msg.value.linuxTarGz };
   }
 });
 </script>
@@ -75,16 +75,16 @@ onMounted(() => {
 
 ### Windows
 
-- **Instalador Windows 64-bit (.exe):** <a :href="downloads.win64">Baixar</a>
+- **Instalador Windows 64-bit (.exe):** <a v-if="downloads.hasWinInstaller" :href="downloads.win64">Baixar</a><span v-else>Disponível a partir da próxima release (<a :href="downloads.releaseUrl" target="_blank" rel="noopener noreferrer">GitHub Releases</a>)</span> (instalação padrão por usuário sem exigir senha de administrador, com atalhos opcionais no Menu Iniciar e Área de Trabalho e desinstalador padrão do Windows)
 - **Windows 64-bit Portátil (.zip):** <a :href="downloads.winPortable">Baixar</a>
 
 ### macOS
 
-- **macOS Universal (.dmg):** <a :href="downloads.macUniversal">Baixar</a>
+- **macOS Apple Silicon (.dmg):** <a :href="downloads.macDmg">Baixar</a>
 
 ### Linux
 
-- **Linux x86_64 (.AppImage):** <a :href="downloads.linuxAppImage">Baixar</a>
+- **Linux x64 (.tar.gz):** <a :href="downloads.linuxTarGz">Baixar</a>
 
 ## Compilação pelo Código-Fonte
 
