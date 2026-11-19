@@ -40,6 +40,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Redesigned QML Studio design system (`resources/qml/controls/Studio*.qml`) with dual **Dark (`Studio Carbon`)** and **Light (`Studio Daylight`)** themes (`ui/dark_theme` + `--theme`), bundled `Inter` font family, `MultiEffect`-tinted Lucide vector icons, custom `.jwpub` / `.jwlplaylist` SVG badges, **Meeting Section Dividers** (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*), **Floating Pill Action Bar (`ActionPillBar`)**, **Command Palette (`Ctrl+K`)**, toast notifications, playlist drag-and-drop, non-destructive trim/zoom inspector, media/playlists/downloads/settings views, and responsive scaling down to `360x520`.
 - Complete EN/PT Qt Linguist catalogs (`resources/translations/kmedia_en.ts`, `kmedia_pt.ts`), `--demo` / `--screenshot` automated screenshot workflow (`.github/workflows/screenshot-refresh.yml`), release automation (`release-please-config.json`, `.github/workflows/release-please.yml`, `.github/workflows/release.yml` with SHA-256 sums), workflow security auditing (`.github/workflows/zizmor.yml`), multi-IDE & multi-AI contributor configurations (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `.github/copilot-instructions.md`, `.windsurfrules`, `.ai/system-prompt.md`, `.vscode/`, `.zed/`, `.editorconfig`), and `THIRD-PARTY-NOTICES.md`.
 
+### Fixed
+
+- Centered icon-only `StudioButton` glyphs reliably across toolbars/calendar cells and tightened compact header action bar spacing in `MeetingPlaylistView` so all actions fit comfortably down to `360 px` window widths.
+
 ## [0.1.0] - 2026-11-18
 
 ### Added

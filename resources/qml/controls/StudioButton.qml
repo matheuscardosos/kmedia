@@ -67,36 +67,42 @@ T.Button {
         }
     }
 
-    contentItem: RowLayout {
-        id: contentRow
+    contentItem: Item {
+        implicitWidth: contentRow.implicitWidth
+        implicitHeight: contentRow.implicitHeight
 
-        spacing: 6
+        RowLayout {
+            id: contentRow
 
-        StudioIcon {
-            visible: root.iconName.length > 0
-            name: root.iconName
-            size: root.iconSize
-            color: root.resolvedFg
-            Layout.alignment: Qt.AlignVCenter
-        }
+            anchors.centerIn: parent
+            spacing: 6
 
-        Text {
-            visible: root.text.length > 0
-            text: root.text
-            color: root.resolvedFg
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSizeSm
-            font.weight: root.variant === "primary" ? Font.DemiBold : Font.Medium
-            elide: Text.ElideRight
-            Layout.alignment: Qt.AlignVCenter
-        }
+            StudioIcon {
+                visible: root.iconName.length > 0
+                name: root.iconName
+                size: root.iconSize
+                color: root.resolvedFg
+                Layout.alignment: Qt.AlignVCenter
+            }
 
-        StudioIcon {
-            visible: root.trailingIconName.length > 0
-            name: root.trailingIconName
-            size: root.iconSize
-            color: root.resolvedFg
-            Layout.alignment: Qt.AlignVCenter
+            Text {
+                visible: root.text.length > 0
+                text: root.text
+                color: root.resolvedFg
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeSm
+                font.weight: root.variant === "primary" ? Font.DemiBold : Font.Medium
+                elide: Text.ElideRight
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            StudioIcon {
+                visible: root.trailingIconName.length > 0
+                name: root.trailingIconName
+                size: root.iconSize
+                color: root.resolvedFg
+                Layout.alignment: Qt.AlignVCenter
+            }
         }
     }
 }
