@@ -19,6 +19,7 @@
 #include "models/PlaylistModel.h"
 #include "network/CatalogClient.h"
 #include "network/DownloadService.h"
+#include "network/MeetingCatalogService.h"
 #include "parsers/CloudSyncWatcher.h"
 
 #include <QCoreApplication>
@@ -61,7 +62,9 @@ ApplicationController::ApplicationController(QObject* parent)
       m_obsClient(std::make_unique<kmedia::ObsWebSocketClient>()),
       m_zoomBridge(std::make_unique<kmedia::ZoomBridge>()),
       m_playlistModel(std::make_unique<kmedia::PlaylistModel>()),
-      m_meetingTimer(std::make_unique<kmedia::MeetingTimer>())
+      m_meetingTimer(std::make_unique<kmedia::MeetingTimer>()),
+      m_meetingCatalog(std::make_unique<kmedia::MeetingCatalogService>(
+          m_catalogClient.get(), m_downloadService.get(), m_playlistModel.get()))
 {
     m_playbackController->attachPdfController(m_pdfController.get());
     m_playlistModel->attachPlaybackController(m_playbackController.get());
@@ -259,6 +262,11 @@ kmedia::MeetingTimer* ApplicationController::meetingTimer() const
     return m_meetingTimer.get();
 }
 
+kmedia::MeetingCatalogService* ApplicationController::catalog() const
+{
+    return m_meetingCatalog.get();
+}
+
 void ApplicationController::bindPresentationMpv(MpvRendererItem* mpvItem)
 {
     m_playbackController->attachMpvItem(mpvItem);
@@ -392,11 +400,17 @@ void ApplicationController::applyProfileSettings()
     if (profile.has_value() && !profile->storagePath.isEmpty()) {
         m_playlistModel->setPackageExtractDir(
             QDir(profile->storagePath).filePath(QStringLiteral("packages")));
+        m_meetingCatalog->setStorageRoot(profile->storagePath);
     }
 
     const auto* settings = m_profileManager->activeSettings();
     if (settings == nullptr) {
         return;
+    }
+
+    const QString mediaLang = settings->mediaLanguage();
+    if (!mediaLang.isEmpty()) {
+        m_meetingCatalog->setSelectedLanguageCode(mediaLang);
     }
 
     m_backgroundMusic->setFadeDurationMs(settings->backgroundMusicFadeMs());
@@ -496,4 +510,29 @@ void ApplicationController::wireIntegrations()
 
     connect(m_playlistModel.get(), &kmedia::PlaylistModel::importNotice, this,
             [this](const QString& message) { showToast(message, QStringLiteral("warning")); });
+
+    connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::selectedLanguageChanged, this,
+            [this]() {
+                if (m_demoMode) {
+                    return;
+                }
+                if (auto* settings = m_profileManager->activeSettings()) {
+                    (void)settings->setValue(
+                        QLatin1StringView(kmedia::settings_keys::kMediaLanguage),
+                        m_meetingCatalog->selectedLanguageCode());
+                }
+                if (auto profile = m_profileManager->activeProfile(); profile.has_value()) {
+                    profile->mediaLanguage = m_meetingCatalog->selectedLanguageCode();
+                    (void)m_profileManager->updateProfile(*profile);
+                }
+            });
+    connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::weekSynced, this,
+            [this](int importedCount) {
+                showToast(tr("Synced %1 week item(s) into playlist").arg(importedCount),
+                          QStringLiteral("success"));
+            });
+    connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::catalogError, this,
+            [this](const QString& errorMessage) {
+                showToast(errorMessage, QStringLiteral("warning"));
+            });
 }

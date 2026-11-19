@@ -21,6 +21,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Automatic weekly meeting fetching and download orchestration (`MeetingCatalogService`, disk-cached `CatalogClient` JSON responses, QML-bound `DownloadService` transfer queue with progress/pause/resume/retry/cancel, searchable congregation media language selector, `CatalogBrowserCard`, `DownloadQueueCard`, and one-click `Sync Week` header action).
 - Enlarged floating `ActionPillBar` with authentic OBS Studio and Zoom custom brand SVGs, status LED indicators, anchored quick popovers (Display selector, Background Music playback/volume/fade, live `MeetingTimer`, OBS scene switcher and recording toggle, Zoom launch/audio readout, and Downloads queue), and `libmpv` subtitle toggle.
 - Native Windows Inno Setup installer (`kmedia-windows-x64-setup.exe`) with per-user non-admin default installation, bilingual EN/PT wizard, bundled MSVC CRT runtime DLLs, and aligned download documentation links.
 

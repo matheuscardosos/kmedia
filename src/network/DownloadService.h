@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QUrl>
+#include <QVariantList>
 
 #include <memory>
 #include <optional>
@@ -31,6 +32,8 @@ class DownloadService : public QObject
     Q_PROPERTY(int queuedCount READ queuedCount NOTIFY countsChanged FINAL)
     Q_PROPERTY(int maxConcurrent READ maxConcurrent WRITE setMaxConcurrent NOTIFY
                    maxConcurrentChanged FINAL)
+    Q_PROPERTY(QVariantList tasks READ tasksVariant NOTIFY tasksChanged FINAL)
+    Q_PROPERTY(int finishedCount READ finishedCount NOTIFY tasksChanged FINAL)
 
 public:
     enum class Status {
@@ -54,6 +57,7 @@ public:
     struct TaskInfo
     {
         QString id;
+        QString displayTitle;
         QUrl url;
         QString destinationPath;
         QString expectedSha256;
@@ -86,19 +90,24 @@ public:
 
     QString enqueue(const QUrl& url, const QString& destinationPath,
                     const QString& expectedSha256 = {}, Priority priority = Priority::Normal,
-                    const QString& customId = {});
+                    const QString& customId = {}, const QString& displayTitle = {});
 
-    bool pause(const QString& taskId);
-    bool resume(const QString& taskId);
-    bool cancel(const QString& taskId);
-    void pauseAll();
-    void cancelAll();
+    Q_INVOKABLE bool pause(const QString& taskId);
+    Q_INVOKABLE bool resume(const QString& taskId);
+    Q_INVOKABLE bool cancel(const QString& taskId);
+    Q_INVOKABLE bool retryTask(const QString& taskId);
+    Q_INVOKABLE void pauseAll();
+    Q_INVOKABLE void cancelAll();
+    Q_INVOKABLE void clearFinished();
 
+    [[nodiscard]] int finishedCount() const;
+    [[nodiscard]] QVariantList tasksVariant() const;
     [[nodiscard]] std::optional<TaskInfo> taskInfo(const QString& taskId) const;
     [[nodiscard]] std::vector<TaskInfo> allTasks() const;
 
 signals:
     void countsChanged();
+    void tasksChanged();
     void maxConcurrentChanged();
     void taskAdded(const QString& taskId);
     void taskStateChanged(const QString& taskId, kmedia::DownloadService::Status status);
