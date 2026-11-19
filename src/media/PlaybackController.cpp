@@ -70,6 +70,7 @@ void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
 
     m_mpvItem->setVolume(m_volume);
     m_mpvItem->setMuted(m_muted);
+    m_mpvItem->setAudioDevice(m_audioDevice);
     m_mpvItem->setSubtitlesVisible(m_subtitlesVisible);
 }
 
@@ -124,6 +125,17 @@ void PlaybackController::setStandbyImageUrl(const QUrl& url)
 bool PlaybackController::isPaused() const
 {
     return m_paused;
+}
+
+bool PlaybackController::isActivePresentation() const
+{
+    if (m_mediaKind == MediaKind::None) {
+        return false;
+    }
+    if (m_mediaKind == MediaKind::Image || m_mediaKind == MediaKind::Pdf) {
+        return true;
+    }
+    return !m_paused;
 }
 
 void PlaybackController::setPaused(bool paused)
@@ -236,6 +248,25 @@ void PlaybackController::setMuted(bool muted)
     m_muted = muted;
     if (!m_mpvItem.isNull()) {
         m_mpvItem->setMuted(muted);
+    }
+    emit audioChanged();
+}
+
+QString PlaybackController::audioDevice() const
+{
+    return m_audioDevice;
+}
+
+void PlaybackController::setAudioDevice(const QString& deviceId)
+{
+    const QString cleaned =
+        deviceId.trimmed().isEmpty() ? QStringLiteral("auto") : deviceId.trimmed();
+    if (m_audioDevice == cleaned) {
+        return;
+    }
+    m_audioDevice = cleaned;
+    if (!m_mpvItem.isNull()) {
+        m_mpvItem->setAudioDevice(cleaned);
     }
     emit audioChanged();
 }

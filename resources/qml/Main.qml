@@ -22,6 +22,8 @@ ApplicationWindow {
     readonly property bool isCompact: width < Theme.compactBreakpoint
     readonly property bool isMedium: width >= Theme.compactBreakpoint && width < Theme.wideBreakpoint
     readonly property bool isWide: width >= Theme.wideBreakpoint
+    readonly property bool editingTextInput: root.activeFocusItem instanceof TextInput
+                                             || root.activeFocusItem instanceof TextEdit
     property int currentTabIndex: ApplicationController.startupTabIndex
     property bool inspectorDrawerOpen: false
 
@@ -82,6 +84,70 @@ ApplicationWindow {
     Shortcut {
         sequence: "Alt+Left"
         onActivated: ApplicationController.playlist.activatePrevious()
+    }
+    Shortcut {
+        sequence: "Space"
+        enabled: !root.editingTextInput && !commandPalette.opened
+        onActivated: ApplicationController.playback.togglePause()
+    }
+    Shortcut {
+        sequence: "B"
+        enabled: !root.editingTextInput && !commandPalette.opened
+        onActivated: ApplicationController.playback.toggleStandby()
+    }
+    Shortcut {
+        sequence: "Ctrl+M"
+        enabled: !commandPalette.opened
+        onActivated: {
+            if (ApplicationController.backgroundMusic.playing) {
+                ApplicationController.backgroundMusic.fadeOutAndStop(4000)
+            } else {
+                ApplicationController.backgroundMusic.play()
+            }
+        }
+    }
+    Shortcut {
+        sequence: "Escape"
+        enabled: !root.editingTextInput && !commandPalette.opened
+                 && ApplicationController.playback.mediaKind !== PlaybackController.None
+        onActivated: ApplicationController.playback.stop()
+    }
+    Shortcut {
+        sequence: "Delete"
+        enabled: !root.editingTextInput && !commandPalette.opened
+                 && root.currentTabIndex === 0
+                 && ApplicationController.playlist.activeIndex >= 0
+        onActivated: ApplicationController.playlist.removeAt(ApplicationController.playlist.activeIndex)
+    }
+    Shortcut {
+        sequence: "1"
+        enabled: !root.editingTextInput && !commandPalette.opened
+        onActivated: root.currentTabIndex = 0
+    }
+    Shortcut {
+        sequence: "2"
+        enabled: !root.editingTextInput && !commandPalette.opened
+        onActivated: root.currentTabIndex = 1
+    }
+    Shortcut {
+        sequence: "3"
+        enabled: !root.editingTextInput && !commandPalette.opened
+        onActivated: root.currentTabIndex = 2
+    }
+    Shortcut {
+        sequence: "4"
+        enabled: !root.editingTextInput && !commandPalette.opened
+        onActivated: root.currentTabIndex = 3
+    }
+    Shortcut {
+        sequence: "5"
+        enabled: !root.editingTextInput && !commandPalette.opened
+        onActivated: root.currentTabIndex = 4
+    }
+    Shortcut {
+        sequence: "6"
+        enabled: !root.editingTextInput && !commandPalette.opened
+        onActivated: root.currentTabIndex = 5
     }
 
     DropArea {

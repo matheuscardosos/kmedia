@@ -35,6 +35,7 @@ class PlaybackController : public QObject
     Q_PROPERTY(double panY READ panY WRITE setPanY NOTIFY viewportChanged FINAL)
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY audioChanged FINAL)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY audioChanged FINAL)
+    Q_PROPERTY(QString audioDevice READ audioDevice WRITE setAudioDevice NOTIFY audioChanged FINAL)
     Q_PROPERTY(bool subtitlesVisible READ areSubtitlesVisible WRITE setSubtitlesVisible NOTIFY
                    subtitlesChanged FINAL)
     Q_PROPERTY(QVariantList subtitleTracks READ subtitleTracks NOTIFY tracksChanged FINAL)
@@ -71,6 +72,7 @@ public:
 
     [[nodiscard]] bool isPaused() const;
     void setPaused(bool paused);
+    [[nodiscard]] bool isActivePresentation() const;
 
     [[nodiscard]] qint64 positionMs() const;
     [[nodiscard]] qint64 durationMs() const;
@@ -88,6 +90,8 @@ public:
     void setVolume(int volume);
     [[nodiscard]] bool isMuted() const;
     void setMuted(bool muted);
+    [[nodiscard]] QString audioDevice() const;
+    void setAudioDevice(const QString& deviceId);
     [[nodiscard]] bool areSubtitlesVisible() const;
     void setSubtitlesVisible(bool visible);
     [[nodiscard]] QVariantList subtitleTracks() const;
@@ -152,6 +156,7 @@ private:
     double m_panY{0.0};
     int m_volume{100};
     bool m_muted{false};
+    QString m_audioDevice{QStringLiteral("auto")};
     bool m_subtitlesVisible{true};
 };
 

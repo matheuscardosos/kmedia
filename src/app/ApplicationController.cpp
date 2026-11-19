@@ -309,6 +309,10 @@ bool ApplicationController::setUiLanguage(const QString& languageCode)
             (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kUiLanguage),
                                      normalized);
         }
+        if (auto profile = m_profileManager->activeProfile(); profile.has_value()) {
+            profile->uiLanguage = normalized;
+            (void)m_profileManager->updateProfile(*profile);
+        }
     }
     if (m_qmlEngine != nullptr) {
         m_qmlEngine->retranslate();
@@ -330,9 +334,11 @@ QString ApplicationController::createProfile(const QString& name, const QString&
 void ApplicationController::saveCloudFolder(const QString& folderPath)
 {
     const QString trimmed = folderPath.trimmed();
-    if (auto* settings = m_profileManager->activeSettings()) {
-        (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kCloudSyncFolders),
-                                 trimmed);
+    if (!m_demoMode) {
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kCloudSyncFolders),
+                                     trimmed);
+        }
     }
     m_cloudWatcher->clearWatchedFolders();
     if (!trimmed.isEmpty()) {
@@ -344,6 +350,10 @@ void ApplicationController::saveCloudFolder(const QString& folderPath)
 
 void ApplicationController::saveObsAndZoomSettings()
 {
+    syncAudioRouting();
+    if (m_demoMode) {
+        return;
+    }
     auto* settings = m_profileManager->activeSettings();
     if (settings == nullptr) {
         return;
@@ -374,6 +384,12 @@ void ApplicationController::saveObsAndZoomSettings()
                              m_zoomBridge->dedicatedAudioDevice());
     (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kZoomAutoShare),
                              m_zoomBridge->isAutoShareOnPlayback());
+    if (auto profile = m_profileManager->activeProfile(); profile.has_value()) {
+        profile->obsHost = m_obsClient->host();
+        profile->obsPort = m_obsClient->port();
+        profile->zoomMeetingId = m_zoomBridge->meetingId();
+        (void)m_profileManager->updateProfile(*profile);
+    }
 }
 
 void ApplicationController::saveFadeDurationMs(int ms)
@@ -553,12 +569,6 @@ void ApplicationController::applyProfileSettings()
     m_backgroundMusic->setFadeDurationMs(settings->backgroundMusicFadeMs());
     m_downloadService->setMaxConcurrent(settings->maxConcurrentDownloads());
 
-    const QString deviceId =
-        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kAudioOutputDevice));
-    if (!deviceId.isEmpty()) {
-        m_backgroundMusic->setAudioDevice(deviceId);
-    }
-
     m_obsClient->setHost(settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsHost),
                                                QStringLiteral("127.0.0.1")));
     const int obsPort =
@@ -587,6 +597,8 @@ void ApplicationController::applyProfileSettings()
         settings->stringValue(QLatin1StringView(kmedia::settings_keys::kZoomAudioDevice)));
     m_zoomBridge->setAutoShareOnPlayback(
         settings->boolValue(QLatin1StringView(kmedia::settings_keys::kZoomAutoShare), false));
+
+    syncAudioRouting();
 
     if (!m_demoMode) {
         const QString savedLang = settings->uiLanguage();
@@ -620,6 +632,24 @@ void ApplicationController::applyProfileSettings()
     emit boothLockChanged();
 }
 
+void ApplicationController::syncAudioRouting()
+{
+    const auto* settings = m_profileManager->activeSettings();
+    const QString generalDevice =
+        (settings != nullptr)
+            ? settings->stringValue(QLatin1StringView(kmedia::settings_keys::kAudioOutputDevice))
+            : QString{};
+    const QString zoomDevice = m_zoomBridge->dedicatedAudioDevice().trimmed();
+    const QString playbackTarget = zoomDevice.isEmpty() ? generalDevice : zoomDevice;
+    const QString musicTarget = generalDevice.isEmpty() ? zoomDevice : generalDevice;
+
+    m_playbackController->setAudioDevice(playbackTarget.isEmpty() ? QStringLiteral("auto")
+                                                                  : playbackTarget);
+    if (!musicTarget.isEmpty()) {
+        m_backgroundMusic->setAudioDevice(musicTarget);
+    }
+}
+
 void ApplicationController::wireIntegrations()
 {
     connect(m_processMonitor.get(), &kmedia::ProcessMonitor::statusChanged, this, [this]() {
@@ -627,13 +657,24 @@ void ApplicationController::wireIntegrations()
         m_zoomBridge->setZoomRunning(m_processMonitor->isZoomRunning());
     });
 
+    connect(m_zoomBridge.get(), &kmedia::ZoomBridge::audioDeviceChanged, this,
+            &ApplicationController::syncAudioRouting);
+
+    connect(m_zoomBridge.get(), &kmedia::ZoomBridge::shareTriggerRequested, this,
+            [this](const QString& shortcutHint, const QString& targetWindowTitle) {
+                showToast(
+                    tr("Zoom screen share ready (%1): %2").arg(shortcutHint, targetWindowTitle),
+                    QStringLiteral("info"));
+            });
+
     auto syncPlaybackIntegrations = [this]() {
         const bool hasMedia =
             m_playbackController->mediaKind() != kmedia::PlaybackController::MediaKind::None;
-        const bool paused = m_playbackController->isPaused();
+        const bool activePresentation = m_playbackController->isActivePresentation();
+        const bool effectivelyPaused = hasMedia && !activePresentation;
         const bool standby = m_playbackController->isStandbyActive();
-        m_obsClient->applyPlaybackState(hasMedia, paused, standby);
-        if (hasMedia && !paused && !standby) {
+        m_obsClient->applyPlaybackState(hasMedia, effectivelyPaused, standby);
+        if (activePresentation && !standby) {
             m_zoomBridge->notifyPresentationPlaybackStarted();
         }
     };
