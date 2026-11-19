@@ -5,6 +5,7 @@
 #include <QDate>
 #include <QHash>
 #include <QObject>
+#include <QPair>
 #include <QSet>
 #include <QString>
 #include <QVariantList>
@@ -33,6 +34,8 @@ class MeetingCatalogService : public QObject
     Q_PROPERTY(QVariantList languages READ languagesVariant NOTIFY languagesChanged FINAL)
     Q_PROPERTY(QDate targetWeekMonday READ targetWeekMonday NOTIFY weekChanged FINAL)
     Q_PROPERTY(QString weekLabel READ weekLabel NOTIFY weekChanged FINAL)
+    Q_PROPERTY(QString weekEventType READ weekEventType NOTIFY weekChanged FINAL)
+    Q_PROPERTY(QString weekEventLabel READ weekEventLabel NOTIFY weekChanged FINAL)
     Q_PROPERTY(int midweekIssueTag READ midweekIssueTag NOTIFY weekChanged FINAL)
     Q_PROPERTY(int watchtowerIssueTag READ watchtowerIssueTag NOTIFY weekChanged FINAL)
     Q_PROPERTY(QVariantList assets READ assetsVariant NOTIFY assetsChanged FINAL)
@@ -47,6 +50,7 @@ public:
 
     void setStorageRoot(const QString& storageRoot);
     void setPlaylistModel(PlaylistModel* playlistModel);
+    void setSpecialWeekEvents(const QHash<QString, QPair<QString, QString>>& eventsByMonday);
 
     [[nodiscard]] bool isBusy() const;
     [[nodiscard]] QString statusMessage() const;
@@ -58,6 +62,8 @@ public:
     [[nodiscard]] QVariantList languagesVariant() const;
     [[nodiscard]] QDate targetWeekMonday() const;
     [[nodiscard]] QString weekLabel() const;
+    [[nodiscard]] QString weekEventType() const;
+    [[nodiscard]] QString weekEventLabel() const;
     [[nodiscard]] int midweekIssueTag() const;
     [[nodiscard]] int watchtowerIssueTag() const;
     [[nodiscard]] QVariantList assetsVariant() const;
@@ -115,6 +121,7 @@ private:
     [[nodiscard]] QString localPathForAsset(const CatalogMediaAsset& asset) const;
     void enqueueMissingAutoSyncAssets();
     void resolveLinkedJwpubMedia(const QString& jwpubPath);
+    void applyWeekEventSection();
 
     CatalogClient* m_catalogClient{nullptr};
     DownloadService* m_downloadService{nullptr};
@@ -134,6 +141,7 @@ private:
     QHash<QString, QString> m_assetTaskIds;
     QHash<QString, PendingDownloadTarget> m_pendingDownloads;
     QSet<QString> m_resolvedExternalKeys;
+    QHash<QString, QPair<QString, QString>> m_specialEventsByMonday;
 };
 
 } // namespace kmedia

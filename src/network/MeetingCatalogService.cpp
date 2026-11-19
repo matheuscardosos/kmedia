@@ -90,6 +90,26 @@ void MeetingCatalogService::setPlaylistModel(PlaylistModel* playlistModel)
     m_playlistModel = playlistModel;
 }
 
+void MeetingCatalogService::setSpecialWeekEvents(
+    const QHash<QString, QPair<QString, QString>>& eventsByMonday)
+{
+    if (m_specialEventsByMonday == eventsByMonday) {
+        return;
+    }
+    m_specialEventsByMonday = eventsByMonday;
+    emit weekChanged();
+}
+
+QString MeetingCatalogService::weekEventType() const
+{
+    return m_specialEventsByMonday.value(m_targetWeekMonday.toString(Qt::ISODate)).first;
+}
+
+QString MeetingCatalogService::weekEventLabel() const
+{
+    return m_specialEventsByMonday.value(m_targetWeekMonday.toString(Qt::ISODate)).second;
+}
+
 bool MeetingCatalogService::isBusy() const
 {
     return m_busy;
@@ -381,10 +401,41 @@ void MeetingCatalogService::fetchPublication(const QString& pubSymbol, int issue
 
 void MeetingCatalogService::syncCurrentWeekToPlaylist()
 {
+    applyWeekEventSection();
+    const QString evType = weekEventType();
+    if (evType == QStringLiteral("memorial") || evType == QStringLiteral("circuit_assembly") ||
+        evType == QStringLiteral("regional_convention")) {
+        m_autoSyncPending = false;
+        setBusy(false);
+        setStatusMessage(
+            QStringLiteral("%1 week: skipped regular weekly auto-sync").arg(weekEventLabel()));
+        emit weekSynced(0);
+        return;
+    }
+
     m_autoSyncPending = true;
     m_autoImportedCount = 0;
     m_resolvedExternalKeys.clear();
     fetchWeekCatalog();
+}
+
+void MeetingCatalogService::applyWeekEventSection()
+{
+    if (m_playlistModel == nullptr) {
+        return;
+    }
+    const QString evType = weekEventType();
+    const QString evLabel = weekEventLabel();
+    if (evType.isEmpty()) {
+        return;
+    }
+    m_playlistModel->setPlaylistSubtitle(QStringLiteral("%1 | %2").arg(weekLabel(), evLabel));
+    if (evType == QStringLiteral("co_visit")) {
+        (void)m_playlistModel->ensureSection(QStringLiteral("Circuit Overseer"),
+                                             QStringLiteral("#3F7F5F"));
+    } else if (!evLabel.isEmpty()) {
+        (void)m_playlistModel->ensureSection(evLabel);
+    }
 }
 
 QString MeetingCatalogService::downloadAssetAt(int index)

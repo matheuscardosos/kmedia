@@ -1,4 +1,5 @@
 #include "core/MeetingCalendarModel.h"
+#include "models/PlaylistModel.h"
 #include "network/MeetingCatalogService.h"
 
 #include <QDir>
@@ -95,4 +96,55 @@ TEST_CASE("MeetingCalendarModel detects cached issue readiness and emits weekOpe
     REQUIRE(openSpy.count() == 1);
     REQUIRE(openSpy.at(0).at(0).toDate() == QDate(2026, 5, 4));
     REQUIRE(openSpy.at(0).at(1).toBool() == true);
+}
+
+TEST_CASE(
+    "MeetingCalendarModel and MeetingCatalogService handle CO visit and special week overrides",
+    "[core][calendar][events]")
+{
+    kmedia::MeetingCalendarModel model;
+    QSignalSpy eventsSpy(&model, &kmedia::MeetingCalendarModel::specialEventsChanged);
+
+    model.selectDate(QStringLiteral("2026-06-10"));
+    model.setWeekSpecialEvent(QStringLiteral("2026-06-10"), QStringLiteral("co_visit"));
+    REQUIRE(eventsSpy.count() == 1);
+    REQUIRE(model.selectedWeekEventType() == QStringLiteral("co_visit"));
+    REQUIRE(model.selectedWeekEventLabel() == QStringLiteral("Circuit Overseer Visit"));
+    REQUIRE_FALSE(
+        kmedia::MeetingCalendarModel::isRegularStudySkippedForEvent(QStringLiteral("co_visit")));
+    REQUIRE(
+        kmedia::MeetingCalendarModel::isRegularStudySkippedForEvent(QStringLiteral("memorial")));
+    REQUIRE(kmedia::MeetingCalendarModel::isRegularStudySkippedForEvent(
+        QStringLiteral("circuit_assembly")));
+
+    model.setWeekSpecialEvent(QStringLiteral("2026-06-24"), QStringLiteral("memorial"),
+                              QStringLiteral("Annual Memorial"));
+    const QString exported = model.exportSpecialEventsJson();
+
+    kmedia::MeetingCalendarModel restored;
+    restored.loadSpecialEventsJson(exported);
+    restored.selectDate(QStringLiteral("2026-06-24"));
+    REQUIRE(restored.selectedWeekEventType() == QStringLiteral("memorial"));
+    REQUIRE(restored.selectedWeekEventLabel() == QStringLiteral("Annual Memorial"));
+
+    // Verify Circuit Overseer section injection and Memorial auto-sync skip.
+    kmedia::PlaylistModel playlist;
+    kmedia::MeetingCatalogService catalog(nullptr, nullptr, &playlist);
+    catalog.setSpecialWeekEvents(restored.specialEventsMap());
+
+    catalog.setTargetWeekDate(QDate(2026, 6, 10));
+    REQUIRE(catalog.weekEventType() == QStringLiteral("co_visit"));
+    catalog.syncCurrentWeekToPlaylist();
+    REQUIRE(playlist.sections().size() == 1);
+    REQUIRE(playlist.sections().at(0).toMap().value(QStringLiteral("name")).toString() ==
+            QStringLiteral("Circuit Overseer"));
+    REQUIRE(playlist.colorForSection(QStringLiteral("Circuit Overseer")) ==
+            QStringLiteral("#3F7F5F"));
+
+    catalog.setTargetWeekDate(QDate(2026, 6, 24));
+    catalog.syncCurrentWeekToPlaylist();
+    REQUIRE(catalog.statusMessage().contains(QStringLiteral("skipped regular weekly auto-sync")));
+
+    restored.clearWeekSpecialEvent(QStringLiteral("2026-06-24"));
+    REQUIRE(restored.selectedWeekEventType().isEmpty());
 }

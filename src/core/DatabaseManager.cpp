@@ -617,6 +617,45 @@ std::vector<PlaylistEntryRecord> DatabaseManager::listPlaylistEntries(qint64 pla
     return entries;
 }
 
+bool DatabaseManager::updatePlaylistEntrySection(qint64 entryId, qint64 playlistId,
+                                                 const QString& sectionTitle)
+{
+    if (!m_isOpen || entryId <= 0 || playlistId <= 0) {
+        return false;
+    }
+    QSqlQuery query(databaseHandle());
+    query.prepare(QStringLiteral("UPDATE playlist_items SET section_title = :section_title "
+                                 "WHERE id = :id AND playlist_id = :playlist_id"));
+    query.bindValue(QStringLiteral(":section_title"), nonNullText(sectionTitle));
+    query.bindValue(QStringLiteral(":id"), entryId);
+    query.bindValue(QStringLiteral(":playlist_id"), playlistId);
+    if (!query.exec()) {
+        setLastError(query.lastError().text());
+        return false;
+    }
+    return true;
+}
+
+bool DatabaseManager::renamePlaylistEntrySections(qint64 playlistId, const QString& oldSectionTitle,
+                                                  const QString& newSectionTitle)
+{
+    if (!m_isOpen || playlistId <= 0 || oldSectionTitle.trimmed().isEmpty()) {
+        return false;
+    }
+    QSqlQuery query(databaseHandle());
+    query.prepare(
+        QStringLiteral("UPDATE playlist_items SET section_title = :new_section "
+                       "WHERE playlist_id = :playlist_id AND section_title = :old_section"));
+    query.bindValue(QStringLiteral(":new_section"), nonNullText(newSectionTitle));
+    query.bindValue(QStringLiteral(":playlist_id"), playlistId);
+    query.bindValue(QStringLiteral(":old_section"), oldSectionTitle);
+    if (!query.exec()) {
+        setLastError(query.lastError().text());
+        return false;
+    }
+    return true;
+}
+
 bool DatabaseManager::reorderPlaylistEntries(qint64 playlistId,
                                              const std::vector<qint64>& orderedEntryIds)
 {

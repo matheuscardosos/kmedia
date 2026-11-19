@@ -15,29 +15,13 @@ Item {
     signal addMediaRequested()
     signal previewToggled()
 
-    // Workbook-inspired section accent colors. Unknown or imported sections fall back to
-    // the neutral purple used for additional media.
     function sectionColor(title) {
-        const t = (title || "").toLowerCase()
-        if (t.indexOf("treasure") >= 0 || t.indexOf("tesouro") >= 0) {
-            return "#5F6B73"
-        }
-        if (t.indexOf("apply yourself") >= 0 || t.indexOf("ministério") >= 0) {
-            return "#B7801F"
-        }
-        if (t.indexOf("living") >= 0 || t.indexOf("vida cristã") >= 0) {
-            return "#9A1F33"
-        }
-        if (t.indexOf("public talk") >= 0 || t.indexOf("discurso") >= 0) {
-            return "#3E6EA8"
-        }
-        if (t.indexOf("watchtower") >= 0 || t.indexOf("sentinela") >= 0) {
-            return "#2F7D8C"
-        }
-        if (t.indexOf("overseer") >= 0 || t.indexOf("superintendente") >= 0) {
-            return "#3F7F5F"
-        }
-        return "#945EB5"
+        const _watch = ApplicationController.playlist.sections
+        return ApplicationController.playlist.colorForSection(title)
+    }
+
+    CustomSectionPopup {
+        id: sectionPopup
     }
 
     function formatMsToClock(ms) {
@@ -302,8 +286,34 @@ Item {
                         }
                     }
 
+                    StudioBadge {
+                        visible: !root.compactMode && ApplicationController.catalog.weekEventLabel.length > 0
+                        text: ApplicationController.catalog.weekEventLabel
+                        showDot: true
+                        dotColor: ApplicationController.catalog.weekEventType === "co_visit"
+                                  ? "#3F7F5F" : "#6B4E9B"
+                        badgeColor: Theme.accentSoft
+                        textColor: Theme.accentPrimary
+                        hasBorder: true
+                    }
+
                     Item {
                         Layout.fillWidth: true
+                    }
+
+                    StudioButton {
+                        id: addSectionBtn
+
+                        variant: "secondary"
+                        iconName: "folder-plus"
+                        text: root.compactMode ? "" : qsTr("Section")
+                        leftPadding: root.compactMode ? 0 : 10
+                        rightPadding: root.compactMode ? 0 : 10
+                        Layout.preferredWidth: root.compactMode ? 34 : addSectionBtn.implicitWidth
+                        Layout.preferredHeight: 34
+                        onClicked: sectionPopup.openCreate()
+                        ToolTip.visible: addSectionBtn.hovered
+                        ToolTip.text: qsTr("Create custom meeting section")
                     }
 
                     StudioButton {
@@ -323,6 +333,64 @@ Item {
                         text: root.compactMode ? qsTr("Add") : qsTr("Add Media")
                         implicitHeight: 34
                         onClicked: root.addMediaRequested()
+                    }
+                }
+
+                // Custom section chips strip for quick color, reorder, and section creation
+                Flow {
+                    visible: !root.compactMode && ApplicationController.playlist.sections.length > 0
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Repeater {
+                        model: ApplicationController.playlist.sections
+
+                        delegate: Rectangle {
+                            id: secChip
+
+                            required property var modelData
+
+                            width: secChipRow.implicitWidth + 16
+                            height: 24
+                            radius: 12
+                            color: secChipHover.containsMouse ? Theme.cardHover : Theme.cardSurface
+                            border.width: 1
+                            border.color: Theme.borderHairline
+
+                            RowLayout {
+                                id: secChipRow
+
+                                anchors.centerIn: parent
+                                spacing: 6
+
+                                Rectangle {
+                                    Layout.preferredWidth: 8
+                                    Layout.preferredHeight: 8
+                                    radius: 4
+                                    color: secChip.modelData.color
+                                }
+
+                                Text {
+                                    text: secChip.modelData.name + " (" + secChip.modelData.itemCount + ")"
+                                    color: Theme.textSecondary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeXs
+                                    font.weight: Font.Medium
+                                }
+                            }
+
+                            MouseArea {
+                                id: secChipHover
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: sectionPopup.openEdit(
+                                    secChip.modelData.name,
+                                    secChip.modelData.color,
+                                    secChip.modelData.itemCount === 0)
+                            }
+                        }
                     }
                 }
             }
@@ -425,6 +493,11 @@ Item {
 
                         required property string section
 
+                        readonly property string resolvedColorHex: {
+                            const _watch = ApplicationController.playlist.sections
+                            return ApplicationController.playlist.colorForSection(sectionHeader.section)
+                        }
+
                         width: playlistView.width - 10
                         height: 40
 
@@ -441,7 +514,7 @@ Item {
                                 Layout.preferredHeight: 24
                                 Layout.alignment: Qt.AlignVCenter
                                 radius: 12
-                                color: root.sectionColor(sectionHeader.section)
+                                color: sectionHeader.resolvedColorHex
 
                                 StudioIcon {
                                     anchors.centerIn: parent
@@ -463,6 +536,21 @@ Item {
                                 font.capitalization: Font.AllUppercase
                                 elide: Text.ElideRight
                             }
+
+                            StudioButton {
+                                id: editSecBtn
+
+                                variant: "ghost"
+                                iconName: "sliders-horizontal"
+                                iconSize: 12
+                                leftPadding: 0
+                                rightPadding: 0
+                                Layout.preferredWidth: 24
+                                Layout.preferredHeight: 24
+                                onClicked: sectionPopup.openEdit(sectionHeader.section, sectionHeader.resolvedColorHex, false)
+                                ToolTip.visible: editSecBtn.hovered
+                                ToolTip.text: qsTr("Customize or reorder section")
+                            }
                         }
 
                         Rectangle {
@@ -472,7 +560,7 @@ Item {
                             anchors.leftMargin: 8
                             anchors.rightMargin: 8
                             height: 1
-                            color: root.sectionColor(sectionHeader.section)
+                            color: sectionHeader.resolvedColorHex
                             opacity: 0.45
                         }
                     }
@@ -795,6 +883,10 @@ Item {
                                 text: qsTr("Move Down")
                                 enabled: rowDelegate.index < playlistView.count - 1
                                 onTriggered: ApplicationController.playlist.moveItem(rowDelegate.index, rowDelegate.index + 1)
+                            }
+                            MenuItem {
+                                text: qsTr("Move to Section...")
+                                onTriggered: sectionPopup.openAssign(rowDelegate.index, rowDelegate.section)
                             }
                             MenuSeparator {}
                             MenuItem {

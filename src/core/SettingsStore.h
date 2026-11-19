@@ -18,6 +18,7 @@ inline constexpr auto kMeetingMidweekDay = "meeting/midweek_day";
 inline constexpr auto kMeetingMidweekTime = "meeting/midweek_time";
 inline constexpr auto kMeetingWeekendDay = "meeting/weekend_day";
 inline constexpr auto kMeetingWeekendTime = "meeting/weekend_time";
+inline constexpr auto kMeetingSpecialEvents = "meeting/special_events_json";
 inline constexpr auto kBackgroundMusicFadeMs = "audio/background_fade_ms";
 inline constexpr auto kAudioOutputDevice = "audio/output_device";
 inline constexpr auto kHardwareDecoder = "video/hwdec";

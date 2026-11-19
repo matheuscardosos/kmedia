@@ -73,6 +73,59 @@
     </message>
 </context>
 <context>
+    <name>CalendarEventPopup</name>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="14"/>
+        <source>Regular Week</source>
+        <translation>Regular Week</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="15"/>
+        <source>Circuit Overseer Visit</source>
+        <translation>Circuit Overseer Visit</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="16"/>
+        <source>Memorial</source>
+        <translation>Memorial</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="17"/>
+        <source>Circuit Assembly</source>
+        <translation>Circuit Assembly</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="18"/>
+        <source>Regional Convention</source>
+        <translation>Regional Convention</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="57"/>
+        <source>Week Special Event</source>
+        <translation>Week Special Event</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="104"/>
+        <source>Optional custom event title...</source>
+        <translation>Optional custom event title...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="122"/>
+        <source>Reset</source>
+        <translation>Reset</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="138"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="145"/>
+        <source>Apply</source>
+        <translation>Apply</translation>
+    </message>
+</context>
+<context>
     <name>CalendarSchedulePopup</name>
     <message>
         <location filename="../qml/components/CalendarSchedulePopup.qml" line="15"/>
@@ -247,6 +300,16 @@
         <location filename="../qml/components/CalendarView.qml" line="427"/>
         <source>Sync week media</source>
         <translation>Sync week media</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarView.qml" line="324"/>
+        <source>Event</source>
+        <translation>Event</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarView.qml" line="330"/>
+        <source>Set Circuit Overseer visit or special week event</source>
+        <translation>Set Circuit Overseer visit or special week event</translation>
     </message>
 </context>
 <context>
@@ -915,6 +978,59 @@
     </message>
 </context>
 <context>
+    <name>CustomSectionPopup</name>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="85"/>
+        <source>New Meeting Section</source>
+        <translation>New Meeting Section</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="87"/>
+        <source>Assign Item to Section</source>
+        <translation>Assign Item to Section</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="88"/>
+        <source>Customize Section</source>
+        <translation>Customize Section</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="131"/>
+        <source>Section title...</source>
+        <translation>Section title...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="188"/>
+        <source>Move Up</source>
+        <translation>Move Up</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="196"/>
+        <source>Move Down</source>
+        <translation>Move Down</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="207"/>
+        <source>Move Active Media Here</source>
+        <translation>Move Active Media Here</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="239"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="247"/>
+        <source>Create</source>
+        <translation>Create</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="247"/>
+        <source>Save</source>
+        <translation>Save</translation>
+    </message>
+</context>
+<context>
     <name>MeetingPlaylistView</name>
     <message>
         <location filename="../qml/components/MeetingPlaylistView.qml" line="137"/>
@@ -1025,6 +1141,26 @@
         <location filename="../qml/components/MeetingPlaylistView.qml" line="784"/>
         <source>Move Down</source>
         <translation>Move Down</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="889"/>
+        <source>Move to Section...</source>
+        <translation>Move to Section...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="311"/>
+        <source>Section</source>
+        <translation>Section</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="318"/>
+        <source>Create custom meeting section</source>
+        <translation>Create custom meeting section</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="544"/>
+        <source>Customize or reorder section</source>
+        <translation>Customize or reorder section</translation>
     </message>
     <message>
         <location filename="../qml/components/MeetingPlaylistView.qml" line="790"/>

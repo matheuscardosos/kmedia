@@ -73,6 +73,59 @@
     </message>
 </context>
 <context>
+    <name>CalendarEventPopup</name>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="14"/>
+        <source>Regular Week</source>
+        <translation>Semana Normal</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="15"/>
+        <source>Circuit Overseer Visit</source>
+        <translation>Visita do Superintendente</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="16"/>
+        <source>Memorial</source>
+        <translation>Celebração</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="17"/>
+        <source>Circuit Assembly</source>
+        <translation>Assembleia de Circuito</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="18"/>
+        <source>Regional Convention</source>
+        <translation>Congresso Regional</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="57"/>
+        <source>Week Special Event</source>
+        <translation>Evento Especial da Semana</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="104"/>
+        <source>Optional custom event title...</source>
+        <translation>Título personalizado opcional...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="122"/>
+        <source>Reset</source>
+        <translation>Limpar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="138"/>
+        <source>Cancel</source>
+        <translation>Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarEventPopup.qml" line="145"/>
+        <source>Apply</source>
+        <translation>Aplicar</translation>
+    </message>
+</context>
+<context>
     <name>CalendarSchedulePopup</name>
     <message>
         <location filename="../qml/components/CalendarSchedulePopup.qml" line="15"/>
@@ -247,6 +300,16 @@
         <location filename="../qml/components/CalendarView.qml" line="427"/>
         <source>Sync week media</source>
         <translation>Sincronizar mídias da semana</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarView.qml" line="324"/>
+        <source>Event</source>
+        <translation>Evento</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CalendarView.qml" line="330"/>
+        <source>Set Circuit Overseer visit or special week event</source>
+        <translation>Definir visita do superintendente ou evento especial</translation>
     </message>
 </context>
 <context>
@@ -915,6 +978,59 @@
     </message>
 </context>
 <context>
+    <name>CustomSectionPopup</name>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="85"/>
+        <source>New Meeting Section</source>
+        <translation>Nova Seção da Reunião</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="87"/>
+        <source>Assign Item to Section</source>
+        <translation>Mover Item para Seção</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="88"/>
+        <source>Customize Section</source>
+        <translation>Personalizar Seção</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="131"/>
+        <source>Section title...</source>
+        <translation>Nome da seção...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="188"/>
+        <source>Move Up</source>
+        <translation>Mover para Cima</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="196"/>
+        <source>Move Down</source>
+        <translation>Mover para Baixo</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="207"/>
+        <source>Move Active Media Here</source>
+        <translation>Mover Mídia Ativa para Cá</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="239"/>
+        <source>Close</source>
+        <translation>Fechar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="247"/>
+        <source>Create</source>
+        <translation>Criar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CustomSectionPopup.qml" line="247"/>
+        <source>Save</source>
+        <translation>Salvar</translation>
+    </message>
+</context>
+<context>
     <name>MeetingPlaylistView</name>
     <message>
         <location filename="../qml/components/MeetingPlaylistView.qml" line="137"/>
@@ -1025,6 +1141,26 @@
         <location filename="../qml/components/MeetingPlaylistView.qml" line="784"/>
         <source>Move Down</source>
         <translation>Mover para Baixo</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="889"/>
+        <source>Move to Section...</source>
+        <translation>Mover para Seção...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="311"/>
+        <source>Section</source>
+        <translation>Seção</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="318"/>
+        <source>Create custom meeting section</source>
+        <translation>Criar seção personalizada na reunião</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingPlaylistView.qml" line="544"/>
+        <source>Customize or reorder section</source>
+        <translation>Personalizar ou reordenar seção</translation>
     </message>
     <message>
         <location filename="../qml/components/MeetingPlaylistView.qml" line="790"/>

@@ -1,0 +1,278 @@
+pragma ComponentBehavior: Bound
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import KMedia.UI
+import ".."
+import "../controls"
+
+Popup {
+    id: popupRoot
+
+    // mode: "create" | "edit" | "assign"
+    property string mode: "create"
+    property string targetSectionName: ""
+    property string selectedColor: "#5F6B73"
+    property bool canRemove: false
+    property int assignItemIndex: -1
+
+    readonly property var colorSwatches: [
+        "#5F6B73",
+        "#B7801F",
+        "#9A1F33",
+        "#3E6EA8",
+        "#2F7D8C",
+        "#3F7F5F",
+        "#8C3B66",
+        "#6B4E9B",
+        "#945EB5"
+    ]
+
+    function openCreate() {
+        popupRoot.mode = "create"
+        popupRoot.targetSectionName = ""
+        popupRoot.selectedColor = "#5F6B73"
+        popupRoot.canRemove = false
+        popupRoot.assignItemIndex = -1
+        sectionNameField.text = ""
+        popupRoot.open()
+    }
+
+    function openEdit(sectionName, colorHex, removable) {
+        popupRoot.mode = "edit"
+        popupRoot.targetSectionName = sectionName
+        popupRoot.selectedColor = colorHex
+        popupRoot.canRemove = removable
+        popupRoot.assignItemIndex = -1
+        sectionNameField.text = sectionName
+        popupRoot.open()
+    }
+
+    function openAssign(rowIndex, currentSection) {
+        popupRoot.mode = "assign"
+        popupRoot.assignItemIndex = rowIndex
+        popupRoot.targetSectionName = currentSection
+        popupRoot.selectedColor = "#5F6B73"
+        popupRoot.canRemove = false
+        sectionNameField.text = ""
+        popupRoot.open()
+    }
+
+    width: Math.min(352, parent ? parent.width - 24 : 352)
+    padding: 16
+    modal: true
+    focus: true
+    anchors.centerIn: Overlay.overlay
+    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+    Overlay.modal: Rectangle {
+        color: Theme.scrimOverlay
+    }
+
+    background: StudioCard {
+        surfaceColor: Theme.cardElevated
+        strokeColor: Theme.borderStrong
+        cornerRadius: Theme.radiusLarge
+    }
+
+    contentItem: ColumnLayout {
+        spacing: 12
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            StudioIcon {
+                name: popupRoot.mode === "create" ? "folder-plus" : "layers"
+                size: 16
+                color: Theme.accentPrimary
+            }
+
+            Text {
+                text: popupRoot.mode === "create"
+                      ? qsTr("New Meeting Section")
+                      : (popupRoot.mode === "assign"
+                         ? qsTr("Assign Item to Section")
+                         : qsTr("Customize Section"))
+                color: Theme.textPrimary
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeMd
+                font.weight: Font.DemiBold
+                Layout.fillWidth: true
+            }
+        }
+
+        // Section list for quick item assignment
+        ColumnLayout {
+            visible: popupRoot.mode === "assign"
+            Layout.fillWidth: true
+            spacing: 6
+
+            Repeater {
+                model: ApplicationController.playlist.sections
+
+                delegate: StudioButton {
+                    id: assignSecBtn
+
+                    required property var modelData
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 34
+                    variant: assignSecBtn.modelData.name === popupRoot.targetSectionName
+                             ? "primary" : "secondary"
+                    text: assignSecBtn.modelData.name
+                    onClicked: {
+                        ApplicationController.playlist.assignItemToSection(
+                            popupRoot.assignItemIndex, assignSecBtn.modelData.name)
+                        popupRoot.close()
+                    }
+                }
+            }
+        }
+
+        // Create / Edit section name & swatches
+        ColumnLayout {
+            visible: popupRoot.mode !== "assign"
+            Layout.fillWidth: true
+            spacing: 10
+
+            TextField {
+                id: sectionNameField
+
+                Layout.fillWidth: true
+                placeholderText: qsTr("Section title...")
+                color: Theme.textPrimary
+                placeholderTextColor: Theme.textMuted
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeSm
+                background: StudioCard {
+                    surfaceColor: Theme.windowBase
+                    cornerRadius: Theme.radiusSmall
+                }
+            }
+
+            Flow {
+                Layout.fillWidth: true
+                spacing: 8
+
+                Repeater {
+                    model: popupRoot.colorSwatches
+
+                    delegate: Rectangle {
+                        id: swatchRect
+
+                        required property string modelData
+
+                        readonly property bool isChosen: popupRoot.selectedColor.toUpperCase() === swatchRect.modelData.toUpperCase()
+
+                        width: 26
+                        height: 26
+                        radius: 13
+                        color: swatchRect.modelData
+                        border.width: swatchRect.isChosen ? 2 : 1
+                        border.color: swatchRect.isChosen ? Theme.textPrimary : Theme.borderHairline
+
+                        StudioIcon {
+                            visible: swatchRect.isChosen
+                            anchors.centerIn: parent
+                            name: "check"
+                            size: 13
+                            color: "#FFFFFF"
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: popupRoot.selectedColor = swatchRect.modelData
+                        }
+                    }
+                }
+            }
+
+            RowLayout {
+                visible: popupRoot.mode === "edit"
+                Layout.fillWidth: true
+                spacing: 6
+
+                StudioButton {
+                    variant: "secondary"
+                    iconName: "chevron-up"
+                    text: qsTr("Move Up")
+                    Layout.fillWidth: true
+                    onClicked: ApplicationController.playlist.moveSection(popupRoot.targetSectionName, -1)
+                }
+
+                StudioButton {
+                    variant: "secondary"
+                    iconName: "chevron-down"
+                    text: qsTr("Move Down")
+                    Layout.fillWidth: true
+                    onClicked: ApplicationController.playlist.moveSection(popupRoot.targetSectionName, 1)
+                }
+            }
+
+            StudioButton {
+                visible: popupRoot.mode === "edit" && ApplicationController.playlist.activeIndex >= 0
+                Layout.fillWidth: true
+                variant: "secondary"
+                iconName: "layers"
+                text: qsTr("Move Active Media Here")
+                onClicked: {
+                    ApplicationController.playlist.assignItemToSection(
+                        ApplicationController.playlist.activeIndex,
+                        popupRoot.targetSectionName)
+                    popupRoot.close()
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            StudioButton {
+                visible: popupRoot.mode === "edit" && popupRoot.canRemove
+                variant: "danger"
+                iconName: "trash"
+                leftPadding: 8
+                rightPadding: 8
+                onClicked: {
+                    ApplicationController.playlist.removeSection(popupRoot.targetSectionName)
+                    popupRoot.close()
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            StudioButton {
+                variant: "ghost"
+                text: qsTr("Close")
+                onClicked: popupRoot.close()
+            }
+
+            StudioButton {
+                visible: popupRoot.mode !== "assign"
+                variant: "primary"
+                iconName: "check"
+                text: popupRoot.mode === "create" ? qsTr("Create") : qsTr("Save")
+                enabled: sectionNameField.text.trim().length > 0
+                onClicked: {
+                    const cleanTitle = sectionNameField.text.trim()
+                    if (popupRoot.mode === "create") {
+                        ApplicationController.playlist.createSection(cleanTitle, popupRoot.selectedColor)
+                    } else {
+                        let effectiveName = popupRoot.targetSectionName
+                        if (cleanTitle !== popupRoot.targetSectionName &&
+                            ApplicationController.playlist.renameSection(popupRoot.targetSectionName, cleanTitle)) {
+                            effectiveName = cleanTitle
+                        }
+                        ApplicationController.playlist.setSectionColor(effectiveName, popupRoot.selectedColor)
+                    }
+                    popupRoot.close()
+                }
+            }
+        }
+    }
+}
