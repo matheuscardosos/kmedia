@@ -12,6 +12,7 @@ Rectangle {
 
     readonly property var tabs: [
         { label: qsTr("Meeting"), icon: "calendar" },
+        { label: qsTr("Calendar"), icon: "calendar-days" },
         { label: qsTr("Media"), icon: "film" },
         { label: qsTr("Lists"), icon: "layers" },
         { label: qsTr("Downloads"), icon: "download" },
@@ -60,6 +61,7 @@ Rectangle {
 
                 ColumnLayout {
                     anchors.centerIn: parent
+                    width: Math.max(0, compactTab.width - 4)
                     spacing: 3
 
                     StudioIcon {
@@ -70,7 +72,9 @@ Rectangle {
                     }
 
                     Text {
-                        Layout.alignment: Qt.AlignHCenter
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        elide: Text.ElideRight
                         text: compactTab.modelData.label
                         color: compactTab.isCurrent ? Theme.accentPrimary : Theme.textSecondary
                         font.family: Theme.fontFamily

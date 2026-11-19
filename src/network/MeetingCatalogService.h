@@ -82,6 +82,7 @@ public slots:
     void previousWeek();
     void nextWeek();
     void goToCurrentWeek();
+    void setTargetWeekDate(const QDate& date);
 
 signals:
     void busyChanged();

@@ -27,6 +27,7 @@ ApplicationWindow {
 
     readonly property list<string> sectionTitles: [
         qsTr("Meeting Workspace"),
+        qsTr("Meeting Calendar"),
         qsTr("Media Library"),
         qsTr("Playlists"),
         qsTr("Downloads"),
@@ -127,8 +128,9 @@ ApplicationWindow {
                 onPreviewToggled: root.inspectorDrawerOpen = !root.inspectorDrawerOpen
                 onAddMediaRequested: mediaFileDialog.open()
                 onOpenCommandPalette: commandPalette.open()
-                onOpenBoothSettings: root.currentTabIndex = 4
-                onOpenDownloadsTab: root.currentTabIndex = 3
+                onOpenBoothSettings: root.currentTabIndex = 5
+                onOpenDownloadsTab: root.currentTabIndex = 4
+                onOpenMeetingRequested: root.currentTabIndex = 0
             }
 
             InspectorPanel {

@@ -1,6 +1,7 @@
 #include "ApplicationController.h"
 
 #include "core/DatabaseManager.h"
+#include "core/MeetingCalendarModel.h"
 #include "core/MeetingTimer.h"
 #include "core/NetworkManager.h"
 #include "core/ProfileManager.h"
@@ -64,7 +65,8 @@ ApplicationController::ApplicationController(QObject* parent)
       m_playlistModel(std::make_unique<kmedia::PlaylistModel>()),
       m_meetingTimer(std::make_unique<kmedia::MeetingTimer>()),
       m_meetingCatalog(std::make_unique<kmedia::MeetingCatalogService>(
-          m_catalogClient.get(), m_downloadService.get(), m_playlistModel.get()))
+          m_catalogClient.get(), m_downloadService.get(), m_playlistModel.get())),
+      m_calendarModel(std::make_unique<kmedia::MeetingCalendarModel>())
 {
     m_playbackController->attachPdfController(m_pdfController.get());
     m_playlistModel->attachPlaybackController(m_playbackController.get());
@@ -267,6 +269,11 @@ kmedia::MeetingCatalogService* ApplicationController::catalog() const
     return m_meetingCatalog.get();
 }
 
+kmedia::MeetingCalendarModel* ApplicationController::calendar() const
+{
+    return m_calendarModel.get();
+}
+
 void ApplicationController::bindPresentationMpv(MpvRendererItem* mpvItem)
 {
     m_playbackController->attachMpvItem(mpvItem);
@@ -401,6 +408,7 @@ void ApplicationController::applyProfileSettings()
         m_playlistModel->setPackageExtractDir(
             QDir(profile->storagePath).filePath(QStringLiteral("packages")));
         m_meetingCatalog->setStorageRoot(profile->storagePath);
+        m_calendarModel->setStorageRoot(profile->storagePath);
     }
 
     const auto* settings = m_profileManager->activeSettings();
@@ -411,7 +419,29 @@ void ApplicationController::applyProfileSettings()
     const QString mediaLang = settings->mediaLanguage();
     if (!mediaLang.isEmpty()) {
         m_meetingCatalog->setSelectedLanguageCode(mediaLang);
+        m_calendarModel->setMediaLanguage(mediaLang);
     }
+
+    const int midDay =
+        settings->intValue(QLatin1StringView(kmedia::settings_keys::kMeetingMidweekDay), 3);
+    const QString midTime = settings->stringValue(
+        QLatin1StringView(kmedia::settings_keys::kMeetingMidweekTime),
+        profile.has_value() ? profile->midweekSchedule : QStringLiteral("19:30"));
+    const int endDay =
+        settings->intValue(QLatin1StringView(kmedia::settings_keys::kMeetingWeekendDay), 7);
+    const QString endTime = settings->stringValue(
+        QLatin1StringView(kmedia::settings_keys::kMeetingWeekendTime),
+        profile.has_value() ? profile->weekendSchedule : QStringLiteral("09:30"));
+    m_calendarModel->setScheduleDays(midDay, midTime, endDay, endTime);
+
+    m_backgroundMusic->configureSchedules(
+        kmedia::MeetingScheduleSpec{
+            true, m_calendarModel->midweekDay(),
+            QTime::fromString(m_calendarModel->midweekTime(), QStringLiteral("HH:mm"))},
+        kmedia::MeetingScheduleSpec{
+            true, m_calendarModel->weekendDay(),
+            QTime::fromString(m_calendarModel->weekendTime(), QStringLiteral("HH:mm"))},
+        settings->backgroundMusicFadeMs());
 
     m_backgroundMusic->setFadeDurationMs(settings->backgroundMusicFadeMs());
     m_downloadService->setMaxConcurrent(settings->maxConcurrentDownloads());
@@ -525,14 +555,60 @@ void ApplicationController::wireIntegrations()
                     profile->mediaLanguage = m_meetingCatalog->selectedLanguageCode();
                     (void)m_profileManager->updateProfile(*profile);
                 }
+                m_calendarModel->setMediaLanguage(m_meetingCatalog->selectedLanguageCode());
             });
     connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::weekSynced, this,
             [this](int importedCount) {
+                m_calendarModel->refreshReadiness();
                 showToast(tr("Synced %1 week item(s) into playlist").arg(importedCount),
                           QStringLiteral("success"));
             });
     connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::catalogError, this,
             [this](const QString& errorMessage) {
                 showToast(errorMessage, QStringLiteral("warning"));
+            });
+
+    connect(m_downloadService.get(), &kmedia::DownloadService::taskFinished, this,
+            [this](const QString&, bool success) {
+                if (success) {
+                    m_calendarModel->refreshReadiness();
+                }
+            });
+
+    connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::scheduleChanged, this, [this]() {
+        m_backgroundMusic->configureSchedules(
+            kmedia::MeetingScheduleSpec{
+                true, m_calendarModel->midweekDay(),
+                QTime::fromString(m_calendarModel->midweekTime(), QStringLiteral("HH:mm"))},
+            kmedia::MeetingScheduleSpec{
+                true, m_calendarModel->weekendDay(),
+                QTime::fromString(m_calendarModel->weekendTime(), QStringLiteral("HH:mm"))},
+            m_backgroundMusic->fadeDurationMs());
+        if (m_demoMode) {
+            return;
+        }
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kMeetingMidweekDay),
+                                     m_calendarModel->midweekDay());
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kMeetingMidweekTime),
+                                     m_calendarModel->midweekTime());
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kMeetingWeekendDay),
+                                     m_calendarModel->weekendDay());
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kMeetingWeekendTime),
+                                     m_calendarModel->weekendTime());
+        }
+        if (auto profile = m_profileManager->activeProfile(); profile.has_value()) {
+            profile->midweekSchedule = m_calendarModel->midweekTime();
+            profile->weekendSchedule = m_calendarModel->weekendTime();
+            (void)m_profileManager->updateProfile(*profile);
+        }
+    });
+
+    connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::weekOpenRequested, this,
+            [this](const QDate& weekMonday, bool syncNow) {
+                m_meetingCatalog->setTargetWeekDate(weekMonday);
+                if (syncNow) {
+                    m_meetingCatalog->syncCurrentWeekToPlaylist();
+                }
             });
 }

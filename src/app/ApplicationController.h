@@ -7,6 +7,7 @@
 
 #include <memory>
 
+Q_MOC_INCLUDE("core/MeetingCalendarModel.h")
 Q_MOC_INCLUDE("core/MeetingTimer.h")
 Q_MOC_INCLUDE("integrations/DisplayManager.h")
 Q_MOC_INCLUDE("integrations/ObsWebSocketClient.h")
@@ -32,6 +33,7 @@ class CatalogClient;
 class CloudSyncWatcher;
 class DisplayManager;
 class DownloadService;
+class MeetingCalendarModel;
 class MeetingCatalogService;
 class MeetingTimer;
 class NetworkManager;
@@ -77,6 +79,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(kmedia::PlaylistModel* playlist READ playlist CONSTANT FINAL)
     Q_PROPERTY(kmedia::MeetingTimer* meetingTimer READ meetingTimer CONSTANT FINAL)
     Q_PROPERTY(kmedia::MeetingCatalogService* catalog READ catalog CONSTANT FINAL)
+    Q_PROPERTY(kmedia::MeetingCalendarModel* calendar READ calendar CONSTANT FINAL)
 
 public:
     static void setStartupDemoMode(bool enabled);
@@ -114,6 +117,7 @@ public:
     [[nodiscard]] kmedia::PlaylistModel* playlist() const;
     [[nodiscard]] kmedia::MeetingTimer* meetingTimer() const;
     [[nodiscard]] kmedia::MeetingCatalogService* catalog() const;
+    [[nodiscard]] kmedia::MeetingCalendarModel* calendar() const;
 
     Q_INVOKABLE void bindPresentationMpv(MpvRendererItem* mpvItem);
     Q_INVOKABLE bool setUiLanguage(const QString& languageCode);
@@ -165,4 +169,5 @@ private:
     std::unique_ptr<kmedia::PlaylistModel> m_playlistModel;
     std::unique_ptr<kmedia::MeetingTimer> m_meetingTimer;
     std::unique_ptr<kmedia::MeetingCatalogService> m_meetingCatalog;
+    std::unique_ptr<kmedia::MeetingCalendarModel> m_calendarModel;
 };

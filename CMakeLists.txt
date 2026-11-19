@@ -45,6 +45,8 @@ include(CompilerWarnings)
 qt_add_library(kmedia_core STATIC
     src/core/DatabaseManager.h
     src/core/DatabaseManager.cpp
+    src/core/MeetingCalendarModel.h
+    src/core/MeetingCalendarModel.cpp
     src/core/MeetingTimer.h
     src/core/MeetingTimer.cpp
     src/core/NetworkManager.h
@@ -190,6 +192,8 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/PillDownloadsPopover.qml
     resources/qml/components/TransportBar.qml
     resources/qml/components/MeetingPlaylistView.qml
+    resources/qml/components/CalendarSchedulePopup.qml
+    resources/qml/components/CalendarView.qml
     resources/qml/components/MediaLibraryView.qml
     resources/qml/components/PlaylistsView.qml
     resources/qml/components/DownloadsView.qml

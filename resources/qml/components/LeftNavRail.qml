@@ -15,6 +15,7 @@ Rectangle {
 
     readonly property var navItems: [
         { label: qsTr("Meeting"), icon: "calendar" },
+        { label: qsTr("Calendar"), icon: "calendar-days" },
         { label: qsTr("Media"), icon: "film" },
         { label: qsTr("Playlists"), icon: "layers" },
         { label: qsTr("Downloads"), icon: "download" },

@@ -32,7 +32,7 @@ This document defines the behavioral contracts and architectural invariants that
 ## 5. Meeting Schedule and Background Music Fade-Out
 
 - Ambient background music runs on a dedicated audio-only `libmpv` pipeline isolated from presentation video output.
-- Before a scheduled midweek or weekend meeting start time, background music automatically initiates a smooth fade-out (default `5000 ms`) tuned to conclude at the scheduled start timestamp.
+- Midweek (Monday-Friday) and weekend (Saturday-Sunday) congregation meeting weekdays and start times (`meeting/midweek_day`, `meeting/midweek_time`, `meeting/weekend_day`, `meeting/weekend_time`) are modeled in `MeetingCalendarModel`, persisted per profile, and bound automatically into `BackgroundMusicEngine::configureSchedules(...)` so ambient music initiates a smooth fade-out (default `5000 ms`) tuned to conclude at the scheduled start timestamp.
 - Operator pause/fade overrides take immediate precedence over automated scheduling for the remainder of the current session.
 
 ## 6. Network Politeness and Archive Safety
@@ -63,4 +63,5 @@ This document defines the behavioral contracts and architectural invariants that
 
 - All QML controls inherit semantic tokens from `Theme.qml` supporting both **Studio Carbon (Dark)** and **Studio Daylight (Light)** modes persisted per profile via `ui/dark_theme` (and overridable at launch with `--theme dark|light`).
 - Meeting playlist entries (`PlaylistModel`) group visually under workbook section headers (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*, *Public Talk*, *Watchtower Study*, *Circuit Overseer*, or custom imported sections) via `ListView.section` without breaking flat `moveItem` drag-and-drop index ordering.
+- Primary library views (`MediaLibraryView`, `CalendarView`) prioritize visual 16:9 thumbnail grids, type filter pills, local cache readiness badges, and icon-first controls over multi-line descriptive prose.
 - Quick booth actions stay one click away through the enlarged floating `ActionPillBar` (with anchored popovers for display selection, background music playback/fade, live `MeetingTimer` schedule variance tracking, OBS scene/recording control, Zoom booth status, subtitle visibility toggle, and download queue adjustments) and `Ctrl+K` `CommandPalette` using bundled `Inter` typography and `MultiEffect`-tinted vector SVGs.

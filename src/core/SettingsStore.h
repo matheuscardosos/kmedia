@@ -14,6 +14,10 @@ namespace settings_keys {
 inline constexpr auto kMediaLanguage = "media/language";
 inline constexpr auto kUiLanguage = "ui/language";
 inline constexpr auto kUiDarkTheme = "ui/dark_theme";
+inline constexpr auto kMeetingMidweekDay = "meeting/midweek_day";
+inline constexpr auto kMeetingMidweekTime = "meeting/midweek_time";
+inline constexpr auto kMeetingWeekendDay = "meeting/weekend_day";
+inline constexpr auto kMeetingWeekendTime = "meeting/weekend_time";
 inline constexpr auto kBackgroundMusicFadeMs = "audio/background_fade_ms";
 inline constexpr auto kAudioOutputDevice = "audio/output_device";
 inline constexpr auto kHardwareDecoder = "video/hwdec";
