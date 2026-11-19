@@ -69,6 +69,8 @@ CatalogClient::CatalogClient(NetworkManager* networkManager, DatabaseManager* da
     }
 }
 
+CatalogClient::~CatalogClient() = default;
+
 void CatalogClient::setDatabaseManager(DatabaseManager* databaseManager)
 {
     m_database = databaseManager;

@@ -50,7 +50,7 @@ class CatalogClient : public QObject
 public:
     explicit CatalogClient(NetworkManager* networkManager = nullptr,
                            DatabaseManager* databaseManager = nullptr, QObject* parent = nullptr);
-    ~CatalogClient() override = default;
+    ~CatalogClient() override;
 
     Q_DISABLE_COPY_MOVE(CatalogClient)
 
