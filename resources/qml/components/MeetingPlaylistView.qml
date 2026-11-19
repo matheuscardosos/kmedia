@@ -272,10 +272,10 @@ Item {
                 // Row 2: Media count + total duration + Broadcast Orange primary CTA
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 12
+                    spacing: root.compactMode ? 6 : 12
 
                     RowLayout {
-                        spacing: 6
+                        spacing: root.compactMode ? 4 : 6
 
                         StudioIcon {
                             name: "layers"
@@ -284,7 +284,9 @@ Item {
                         }
 
                         Text {
-                            text: qsTr("%1 items").arg(ApplicationController.playlist.count)
+                            text: root.compactMode
+                                  ? ("" + ApplicationController.playlist.count)
+                                  : qsTr("%1 items").arg(ApplicationController.playlist.count)
                             color: Theme.textSecondary
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeSm
@@ -299,7 +301,7 @@ Item {
                     }
 
                     RowLayout {
-                        spacing: 6
+                        spacing: root.compactMode ? 4 : 6
 
                         StudioIcon {
                             name: "clock"
@@ -308,7 +310,9 @@ Item {
                         }
 
                         Text {
-                            text: qsTr("%1 duration").arg(ApplicationController.playlist.formattedTotalDuration)
+                            text: root.compactMode
+                                  ? ApplicationController.playlist.formattedTotalDuration
+                                  : qsTr("%1 duration").arg(ApplicationController.playlist.formattedTotalDuration)
                             color: Theme.textSecondary
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSizeSm
@@ -362,21 +366,30 @@ Item {
                     }
 
                     StudioButton {
+                        id: syncWeekBtn
+
                         variant: "secondary"
                         iconName: "refresh-cw"
-                        text: root.compactMode ? qsTr("Sync") : qsTr("Sync Week")
-                        implicitHeight: 34
+                        text: root.compactMode ? "" : qsTr("Sync Week")
+                        leftPadding: root.compactMode ? 0 : 10
+                        rightPadding: root.compactMode ? 0 : 10
+                        Layout.preferredWidth: root.compactMode ? 34 : syncWeekBtn.implicitWidth
+                        Layout.preferredHeight: 34
                         enabled: !ApplicationController.catalog.busy
                         onClicked: ApplicationController.catalog.syncCurrentWeekToPlaylist()
-                        ToolTip.visible: hovered
+                        ToolTip.visible: syncWeekBtn.hovered
                         ToolTip.text: qsTr("Fetch weekly workbook and Watchtower media automatically")
                     }
 
                     StudioButton {
+                        id: addMediaBtn
+
                         variant: "primary"
                         iconName: "plus"
                         text: root.compactMode ? qsTr("Add") : qsTr("Add Media")
-                        implicitHeight: 34
+                        leftPadding: root.compactMode ? 8 : 12
+                        rightPadding: root.compactMode ? 8 : 12
+                        Layout.preferredHeight: 34
                         onClicked: root.addMediaRequested()
                     }
                 }
