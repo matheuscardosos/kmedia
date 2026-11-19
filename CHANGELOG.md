@@ -4,6 +4,18 @@ All notable changes to KMedia will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3](https://github.com/matheuscardosos/kmedia/compare/v0.1.2...v0.1.3) (2026-11-19)
+
+
+### Added
+
+* **calendar:** implement date-keyed day workspaces and JWPUB week extraction ([#65](https://github.com/matheuscardosos/kmedia/issues/65)) ([1633705](https://github.com/matheuscardosos/kmedia/commit/1633705372f8df07546a13b2a5b3e6cd16a044e0)), closes [#56](https://github.com/matheuscardosos/kmedia/issues/56) [#57](https://github.com/matheuscardosos/kmedia/issues/57)
+
+
+### Fixed
+
+* **integrations,ui:** fix OBS/Zoom wiring, image scene routing, demo guards, and shortcuts ([#63](https://github.com/matheuscardosos/kmedia/issues/63)) ([6ea08c3](https://github.com/matheuscardosos/kmedia/commit/6ea08c32b00678a13204d78d6c6c6cf1c6978485)), closes [#55](https://github.com/matheuscardosos/kmedia/issues/55)
+
 ## [Unreleased]
 
 ### Added
