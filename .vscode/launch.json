@@ -1,0 +1,50 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "KMedia (Demo Mode)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": ["--demo"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": []
+    },
+    {
+      "name": "KMedia (Light Theme Demo)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": ["--demo", "--theme", "light"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": []
+    },
+    {
+      "name": "KMedia (Compact 420x740 Demo)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": ["--demo", "--window-size", "420x740"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": []
+    },
+    {
+      "name": "KMedia Tests (CTest Binary)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/windows-mingw-release/tests/kmedia_tests",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "QT_QPA_PLATFORM",
+          "value": "offscreen"
+        }
+      ]
+    }
+  ]
+}

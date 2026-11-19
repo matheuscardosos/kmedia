@@ -1,0 +1,2 @@
+# Formatting-only or bulk chore commits to ignore in `git blame`
+# Usage: git config blame.ignoreRevsFile .git-blame-ignore-revs

@@ -29,20 +29,32 @@ Review the domain behavioral contracts in [docs/architecture/business-rules.md](
 
 ## UI Design System
 
-KMedia uses a dark **Studio Carbon & Broadcast Orange** palette calibrated to eliminate screen glare inside dimly lit A/V booths (see [resources/qml/Theme.qml](resources/qml/Theme.qml)):
+KMedia provides dual **Studio Carbon (Dark)** and **Studio Daylight (Light)** palettes calibrated for dimly lit A/V booths or daylight rehearsal setups (see [resources/qml/Theme.qml](resources/qml/Theme.qml)), built with shared `Studio*` controls ([resources/qml/controls/](resources/qml/controls)), bundled `Inter` typography, and `MultiEffect`-tinted Lucide vector icons:
 
-| Role | Token | Hex |
-| :--- | :--- | :--- |
-| Window Base | `windowBase` | `#0D0F12` |
-| Panel Surface | `panelSurface` | `#14171C` |
-| Card / Row Surface | `cardSurface` | `#1B1F26` |
-| Elevated Hover | `cardHover` | `#232832` |
-| Subtle Border | `borderHairline` | `#282D37` |
-| Primary Accent | `accentPrimary` | `#FF6B00` |
-| Primary Text | `textPrimary` | `#F4F5F7` |
-| Secondary Text | `textSecondary` | `#949BA8` |
+| Role | Dark Hex | Light Hex | Token |
+| :--- | :--- | :--- | :--- |
+| Window Base | `#0D0F12` | `#F1F3F6` | `windowBase` |
+| Panel Surface | `#13161C` | `#FFFFFF` | `panelSurface` |
+| Card / Row Surface | `#181C23` | `#F8FAFC` | `cardSurface` |
+| Elevated Hover | `#242A35` | `#ECEFF4` | `cardHover` |
+| Subtle Border | `#262C36` | `#E2E6ED` | `borderHairline` |
+| Primary Accent | `#FF6B00` | `#FF6B00` | `accentPrimary` |
+| Primary Text | `#F3F4F6` | `#111827` | `textPrimary` |
+| Secondary Text | `#9CA3AF` | `#4B5563` | `textSecondary` |
 
 Layout adapts smoothly across three responsive breakpoints (`Wide >= 1080 px` three-column workstation, `Medium 680-1079 px` collapsed icon rail, and `Compact 360-679 px` single-column strip for side-by-side operation with Zoom).
+
+## Editor and AI Assistant Configuration
+
+The repository ships synchronized setups across common IDEs and coding agents so every contributor starts with consistent tooling:
+
+- **Universal Editors:** [`.editorconfig`](.editorconfig) and [CMakePresets.json](CMakePresets.json) (VS Code, CLion, Qt Creator, Visual Studio, Neovim).
+- **VS Code & Zed:** [`.vscode/`](.vscode/) (`settings.json`, `extensions.json`, `tasks.json`, `launch.json`) and [`.zed/settings.json`](.zed/settings.json).
+- **AI Assistants:** [`AGENTS.md`](AGENTS.md), [`CLAUDE.md`](CLAUDE.md), [`.cursor/rules/`](.cursor/rules/), [`.github/copilot-instructions.md`](.github/copilot-instructions.md), [`.windsurfrules`](.windsurfrules), [`.aider.conf.yml`](.aider.conf.yml), and [`.ai/system-prompt.md`](.ai/system-prompt.md) (for Grok, DeepSeek, or external models).
+
+## Releases
+
+Versioning and changelogs are automated via [`release-please-config.json`](release-please-config.json) (updating `CMakeLists.txt`, `vcpkg.json`, `docs/package.json`, and `CHANGELOG.md`). Publishing a release or pushing a `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/release.yml) to build and attach signed SHA-256 packages for Windows, macOS, and Linux.
 
 ## Building from Source
 
@@ -50,7 +62,7 @@ Layout adapts smoothly across three responsive breakpoints (`Wide >= 1080 px` th
 
 - **CMake** 3.25 or newer and **Ninja**
 - **C++20 compiler:** MSVC 2022+, MinGW-w64 GCC 13+, Clang 16+, or Apple Clang
-- **Qt 6.8+** with modules: `Core`, `Gui`, `LinguistTools`, `Network`, `OpenGL`, `Pdf`, `Quick`, `QuickControls2`, `Sql`, `Test`, and `WebSockets`
+- **Qt 6.8+** with modules: `Core`, `Gui`, `LinguistTools`, `Network`, `OpenGL`, `Pdf`, `Quick`, `QuickControls2`, `Sql`, `Svg`, `Test`, and `WebSockets`
 - **libmpv** development headers and library (`MPV_ROOT` on Windows, `libmpv-dev` on Debian/Ubuntu, or `mpv` via Homebrew on macOS)
 - **vcpkg** with `VCPKG_ROOT` set in your environment (`catch2` and `minizip-ng` are managed in manifest mode via `vcpkg.json`)
 

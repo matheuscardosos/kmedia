@@ -1,0 +1,73 @@
+name: Refresh README Screenshots
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Qt 6.8.3
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          arch: linux_gcc_64
+          modules: 'qtshadertools qtwebsockets qtimageformats qtpdf qtsvg'
+          cache: true
+
+      - name: Install Linux and Xvfb dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build pkg-config libmpv-dev libgl1-mesa-dev libegl1 libxcb-cursor0 libxkbcommon-dev xvfb mesa-utils libgl1-mesa-dri
+
+      - name: Setup vcpkg
+        run: |
+          VCPKG_DIR="${RUNNER_TEMP}/vcpkg"
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git "$VCPKG_DIR"
+          "$VCPKG_DIR/bootstrap-vcpkg.sh" -disableMetrics
+          echo "VCPKG_ROOT=$VCPKG_DIR" >> "$GITHUB_ENV"
+
+      - name: Cache vcpkg binary archives
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/vcpkg
+          key: vcpkg-Linux-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-Linux-
+
+      - name: Build KMedia
+        run: |
+          cmake --preset linux-release
+          cmake --build --preset linux-release
+
+      - name: Capture demo screenshots
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          mkdir -p docs/src/assets
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" \
+            ./build/linux-release/kmedia --demo --theme dark --window-size 1280x800 --screenshot docs/src/assets/kmedia-preview.png
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" \
+            ./build/linux-release/kmedia --demo --theme light --window-size 1280x800 --screenshot docs/src/assets/kmedia-light-preview.png
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" \
+            ./build/linux-release/kmedia --demo --theme dark --window-size 420x740 --screenshot docs/src/assets/kmedia-compact-preview.png
+
+      - name: Open pull request with refreshed screenshots
+        uses: peter-evans/create-pull-request@v7
+        with:
+          add-paths: |
+            docs/src/assets/kmedia-preview.png
+            docs/src/assets/kmedia-light-preview.png
+            docs/src/assets/kmedia-compact-preview.png
+          branch: chore/refresh-readme-screenshots
+          commit-message: "chore: refresh README screenshots"
+          title: "chore: refresh README screenshots"
+          body: "Automated refresh of desktop and compact UI screenshots captured using `kmedia --demo --screenshot`. Refs #22"

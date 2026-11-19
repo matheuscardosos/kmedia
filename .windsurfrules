@@ -1,0 +1,9 @@
+# Windsurf Rules for KMedia
+
+Follow AGENTS.md and docs/architecture/business-rules.md strictly:
+- Architecture: C++20 + Qt 6.8 + libmpv. Keep persistence, parsers, network, OBS/Zoom integrations inside kmedia_core (headless, no QML includes).
+- UI/UX: Use Qt Quick with Studio* controls (resources/qml/controls/), Theme.qml (Dark Studio Carbon & Light Studio Daylight), Lucide SVG icons tinted via MultiEffect, and Inter font. Maintain responsive breakpoints down to 360x520.
+- QML Quality: Unversioned imports, pragma ComponentBehavior: Bound, required property in delegates, Font.DemiBold, Layout.preferredWidth/Height inside Layouts, plain string literals in qsTr().
+- Style & Docs: Never use em-dashes or en-dashes. Update docs/src/en/, docs/src/pt/, docs/architecture/business-rules.md, and CHANGELOG.md whenever features, settings, or UI change.
+- Verification: clang-format --dry-run --Werror, cmake --build, --target kmedia_qmllint, QT_QPA_PLATFORM=offscreen ctest --output-on-failure, and VitePress typecheck/build.
+- Commits & PRs: Conventional Commits referencing GitHub issues (Refs #id or Closes #id).

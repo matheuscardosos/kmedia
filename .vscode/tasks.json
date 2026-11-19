@@ -1,0 +1,61 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: Configure (Windows MinGW Release)",
+      "type": "shell",
+      "command": "cmake --preset windows-mingw-release",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "CMake: Build (Windows MinGW Release)",
+      "type": "shell",
+      "command": "cmake --build --preset windows-mingw-release",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "QML: Run qmllint",
+      "type": "shell",
+      "command": "cmake --build --preset windows-mingw-release --target kmedia_qmllint",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "CTest: Run All Tests (Offscreen)",
+      "type": "shell",
+      "options": {
+        "env": {
+          "QT_QPA_PLATFORM": "offscreen"
+        }
+      },
+      "command": "ctest --preset windows-mingw-release --output-on-failure",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "CMake: Build (Linux Release)",
+      "type": "shell",
+      "command": "cmake --preset linux-release && cmake --build --preset linux-release",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Docs: Typecheck & Build VitePress",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/docs"
+      },
+      "command": "npm run docs:typecheck && npm run docs:build",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

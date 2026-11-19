@@ -32,7 +32,12 @@ jobs:
               process.exit(1);
             }
 
-            if (process.env.PR_ACTOR === "dependabot[bot]" || process.env.SKIP_ISSUE === "true") {
+            if (
+              process.env.PR_ACTOR === "dependabot[bot]" ||
+              process.env.PR_ACTOR === "github-actions[bot]" ||
+              process.env.PR_ACTOR === "release-please[bot]" ||
+              process.env.SKIP_ISSUE === "true"
+            ) {
               process.exit(0);
             }
 

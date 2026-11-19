@@ -1,0 +1,13 @@
+---
+description: C++20 and kmedia_core architectural and style rules
+globs: ["src/**/*.h", "src/**/*.hpp", "src/**/*.cpp", "tests/**/*.cpp"]
+alwaysApply: false
+---
+
+# C++20 Core and Tests Rules
+
+- Separate headless logic (`kmedia_core`) from Qt Quick UI (`src/app/ApplicationController`). Never include QML headers inside `src/core/`, `src/media/`, `src/models/`, `src/parsers/`, `src/network/`, or `src/integrations/`.
+- Match `.clang-format` and `.clang-tidy`: `CamelCase` classes/structs/enums, `camelCase` methods/variables, `m_` member prefix.
+- Avoid narrowing conversions or sign warnings (`-Wconversion -Wsign-conversion` are enabled in `cmake/CompilerWarnings.cmake`).
+- Never block the UI thread or introduce polling loops in steady state; use async Qt signals, SQLite WAL transactions, and OS filesystem notifications.
+- Write Catch2 unit tests under `tests/` for all new core logic and run `QT_QPA_PLATFORM=offscreen ctest --preset <preset> --output-on-failure`.

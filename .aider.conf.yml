@@ -1,0 +1,8 @@
+read:
+  - AGENTS.md
+  - docs/architecture/business-rules.md
+auto-commits: false
+conventional-commits: true
+line-endings: lf
+test-cmd: ctest --preset windows-mingw-release --output-on-failure
+lint-cmd: cmake --build --preset windows-mingw-release --target kmedia_qmllint

@@ -5,18 +5,21 @@ charset = utf-8
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
-
-[*.{h,hpp,c,cpp,qml}]
 indent_style = space
 indent_size = 4
 
-[{CMakeLists.txt,*.cmake}]
-indent_style = space
+[*.{h,hpp,cpp,qml,cmake}]
 indent_size = 4
 
-[*.{json,yml,yaml,ts,mts,js,mjs,css,md}]
-indent_style = space
+[CMakeLists.txt]
+indent_size = 4
+
+[*.{json,yml,yaml,ts,mts,mjs,css,html}]
 indent_size = 2
 
-[Makefile]
-indent_style = tab
+[*.md]
+trim_trailing_whitespace = false
+indent_size = 2
+
+[*.{bat,ps1}]
+end_of_line = crlf

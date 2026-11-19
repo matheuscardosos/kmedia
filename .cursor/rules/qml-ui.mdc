@@ -1,0 +1,14 @@
+---
+description: Qt 6 QML UI design system, accessibility, and qmllint rules
+globs: ["resources/qml/**/*.qml"]
+alwaysApply: false
+---
+
+# Qt 6 Quick / QML Rules
+
+- Always use unversioned Qt 6 imports (`import QtQuick`, `import QtQuick.Layouts`, `import QtQuick.Templates as T`, `import QtQuick.Effects`).
+- Declare `pragma ComponentBehavior: Bound` in files with delegates/popups and add explicit `required property` declarations inside every delegate. Qualify delegate properties via the delegate root `id`.
+- Inside `RowLayout` / `ColumnLayout`, use `Layout.preferredWidth` and `Layout.preferredHeight` rather than raw `width` / `height`.
+- Reuse `StudioIcon`, `StudioButton`, `StudioSwitch`, `StudioSlider`, `StudioScrollBar`, `StudioCard`, `StudioBadge`, and `Theme` tokens (`Dark` & `Light` booth modes) instead of ad-hoc inline styling.
+- Wrap every user-visible string in a plain literal `qsTr("...")`, use `Font.DemiBold` (not `Font.SemiBold`), and verify `cmake --build --preset <preset> --target kmedia_qmllint` finishes with zero warnings.
+- Preserve all three responsive breakpoints (`Wide >= 1080`, `Medium 680-1079`, `Compact < 680` down to `360x520`).

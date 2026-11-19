@@ -1,0 +1,33 @@
+{
+  "tab_size": 4,
+  "soft_tabs": true,
+  "preferred_line_length": 100,
+  "format_on_save": "on",
+  "ensure_final_newline_on_save": true,
+  "remove_trailing_whitespace_on_save": true,
+  "lsp": {
+    "clangd": {
+      "binary": {
+        "arguments": [
+          "--background-index",
+          "--clang-tidy",
+          "--completion-style=detailed",
+          "--header-insertion=iwyu",
+          "--compile-commands-dir=build"
+        ]
+      }
+    }
+  },
+  "languages": {
+    "YAML": {
+      "tab_size": 2
+    },
+    "JSON": {
+      "tab_size": 2
+    },
+    "Markdown": {
+      "tab_size": 2,
+      "remove_trailing_whitespace_on_save": false
+    }
+  }
+}

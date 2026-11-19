@@ -32,6 +32,6 @@ updates:
           - minor
           - patch
     ignore:
-      # TypeScript 7 is incompatible with current vue-tsc / VitePress tooling.
+      # TypeScript 6+ is incompatible with current VitePress docs typechecking.
       - dependency-name: typescript
-        versions: ['>= 7.0.0']
+        versions: ['>= 6.0.0']

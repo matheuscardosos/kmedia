@@ -1,0 +1,14 @@
+---
+description: Global engineering, docs-as-code, formatting, and traceability rules for KMedia
+globs:
+alwaysApply: true
+---
+
+# KMedia Workspace Standards
+
+1. Follow all rules in `AGENTS.md` and domain invariants in `docs/architecture/business-rules.md`.
+2. Enforce **Docs-as-Code**: user-facing features, UI updates, CLI flags, parsers, and settings must update `docs/src/en/`, `docs/src/pt/`, `docs/architecture/business-rules.md`, and `CHANGELOG.md` in the same PR.
+3. Never insert em-dashes or en-dashes anywhere (code, comments, UI text, docs, or commits).
+4. Keep all repository content in clean English without AI attribution or unfinished `TODO`/`FIXME` placeholders.
+5. Maintain strict clean-room AGPL-3.0 code; document any third-party assets in `THIRD-PARTY-NOTICES.md`.
+6. Use Conventional Commits and reference related GitHub issues (`Refs #<id>` or `Closes #<id>`).
