@@ -45,7 +45,7 @@ jobs:
         with:
           version: '6.8.3'
           arch: ${{ matrix.qt_arch }}
-          modules: 'qtshadertools qtwebsockets qtimageformats qtpdf qtsvg'
+          modules: 'qtshadertools qtwebsockets qtimageformats qtpdf'
           cache: true
 
       - name: Install Linux dependencies

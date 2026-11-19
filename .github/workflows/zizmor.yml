@@ -34,6 +34,6 @@ jobs:
           persist-credentials: false
 
       - name: Run zizmor audit
-        uses: zizmorcore/zizmor-action@v0
+        uses: zizmorcore/zizmor-action@v0.8.1
         with:
           inputs: .github/workflows
