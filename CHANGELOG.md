@@ -4,6 +4,23 @@ All notable changes to KMedia will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2](https://github.com/matheuscardosos/kmedia/compare/v0.1.1...v0.1.2) (2026-11-19)
+
+
+### Added
+
+* **calendar,playlist:** add CO visit overrides and custom section builder ([#51](https://github.com/matheuscardosos/kmedia/issues/51)) ([d426631](https://github.com/matheuscardosos/kmedia/commit/d42663185c7105c16ebc90230dc800b201ba319f)), closes [#32](https://github.com/matheuscardosos/kmedia/issues/32) [#33](https://github.com/matheuscardosos/kmedia/issues/33)
+* **network:** wire automatic weekly meeting sync and catalog download UI ([#49](https://github.com/matheuscardosos/kmedia/issues/49)) ([006569e](https://github.com/matheuscardosos/kmedia/commit/006569eed97db4102571a275407e7fb97eb61dd6)), closes [#46](https://github.com/matheuscardosos/kmedia/issues/46)
+* **packaging:** add native Windows Inno Setup installer ([#44](https://github.com/matheuscardosos/kmedia/issues/44)) ([d017b14](https://github.com/matheuscardosos/kmedia/commit/d017b14c630e5f7f2f79575cb9e913dca7f78d52)), closes [#43](https://github.com/matheuscardosos/kmedia/issues/43)
+* **settings:** add two-pane PIN lock, section glyphs, and checklists ([#52](https://github.com/matheuscardosos/kmedia/issues/52)) ([8ad5488](https://github.com/matheuscardosos/kmedia/commit/8ad548815bd9dae281a6e1845801c4f1d32cb724)), closes [#34](https://github.com/matheuscardosos/kmedia/issues/34) [#36](https://github.com/matheuscardosos/kmedia/issues/36)
+* **ui:** add meeting calendar and visual media grid (Closes [#31](https://github.com/matheuscardosos/kmedia/issues/31), [#47](https://github.com/matheuscardosos/kmedia/issues/47)) ([#50](https://github.com/matheuscardosos/kmedia/issues/50)) ([2dc04f4](https://github.com/matheuscardosos/kmedia/commit/2dc04f4afd7cf7eec29d513a5d0e3596a6f08344))
+* **ui:** upgrade ActionPillBar with brand icons, popovers, timer, and subtitles ([#48](https://github.com/matheuscardosos/kmedia/issues/48)) ([213709d](https://github.com/matheuscardosos/kmedia/commit/213709d67a29e81d0b2477899e926358e459c4c0)), closes [#35](https://github.com/matheuscardosos/kmedia/issues/35)
+
+
+### Fixed
+
+* **ui:** center StudioButton icons and fit compact header actions ([#54](https://github.com/matheuscardosos/kmedia/issues/54)) ([341c1a3](https://github.com/matheuscardosos/kmedia/commit/341c1a358cb7a1b3c09eb8d0068ec4540f015286))
+
 ## [0.1.1](https://github.com/matheuscardosos/kmedia/compare/v0.1.0...v0.1.1) (2026-11-19)
 
 
