@@ -37,17 +37,32 @@ struct CatalogMediaAsset
     int track{0};
     double durationSeconds{0.0};
     QString modifiedDatetime;
+    QString pubMediaId;
+    bool streamOnly{false};
+};
+
+struct CatalogCongregationResult
+{
+    QString orgName;
+    QString address;
+    QString languageCode;
+    int midweekDay{3};
+    QString midweekTime{QStringLiteral("19:30")};
+    int weekendDay{7};
+    QString weekendTime{QStringLiteral("09:30")};
 };
 
 /**
- * Polite catalog API client for JW language lists and pub-media endpoints.
- * Builds standardized URLs, parses JSON payloads, and honors HTTP ETag caching.
+ * Polite catalog API client for JW language lists, pub-media, Mediator, and hub congregation
+ * endpoints. Builds standardized URLs, parses JSON payloads, and honors HTTP ETag caching.
  */
 class CatalogClient : public QObject
 {
     Q_OBJECT
 
 public:
+    static constexpr double kLongMediaDurationSeconds = 2100.0;
+
     explicit CatalogClient(NetworkManager* networkManager = nullptr,
                            DatabaseManager* databaseManager = nullptr, QObject* parent = nullptr);
     ~CatalogClient() override;
@@ -59,22 +74,49 @@ public:
     [[nodiscard]] static QUrl
     languagesEndpointUrl(const QString& baseDomain = QStringLiteral("jw.org"));
 
+    [[nodiscard]] static QUrl hubLanguagesEndpointUrl();
+
     [[nodiscard]] static QUrl
     pubMediaLinksUrl(const QString& pubSymbol, const QString& langCode, int issueTagNumber = 0,
                      const QString& fileFormat = {}, int track = 0, const QString& docId = {},
                      const QString& baseUrl =
                          QStringLiteral("https://b.jw-cdn.org/apis/pub-media/GETPUBMEDIALINKS"));
 
+    [[nodiscard]] static QUrl
+    mediatorMediaUrl(const QString& pubMediaKey, const QString& langCode = QStringLiteral("E"),
+                     const QString& baseUrl =
+                         QStringLiteral("https://b.jw-cdn.org/apis/mediator/v1/media-items"));
+
+    [[nodiscard]] static QString buildPubMediaKey(const QString& pubSymbol, int issueTagNumber,
+                                                  qint64 docId = 0, int track = 0,
+                                                  bool isVideo = true);
+
+    [[nodiscard]] static QString pinyinSongFilename(int songNumber, int height = 720);
+
+    [[nodiscard]] static QUrl congregationSearchUrl(
+        const QString& queryText,
+        const QString& baseUrl = QStringLiteral("https://hub.jw.org/meetings/api/meeting-search"));
+
     [[nodiscard]] static std::vector<CatalogLanguage> parseLanguagesJson(const QByteArray& json);
     [[nodiscard]] static std::vector<CatalogMediaAsset>
     parsePubMediaLinksJson(const QByteArray& json, const QString& preferredLangCode = {});
+    [[nodiscard]] static std::vector<CatalogMediaAsset>
+    parseMediatorMediaJson(const QByteArray& json, const QString& pubMediaKey = {});
+    [[nodiscard]] static std::vector<CatalogCongregationResult>
+    parseCongregationSearchJson(const QByteArray& json);
 
     void fetchLanguages(const QUrl& endpoint = languagesEndpointUrl());
     void fetchPubMediaLinks(const QUrl& endpoint, const QString& preferredLangCode = {});
+    void fetchMediatorMedia(const QUrl& endpoint, const QString& pubMediaKey = {});
+    void searchCongregations(const QString& queryText);
 
 signals:
     void languagesLoaded(const std::vector<kmedia::CatalogLanguage>& languages, bool fromCache);
     void pubMediaAssetsLoaded(const std::vector<kmedia::CatalogMediaAsset>& assets, bool fromCache);
+    void mediatorAssetsLoaded(const QString& pubMediaKey,
+                              const std::vector<kmedia::CatalogMediaAsset>& assets, bool fromCache);
+    void congregationsLoaded(const std::vector<kmedia::CatalogCongregationResult>& results,
+                             bool fromCache);
     void requestFailed(const QString& url, const QString& errorMessage);
 
 private:

@@ -140,6 +140,7 @@ public:
     Q_INVOKABLE void lockBoothSettings();
     Q_INVOKABLE void enterDemoMode();
     Q_INVOKABLE void toggleDarkTheme();
+    Q_INVOKABLE void openDateWorkspace(const QString& isoDate, bool forceSync = false);
     Q_INVOKABLE void showToast(const QString& message,
                                const QString& level = QStringLiteral("info"));
 

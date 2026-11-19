@@ -161,3 +161,77 @@ TEST_CASE("PlaylistModel supports custom section builder, color customization, a
         reloaded.data(reloaded.index(0, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
         QStringLiteral("Special Talk"));
 }
+
+TEST_CASE(
+    "PlaylistModel supports date-keyed workspaces, dividers, tags, groups, hide, and reset order",
+    "[models][playlist][workspace]")
+{
+    const QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+    const QString dbPath = tempDir.filePath(QStringLiteral("workspace.db"));
+
+    {
+        kmedia::DatabaseManager db;
+        REQUIRE(db.open(dbPath));
+        kmedia::PlaylistModel model;
+        model.attachDatabase(&db);
+
+        REQUIRE(model.openWorkspaceForDate(QStringLiteral("2026-11-25"), QStringLiteral("midweek"),
+                                           QStringLiteral("Midweek Nov 25"), false));
+        REQUIRE(model.sections().size() == 3);
+
+        const QString imgA = tempDir.filePath(QStringLiteral("slideA.png"));
+        const QString imgB = tempDir.filePath(QStringLiteral("slideB.png"));
+        QImage(16, 9, QImage::Format_RGB32).save(imgA);
+        QImage(16, 9, QImage::Format_RGB32).save(imgB);
+
+        kmedia::PlaylistEntryView a;
+        a.title = QStringLiteral("Opening Song 126");
+        a.sectionTitle = QStringLiteral("Treasures From God's Word");
+        a.filePath = imgA;
+        a.tagType = QStringLiteral("song");
+        a.tagValue = QStringLiteral("Song 126");
+        a.groupKey = QStringLiteral("grp_intro");
+        REQUIRE(model.appendEntry(a));
+
+        kmedia::PlaylistEntryView b;
+        b.title = QStringLiteral("Gems Image");
+        b.sectionTitle = QStringLiteral("Treasures From God's Word");
+        b.filePath = imgB;
+        b.groupKey = QStringLiteral("grp_intro");
+        REQUIRE(model.appendEntry(b));
+
+        REQUIRE(model.addDivider(QStringLiteral("Transition Break"),
+                                 QStringLiteral("Treasures From God's Word"),
+                                 QStringLiteral("#D47B2A"), 0));
+        REQUIRE(model.count() == 3);
+        REQUIRE(model.data(model.index(1, 0), kmedia::PlaylistModel::ItemKindRole).toString() ==
+                QStringLiteral("divider"));
+
+        REQUIRE(model.toggleItemHidden(2));
+        REQUIRE(model.hiddenCount() == 1);
+        REQUIRE_FALSE(
+            model.data(model.index(2, 0), kmedia::PlaylistModel::RowVisibleRole).toBool());
+        model.setShowHidden(true);
+        REQUIRE(model.data(model.index(2, 0), kmedia::PlaylistModel::RowVisibleRole).toBool());
+
+        REQUIRE(model.toggleGroupExpanded(QStringLiteral("grp_intro")));
+        REQUIRE(model.updateItemTag(0, QStringLiteral("para"), QStringLiteral("Para. 2")));
+        REQUIRE(model.setItemSlideInterval(0, 30000));
+        REQUIRE(model.setSectionRepeatable(QStringLiteral("Treasures From God's Word"), true));
+
+        // Switch to another date and back to confirm isolation per date.
+        REQUIRE(model.openWorkspaceForDate(QStringLiteral("2026-11-29"), QStringLiteral("weekend"),
+                                           QStringLiteral("Weekend Nov 29"), false));
+        REQUIRE(model.count() == 0);
+        REQUIRE(model.sections().size() == 2);
+
+        REQUIRE(
+            model.openWorkspaceForDate(QStringLiteral("2026-11-25"), QStringLiteral("midweek")));
+        REQUIRE(model.count() == 3);
+        REQUIRE(model.data(model.index(0, 0), kmedia::PlaylistModel::TagValueRole).toString() ==
+                QStringLiteral("Para. 2"));
+        REQUIRE(model.data(model.index(0, 0), kmedia::PlaylistModel::SlideIntervalMsRole).toInt() ==
+                30000);
+    }
+}

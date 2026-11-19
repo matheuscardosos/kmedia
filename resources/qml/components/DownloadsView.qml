@@ -99,6 +99,139 @@ ScrollView {
                     }
 
                     StudioButton {
+                        id: congBtn
+
+                        visible: !root.compactMode
+                        variant: "secondary"
+                        iconName: "users"
+                        text: qsTr("Find Congregation")
+                        Layout.preferredHeight: 32
+                        onClicked: congPopup.open()
+
+                        Popup {
+                            id: congPopup
+
+                            x: Math.min(0, congBtn.width - width)
+                            y: congBtn.height + 4
+                            width: 340
+                            padding: 10
+                            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+                            background: StudioCard {
+                                surfaceColor: Theme.cardElevated
+                                strokeColor: Theme.borderStrong
+                            }
+
+                            contentItem: ColumnLayout {
+                                spacing: 8
+
+                                Text {
+                                    text: qsTr("Congregation Lookup (hub.jw.org)")
+                                    color: Theme.textPrimary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeSm
+                                    font.weight: Font.DemiBold
+                                }
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 6
+
+                                    TextField {
+                                        id: congQueryField
+
+                                        Layout.fillWidth: true
+                                        placeholderText: qsTr("City, congregation name...")
+                                        color: Theme.textPrimary
+                                        placeholderTextColor: Theme.textMuted
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeSm
+                                        onAccepted: ApplicationController.catalog.searchCongregations(congQueryField.text)
+                                        background: StudioCard {
+                                            surfaceColor: Theme.windowBase
+                                            cornerRadius: Theme.radiusSmall
+                                        }
+                                    }
+
+                                    StudioButton {
+                                        variant: "primary"
+                                        iconName: "search"
+                                        Layout.preferredWidth: 32
+                                        Layout.preferredHeight: 32
+                                        leftPadding: 0
+                                        rightPadding: 0
+                                        enabled: congQueryField.text.trim().length > 0 && !ApplicationController.catalog.busy
+                                        onClicked: ApplicationController.catalog.searchCongregations(congQueryField.text)
+                                    }
+                                }
+
+                                ListView {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 180
+                                    clip: true
+                                    spacing: 4
+                                    model: ApplicationController.catalog.congregationResults
+                                    ScrollBar.vertical: StudioScrollBar {
+                                        policy: ScrollBar.AsNeeded
+                                    }
+
+                                    delegate: Rectangle {
+                                        id: congRow
+
+                                        required property var modelData
+
+                                        width: ListView.view ? ListView.view.width : 310
+                                        height: 46
+                                        radius: Theme.radiusSmall
+                                        color: congHover.containsMouse ? Theme.cardHover : Theme.cardSurface
+                                        border.width: 1
+                                        border.color: Theme.borderHairline
+
+                                        ColumnLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 8
+                                            spacing: 1
+
+                                            Text {
+                                                text: congRow.modelData.orgName + " (" + congRow.modelData.languageCode + ")"
+                                                color: Theme.textPrimary
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: Theme.fontSizeXs
+                                                font.weight: Font.DemiBold
+                                                elide: Text.ElideRight
+                                                Layout.fillWidth: true
+                                            }
+
+                                            Text {
+                                                text: congRow.modelData.address.length > 0
+                                                      ? congRow.modelData.address
+                                                      : (congRow.modelData.midweekTime + " / " + congRow.modelData.weekendTime)
+                                                color: Theme.textMuted
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: 10
+                                                elide: Text.ElideRight
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            id: congHover
+
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                ApplicationController.catalog.applyCongregationResult(congRow.modelData.index)
+                                                congPopup.close()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    StudioButton {
                         id: langBtn
 
                         variant: "secondary"
@@ -273,6 +406,121 @@ ScrollView {
                         text: qsTr("Lookup")
                         enabled: !ApplicationController.catalog.busy && pubField.text.trim().length > 0
                         onClicked: ApplicationController.catalog.fetchPublication(pubField.text.trim(), 0, "")
+                    }
+                }
+
+                // Row 3: Extraction filters & fallback language
+                Flow {
+                    visible: !root.compactMode
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    StudioButton {
+                        variant: ApplicationController.catalog.autoLoadWeekMedia ? "primary" : "secondary"
+                        text: qsTr("Auto-Load Week")
+                        height: 28
+                        onClicked: ApplicationController.catalog.autoLoadWeekMedia = !ApplicationController.catalog.autoLoadWeekMedia
+                    }
+
+                    StudioButton {
+                        variant: ApplicationController.catalog.excludeFootnotes ? "primary" : "secondary"
+                        text: qsTr("Hide Footnotes (*)")
+                        height: 28
+                        onClicked: ApplicationController.catalog.excludeFootnotes = !ApplicationController.catalog.excludeFootnotes
+                    }
+
+                    StudioButton {
+                        variant: ApplicationController.catalog.includePrinted ? "primary" : "secondary"
+                        text: qsTr("Include Printed")
+                        height: 28
+                        onClicked: ApplicationController.catalog.includePrinted = !ApplicationController.catalog.includePrinted
+                    }
+
+                    StudioButton {
+                        variant: ApplicationController.catalog.excludeWtParagraphVideos ? "primary" : "secondary"
+                        text: qsTr("Skip WT Inline Videos")
+                        height: 28
+                        onClicked: ApplicationController.catalog.excludeWtParagraphVideos = !ApplicationController.catalog.excludeWtParagraphVideos
+                    }
+
+                    StudioButton {
+                        variant: ApplicationController.catalog.excludeTh ? "primary" : "secondary"
+                        text: qsTr("Skip TH Videos")
+                        height: 28
+                        onClicked: ApplicationController.catalog.excludeTh = !ApplicationController.catalog.excludeTh
+                    }
+
+                    StudioButton {
+                        variant: ApplicationController.catalog.excludeCbsPubs ? "primary" : "secondary"
+                        text: qsTr("Skip CBS Extracts")
+                        height: 28
+                        onClicked: ApplicationController.catalog.excludeCbsPubs = !ApplicationController.catalog.excludeCbsPubs
+                    }
+
+                    StudioButton {
+                        id: fallbackLangBtn
+
+                        variant: "secondary"
+                        text: qsTr("Fallback: %1").arg(ApplicationController.catalog.fallbackLanguageCode)
+                        height: 28
+                        onClicked: fallbackLangPopup.open()
+
+                        Popup {
+                            id: fallbackLangPopup
+
+                            x: 0
+                            y: fallbackLangBtn.height + 4
+                            width: 220
+                            padding: 6
+
+                            background: StudioCard {
+                                surfaceColor: Theme.cardElevated
+                                strokeColor: Theme.borderStrong
+                            }
+
+                            contentItem: ListView {
+                                width: 208
+                                height: 160
+                                clip: true
+                                spacing: 2
+                                model: ApplicationController.catalog.languages
+
+                                delegate: Rectangle {
+                                    id: fbRow
+
+                                    required property var modelData
+
+                                    width: 208
+                                    height: 28
+                                    radius: Theme.radiusSmall
+                                    color: fbHover.containsMouse ? Theme.cardHover : "transparent"
+
+                                    Text {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 8
+                                        anchors.rightMargin: 8
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: fbRow.modelData.label
+                                        color: Theme.textPrimary
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontSizeXs
+                                        elide: Text.ElideRight
+                                    }
+
+                                    MouseArea {
+                                        id: fbHover
+
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            ApplicationController.catalog.fallbackLanguageCode = fbRow.modelData.code
+                                            fallbackLangPopup.close()
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 

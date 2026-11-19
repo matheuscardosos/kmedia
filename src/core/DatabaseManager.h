@@ -33,6 +33,8 @@ struct PlaylistRecord
     QString meetingType{QStringLiteral("midweek")};
     bool isSpecialEvent{false};
     QString accentColor;
+    QString sectionsJson;
+    bool sortLocked{false};
 };
 
 struct PlaylistEntryRecord
@@ -50,6 +52,21 @@ struct PlaylistEntryRecord
     double panY{0.0};
     int pdfPage{0};
     bool isRepeatable{false};
+    QString groupKey;
+    QString itemKind{QStringLiteral("media")};
+    bool hidden{false};
+    QString tagType;
+    QString tagValue;
+    QString pubMediaId;
+    QString streamUrl;
+    QString markerRangesJson;
+    double playbackRate{1.0};
+    bool isCbs{false};
+    QString originalSection;
+    int sortOrderOriginal{0};
+    QString dividerColor;
+    int slideIntervalMs{0};
+    QString pairedAudioPath;
 };
 
 struct DownloadCacheRecord
@@ -96,11 +113,21 @@ public:
 
     [[nodiscard]] qint64 createPlaylist(const PlaylistRecord& playlist);
     [[nodiscard]] std::optional<PlaylistRecord> findPlaylistById(qint64 id) const;
+    [[nodiscard]] std::optional<PlaylistRecord>
+    findPlaylistByDateAndType(const QString& meetingDate, const QString& meetingType) const;
+    [[nodiscard]] PlaylistRecord findOrCreatePlaylistForDate(const QString& meetingDate,
+                                                             const QString& meetingType,
+                                                             const QString& displayName,
+                                                             bool isSpecialEvent = false,
+                                                             const QString& accentColor = {});
+    [[nodiscard]] bool updatePlaylistMetadata(const PlaylistRecord& playlist);
     [[nodiscard]] std::vector<PlaylistRecord> listPlaylists() const;
     [[nodiscard]] bool deletePlaylist(qint64 id);
 
     [[nodiscard]] qint64 addPlaylistEntry(const PlaylistEntryRecord& entry);
     [[nodiscard]] std::vector<PlaylistEntryRecord> listPlaylistEntries(qint64 playlistId) const;
+    [[nodiscard]] bool updatePlaylistEntryFull(const PlaylistEntryRecord& entry);
+    [[nodiscard]] bool deletePlaylistEntry(qint64 entryId, qint64 playlistId);
     [[nodiscard]] bool updatePlaylistEntrySection(qint64 entryId, qint64 playlistId,
                                                   const QString& sectionTitle);
     [[nodiscard]] bool renamePlaylistEntrySections(qint64 playlistId,

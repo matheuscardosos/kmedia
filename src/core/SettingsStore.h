@@ -12,6 +12,7 @@ class DatabaseManager;
 namespace settings_keys {
 
 inline constexpr auto kMediaLanguage = "media/language";
+inline constexpr auto kMediaFallbackLanguage = "media/fallback_language";
 inline constexpr auto kUiLanguage = "ui/language";
 inline constexpr auto kUiDarkTheme = "ui/dark_theme";
 inline constexpr auto kMeetingMidweekDay = "meeting/midweek_day";
@@ -19,6 +20,13 @@ inline constexpr auto kMeetingMidweekTime = "meeting/midweek_time";
 inline constexpr auto kMeetingWeekendDay = "meeting/weekend_day";
 inline constexpr auto kMeetingWeekendTime = "meeting/weekend_time";
 inline constexpr auto kMeetingSpecialEvents = "meeting/special_events_json";
+inline constexpr auto kMeetingTempScheduleChanges = "meeting/temp_schedule_changes_json";
+inline constexpr auto kFilterIncludePrinted = "catalog/include_printed";
+inline constexpr auto kFilterExcludeFootnotes = "catalog/exclude_footnotes";
+inline constexpr auto kFilterExcludeWtParagraphVideos = "catalog/exclude_wt_paragraph_videos";
+inline constexpr auto kFilterExcludeTh = "catalog/exclude_th";
+inline constexpr auto kFilterExcludeCbsPubs = "catalog/exclude_cbs_pubs";
+inline constexpr auto kAutoLoadWeekMedia = "catalog/auto_load_week_media";
 inline constexpr auto kBackgroundMusicFadeMs = "audio/background_fade_ms";
 inline constexpr auto kAudioOutputDevice = "audio/output_device";
 inline constexpr auto kHardwareDecoder = "video/hwdec";

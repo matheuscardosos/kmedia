@@ -54,7 +54,39 @@ void parseAssetObject(const QJsonObject& obj, const QString& pubSymbol, int issu
     asset.track = obj.value(QStringLiteral("track")).toInt(0);
     asset.durationSeconds = obj.value(QStringLiteral("duration")).toDouble(0.0);
     asset.modifiedDatetime = fileObj.value(QStringLiteral("modifiedDatetime")).toString().trimmed();
+    asset.streamOnly = asset.durationSeconds > CatalogClient::kLongMediaDurationSeconds;
     out.push_back(std::move(asset));
+}
+
+int parseDayOfWeekValue(const QJsonValue& val, int fallbackDay)
+{
+    if (val.isDouble()) {
+        const int d = val.toInt();
+        return (d >= 1 && d <= 7) ? d : fallbackDay;
+    }
+    const QString text = val.toString().trimmed().toLower();
+    if (text.startsWith(QStringLiteral("mon"))) {
+        return 1;
+    }
+    if (text.startsWith(QStringLiteral("tue"))) {
+        return 2;
+    }
+    if (text.startsWith(QStringLiteral("wed"))) {
+        return 3;
+    }
+    if (text.startsWith(QStringLiteral("thu"))) {
+        return 4;
+    }
+    if (text.startsWith(QStringLiteral("fri"))) {
+        return 5;
+    }
+    if (text.startsWith(QStringLiteral("sat"))) {
+        return 6;
+    }
+    if (text.startsWith(QStringLiteral("sun"))) {
+        return 7;
+    }
+    return fallbackDay;
 }
 
 } // namespace
@@ -80,6 +112,11 @@ QUrl CatalogClient::languagesEndpointUrl(const QString& baseDomain)
 {
     return QUrl(
         QStringLiteral("https://www.%1/en/languages/json/").arg(normalizedBaseDomain(baseDomain)));
+}
+
+QUrl CatalogClient::hubLanguagesEndpointUrl()
+{
+    return QUrl(QStringLiteral("https://hub.jw.org/meetings/api/languages"));
 }
 
 QUrl CatalogClient::pubMediaLinksUrl(const QString& pubSymbol, const QString& langCode,
@@ -108,6 +145,58 @@ QUrl CatalogClient::pubMediaLinksUrl(const QString& pubSymbol, const QString& la
     }
     query.addQueryItem(QStringLiteral("txtCMSLang"), QStringLiteral("E"));
     query.addQueryItem(QStringLiteral("output"), QStringLiteral("json"));
+    url.setQuery(query);
+    return url;
+}
+
+QUrl CatalogClient::mediatorMediaUrl(const QString& pubMediaKey, const QString& langCode,
+                                     const QString& baseUrl)
+{
+    const QString cleanLang =
+        langCode.trimmed().isEmpty() ? QStringLiteral("E") : langCode.trimmed();
+    QString cleanBase = baseUrl.trimmed();
+    while (cleanBase.endsWith(QLatin1Char('/'))) {
+        cleanBase.chop(1);
+    }
+    QUrl url(QStringLiteral("%1/%2/%3").arg(cleanBase, cleanLang, pubMediaKey.trimmed()));
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("clientType"), QStringLiteral("www"));
+    url.setQuery(query);
+    return url;
+}
+
+QString CatalogClient::buildPubMediaKey(const QString& pubSymbol, int issueTagNumber, qint64 docId,
+                                        int track, bool isVideo)
+{
+    const QString kindTag = isVideo ? QStringLiteral("VIDEO") : QStringLiteral("AUDIO");
+    if (docId > 0) {
+        return QStringLiteral("doc-%1_%2_%3").arg(docId).arg(track).arg(kindTag);
+    }
+    const QString sym = pubSymbol.trimmed().toLower();
+    if (issueTagNumber > 0) {
+        return QStringLiteral("pub-%1_%2_%3_%4")
+            .arg(sym)
+            .arg(issueTagNumber)
+            .arg(track)
+            .arg(kindTag);
+    }
+    return QStringLiteral("pub-%1_%2_%3").arg(sym).arg(track).arg(kindTag);
+}
+
+QString CatalogClient::pinyinSongFilename(int songNumber, int height)
+{
+    const int safeSong = qBound(1, songNumber, 999);
+    const int safeHeight = (height >= 720) ? 720 : ((height >= 480) ? 480 : 360);
+    return QStringLiteral("sjjm_s-Pi_CHS_%1_r%2P.mp4")
+        .arg(safeSong, 3, 10, QLatin1Char('0'))
+        .arg(safeHeight);
+}
+
+QUrl CatalogClient::congregationSearchUrl(const QString& queryText, const QString& baseUrl)
+{
+    QUrl url(baseUrl);
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("q"), queryText.trimmed());
     url.setQuery(query);
     return url;
 }
@@ -181,6 +270,115 @@ CatalogClient::parsePubMediaLinksJson(const QByteArray& json, const QString& pre
         }
     }
     return assets;
+}
+
+std::vector<CatalogMediaAsset> CatalogClient::parseMediatorMediaJson(const QByteArray& json,
+                                                                     const QString& pubMediaKey)
+{
+    std::vector<CatalogMediaAsset> assets;
+    const QJsonDocument doc = QJsonDocument::fromJson(json);
+    if (!doc.isObject()) {
+        return assets;
+    }
+
+    const QJsonArray mediaArray = doc.object().value(QStringLiteral("media")).toArray();
+    for (const QJsonValue& mediaVal : mediaArray) {
+        if (!mediaVal.isObject()) {
+            continue;
+        }
+        const QJsonObject mediaObj = mediaVal.toObject();
+        const QString title = mediaObj.value(QStringLiteral("title")).toString().trimmed();
+        const double durationSec = mediaObj.value(QStringLiteral("duration")).toDouble(0.0);
+        const QString mediaKey = mediaObj.value(QStringLiteral("naturalKey")).toString().trimmed();
+        const QJsonArray files = mediaObj.value(QStringLiteral("files")).toArray();
+        for (const QJsonValue& fileVal : files) {
+            if (!fileVal.isObject()) {
+                continue;
+            }
+            const QJsonObject fObj = fileVal.toObject();
+            const QString url = fObj.value(QStringLiteral("progressiveDownloadURL"))
+                                    .toString(fObj.value(QStringLiteral("url")).toString())
+                                    .trimmed();
+            if (url.isEmpty()) {
+                continue;
+            }
+            CatalogMediaAsset asset;
+            asset.url = url;
+            asset.sha256 = fObj.value(QStringLiteral("checksum")).toString().trimmed();
+            asset.fileSize = fObj.value(QStringLiteral("filesize")).toInteger(0);
+            asset.mimeType = fObj.value(QStringLiteral("mimetype")).toString().trimmed();
+            asset.label = fObj.value(QStringLiteral("label")).toString().trimmed();
+            asset.title = title;
+            asset.durationSeconds = fObj.value(QStringLiteral("duration")).toDouble(durationSec);
+            asset.pubMediaId = pubMediaKey.isEmpty() ? mediaKey : pubMediaKey;
+            asset.streamOnly = asset.durationSeconds > kLongMediaDurationSeconds;
+            if (asset.mimeType.contains(QStringLiteral("audio"), Qt::CaseInsensitive) ||
+                url.endsWith(QStringLiteral(".mp3"), Qt::CaseInsensitive)) {
+                asset.fileFormat = QStringLiteral("MP3");
+            } else {
+                asset.fileFormat = QStringLiteral("MP4");
+            }
+            assets.push_back(std::move(asset));
+        }
+    }
+    return assets;
+}
+
+std::vector<CatalogCongregationResult>
+CatalogClient::parseCongregationSearchJson(const QByteArray& json)
+{
+    std::vector<CatalogCongregationResult> results;
+    const QJsonDocument doc = QJsonDocument::fromJson(json);
+    QJsonArray items;
+    if (doc.isArray()) {
+        items = doc.array();
+    } else if (doc.isObject()) {
+        const QJsonObject root = doc.object();
+        if (root.contains(QStringLiteral("geoLocationList"))) {
+            items = root.value(QStringLiteral("geoLocationList")).toArray();
+        } else if (root.contains(QStringLiteral("features"))) {
+            items = root.value(QStringLiteral("features")).toArray();
+        } else if (root.contains(QStringLiteral("congregations"))) {
+            items = root.value(QStringLiteral("congregations")).toArray();
+        }
+    }
+
+    for (const QJsonValue& val : items) {
+        if (!val.isObject()) {
+            continue;
+        }
+        QJsonObject obj = val.toObject();
+        if (obj.contains(QStringLiteral("properties")) &&
+            obj.value(QStringLiteral("properties")).isObject()) {
+            obj = obj.value(QStringLiteral("properties")).toObject();
+        }
+        const QString name = obj.value(QStringLiteral("orgName"))
+                                 .toString(obj.value(QStringLiteral("name")).toString())
+                                 .trimmed();
+        if (name.isEmpty()) {
+            continue;
+        }
+        CatalogCongregationResult item;
+        item.orgName = name;
+        item.address = obj.value(QStringLiteral("address")).toString().trimmed();
+        item.languageCode =
+            obj.value(QStringLiteral("lang"))
+                .toString(obj.value(QStringLiteral("languageCode")).toString(QStringLiteral("E")))
+                .trimmed();
+        const QJsonObject sched = obj.contains(QStringLiteral("schedule"))
+                                      ? obj.value(QStringLiteral("schedule")).toObject()
+                                      : obj.value(QStringLiteral("currentSchedule")).toObject();
+        const QJsonObject mid = sched.value(QStringLiteral("midweek")).toObject();
+        const QJsonObject end = sched.value(QStringLiteral("weekend")).toObject();
+        item.midweekDay = parseDayOfWeekValue(mid.value(QStringLiteral("weekday")), 3);
+        item.midweekTime =
+            mid.value(QStringLiteral("time")).toString(QStringLiteral("19:30")).trimmed();
+        item.weekendDay = parseDayOfWeekValue(end.value(QStringLiteral("weekday")), 7);
+        item.weekendTime =
+            end.value(QStringLiteral("time")).toString(QStringLiteral("09:30")).trimmed();
+        results.push_back(std::move(item));
+    }
+    return results;
 }
 
 template <typename Callback>
@@ -275,6 +473,30 @@ void CatalogClient::fetchPubMediaLinks(const QUrl& endpoint, const QString& pref
         }
         emit pubMediaAssetsLoaded(parsePubMediaLinksJson(body, preferredLangCode), fromCache);
     });
+}
+
+void CatalogClient::fetchMediatorMedia(const QUrl& endpoint, const QString& pubMediaKey)
+{
+    fetchWithEtagCache(endpoint, [this, pubMediaKey](const QByteArray& body, bool fromCache) {
+        if (body.isEmpty() && fromCache) {
+            emit mediatorAssetsLoaded(pubMediaKey, {}, true);
+            return;
+        }
+        emit mediatorAssetsLoaded(pubMediaKey, parseMediatorMediaJson(body, pubMediaKey),
+                                  fromCache);
+    });
+}
+
+void CatalogClient::searchCongregations(const QString& queryText)
+{
+    fetchWithEtagCache(congregationSearchUrl(queryText),
+                       [this](const QByteArray& body, bool fromCache) {
+                           if (body.isEmpty() && fromCache) {
+                               emit congregationsLoaded({}, true);
+                               return;
+                           }
+                           emit congregationsLoaded(parseCongregationSearchJson(body), fromCache);
+                       });
 }
 
 } // namespace kmedia

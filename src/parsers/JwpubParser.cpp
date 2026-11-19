@@ -8,9 +8,14 @@
 #include <QHash>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QRegularExpression>
+#include <QSet>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QTemporaryDir>
+
+#include <algorithm>
+#include <utility>
 
 namespace kmedia {
 
@@ -182,6 +187,216 @@ JwpubPublicationInfo readPublicationInfo(const ScopedReadOnlySqliteDb& db,
     return info;
 }
 
+QHash<qint64, std::pair<int, int>> readDatedTextRanges(const ScopedReadOnlySqliteDb& db)
+{
+    QHash<qint64, std::pair<int, int>> ranges;
+    const QSet<QString> cols = db.tableColumns(QStringLiteral("DatedText"));
+    if (!cols.contains(QStringLiteral("DocumentId")) ||
+        !cols.contains(QStringLiteral("FirstDateOffset"))) {
+        return ranges;
+    }
+
+    const QString lastExpr = cols.contains(QStringLiteral("LastDateOffset"))
+                                 ? QStringLiteral("LastDateOffset")
+                                 : QStringLiteral("FirstDateOffset");
+    QSqlQuery query(db.database());
+    if (!query.exec(QStringLiteral("SELECT DocumentId, FirstDateOffset, %1 FROM DatedText "
+                                   "ORDER BY FirstDateOffset ASC")
+                        .arg(lastExpr))) {
+        return ranges;
+    }
+    while (query.next()) {
+        const qint64 docId = query.value(0).toLongLong();
+        const int firstOffset = query.value(1).toInt();
+        const int lastOffset = query.value(2).toInt();
+        if (!ranges.contains(docId)) {
+            ranges.insert(docId, {firstOffset, lastOffset > 0 ? lastOffset : firstOffset});
+        }
+    }
+    return ranges;
+}
+
+QHash<qint64, int> readMaxParagraphs(const ScopedReadOnlySqliteDb& db)
+{
+    QHash<qint64, int> maxParas;
+    const QSet<QString> dpCols = db.tableColumns(QStringLiteral("DocumentParagraph"));
+    if (dpCols.contains(QStringLiteral("DocumentId")) &&
+        dpCols.contains(QStringLiteral("ParagraphIndex"))) {
+        QSqlQuery query(db.database());
+        if (query.exec(QStringLiteral("SELECT DocumentId, MAX(ParagraphIndex) "
+                                      "FROM DocumentParagraph GROUP BY DocumentId"))) {
+            while (query.next()) {
+                maxParas.insert(query.value(0).toLongLong(), query.value(1).toInt());
+            }
+        }
+    }
+
+    const QSet<QString> dmCols = db.tableColumns(QStringLiteral("DocumentMultimedia"));
+    if (dmCols.contains(QStringLiteral("DocumentId")) &&
+        dmCols.contains(QStringLiteral("EndParagraphOrdinal"))) {
+        QSqlQuery query(db.database());
+        if (query.exec(QStringLiteral("SELECT DocumentId, MAX(EndParagraphOrdinal) "
+                                      "FROM DocumentMultimedia GROUP BY DocumentId"))) {
+            while (query.next()) {
+                const qint64 docId = query.value(0).toLongLong();
+                const int candidate = query.value(1).toInt();
+                if (candidate > maxParas.value(docId, 0)) {
+                    maxParas.insert(docId, candidate);
+                }
+            }
+        }
+    }
+    return maxParas;
+}
+
+QHash<qint64, QHash<int, QString>> readQuestionLabels(const ScopedReadOnlySqliteDb& db)
+{
+    QHash<qint64, QHash<int, QString>> labels;
+    const QSet<QString> cols = db.tableColumns(QStringLiteral("Question"));
+    if (!cols.contains(QStringLiteral("DocumentId")) ||
+        !cols.contains(QStringLiteral("TargetParagraphNumberLabel"))) {
+        return labels;
+    }
+
+    const QString ordCol = cols.contains(QStringLiteral("BeginParagraphOrdinal"))
+                               ? QStringLiteral("BeginParagraphOrdinal")
+                               : (cols.contains(QStringLiteral("ParagraphOrdinal"))
+                                      ? QStringLiteral("ParagraphOrdinal")
+                                      : (cols.contains(QStringLiteral("ParagraphIndex"))
+                                             ? QStringLiteral("ParagraphIndex")
+                                             : QString()));
+    if (ordCol.isEmpty()) {
+        return labels;
+    }
+
+    QSqlQuery query(db.database());
+    if (!query.exec(
+            QStringLiteral("SELECT DocumentId, %1, TargetParagraphNumberLabel FROM Question")
+                .arg(ordCol))) {
+        return labels;
+    }
+    while (query.next()) {
+        const qint64 docId = query.value(0).toLongLong();
+        const int ordinal = query.value(1).toInt();
+        const QString label = query.value(2).toString().trimmed();
+        if (docId > 0 && ordinal > 0 && !label.isEmpty()) {
+            labels[docId].insert(ordinal, label);
+        }
+    }
+    return labels;
+}
+
+int extractSongNumberFromText(const QString& caption, qint64 refMepsDocId)
+{
+    static const QRegularExpression digitsRe(QStringLiteral(R"((\d{1,3}))"));
+    const QRegularExpressionMatch match = digitsRe.match(caption);
+    if (match.hasMatch()) {
+        const int num = match.captured(1).toInt();
+        if (num >= 1 && num <= 200) {
+            return num;
+        }
+    }
+    if (refMepsDocId >= 1 && refMepsDocId <= 200) {
+        return static_cast<int>(refMepsDocId);
+    }
+    return 0;
+}
+
+bool isIgnoredExtractSymbol(const QString& symLower)
+{
+    return symLower.startsWith(QStringLiteral("mwbr")) || symLower == QStringLiteral("it") ||
+           symLower == QStringLiteral("snnw");
+}
+
+bool isCbsExtractSymbol(const QString& symLower)
+{
+    return symLower == QStringLiteral("wcg") || symLower == QStringLiteral("bt") ||
+           symLower == QStringLiteral("lff") || symLower == QStringLiteral("lmd");
+}
+
+std::vector<JwpubExtractRef> readExtracts(const ScopedReadOnlySqliteDb& db)
+{
+    std::vector<JwpubExtractRef> extracts;
+    const QSet<QString> deCols = db.tableColumns(QStringLiteral("DocumentExtract"));
+    const QSet<QString> exCols = db.tableColumns(QStringLiteral("Extract"));
+    if (!deCols.contains(QStringLiteral("DocumentId")) ||
+        !deCols.contains(QStringLiteral("ExtractId")) ||
+        !exCols.contains(QStringLiteral("ExtractId"))) {
+        return extracts;
+    }
+
+    const QSet<QString> rpCols = db.tableColumns(QStringLiteral("RefPublication"));
+    const bool hasRefPub = exCols.contains(QStringLiteral("RefPublicationId")) &&
+                           rpCols.contains(QStringLiteral("RefPublicationId"));
+
+    auto colOr = [](const QString& alias, const QSet<QString>& cols, const QString& col,
+                    const QString& fallback) {
+        return cols.contains(col) ? QStringLiteral("%1.%2").arg(alias, col) : fallback;
+    };
+
+    const QString sql =
+        QStringLiteral("SELECT de.DocumentId, de.ExtractId, %1, %2, %3, %4, %5, %6, %7, %8, %9 "
+                       "FROM DocumentExtract de "
+                       "INNER JOIN Extract ex ON ex.ExtractId = de.ExtractId %10 "
+                       "ORDER BY de.DocumentId ASC, %1 ASC, de.ExtractId ASC")
+            .arg(colOr(QStringLiteral("de"), deCols, QStringLiteral("BeginParagraphOrdinal"),
+                       QStringLiteral("0")),
+                 colOr(QStringLiteral("de"), deCols, QStringLiteral("EndParagraphOrdinal"),
+                       QStringLiteral("0")),
+                 colOr(QStringLiteral("ex"), exCols, QStringLiteral("Caption"),
+                       QStringLiteral("''")),
+                 hasRefPub ? colOr(QStringLiteral("rp"), rpCols, QStringLiteral("UndatedSymbol"),
+                                   QStringLiteral("''"))
+                           : QStringLiteral("''"),
+                 hasRefPub ? colOr(QStringLiteral("rp"), rpCols, QStringLiteral("IssueTagNumber"),
+                                   QStringLiteral("0"))
+                           : QStringLiteral("0"),
+                 hasRefPub ? colOr(QStringLiteral("rp"), rpCols,
+                                   QStringLiteral("MepsLanguageIndex"), QStringLiteral("0"))
+                           : QStringLiteral("0"),
+                 colOr(QStringLiteral("ex"), exCols, QStringLiteral("RefMepsDocumentId"),
+                       QStringLiteral("0")),
+                 colOr(QStringLiteral("ex"), exCols, QStringLiteral("RefBeginParagraphOrdinal"),
+                       QStringLiteral("0")),
+                 colOr(QStringLiteral("ex"), exCols, QStringLiteral("RefEndParagraphOrdinal"),
+                       QStringLiteral("0")),
+                 hasRefPub ? QStringLiteral("LEFT JOIN RefPublication rp ON rp.RefPublicationId = "
+                                            "ex.RefPublicationId")
+                           : QString());
+
+    QSqlQuery query(db.database());
+    if (!query.exec(sql)) {
+        return extracts;
+    }
+
+    while (query.next()) {
+        JwpubExtractRef ref;
+        ref.documentId = query.value(0).toLongLong();
+        ref.extractId = query.value(1).toLongLong();
+        ref.beginParagraphOrdinal = query.value(2).toInt();
+        ref.endParagraphOrdinal = query.value(3).toInt();
+        ref.caption = query.value(4).toString().trimmed();
+        ref.refPubSymbol = query.value(5).toString().trimmed();
+        ref.refIssueTagNumber = query.value(6).toInt();
+        ref.refMepsLanguageIndex = query.value(7).toInt();
+        ref.refMepsDocumentId = query.value(8).toLongLong();
+        ref.refBeginParagraphOrdinal = query.value(9).toInt();
+        ref.refEndParagraphOrdinal = query.value(10).toInt();
+
+        const QString symLower = ref.refPubSymbol.toLower();
+        if (isIgnoredExtractSymbol(symLower)) {
+            continue;
+        }
+        if (symLower == QStringLiteral("sjj")) {
+            ref.songNumber = extractSongNumberFromText(ref.caption, ref.refMepsDocumentId);
+        }
+        ref.isTh = (symLower == QStringLiteral("th"));
+        ref.isCbsSource = isCbsExtractSymbol(symLower);
+        extracts.push_back(std::move(ref));
+    }
+    return extracts;
+}
+
 std::vector<JwpubDocument> readDocuments(const ScopedReadOnlySqliteDb& db)
 {
     std::vector<JwpubDocument> docs;
@@ -190,11 +405,17 @@ std::vector<JwpubDocument> readDocuments(const ScopedReadOnlySqliteDb& db)
         return docs;
     }
 
+    const QHash<qint64, std::pair<int, int>> datedRanges = readDatedTextRanges(db);
+    const QHash<qint64, int> maxParas = readMaxParagraphs(db);
+
     const QString mepsExpr = cols.contains(QStringLiteral("MepsDocumentId"))
                                  ? QStringLiteral("MepsDocumentId")
                                  : QStringLiteral("0");
     const QString titleExpr =
         cols.contains(QStringLiteral("Title")) ? QStringLiteral("Title") : QStringLiteral("''");
+    const QString subtitleExpr = cols.contains(QStringLiteral("Subtitle"))
+                                     ? QStringLiteral("Subtitle")
+                                     : QStringLiteral("''");
     const QString featureExpr = cols.contains(QStringLiteral("FeatureTitle"))
                                     ? QStringLiteral("FeatureTitle")
                                     : QStringLiteral("''");
@@ -203,8 +424,9 @@ std::vector<JwpubDocument> readDocuments(const ScopedReadOnlySqliteDb& db)
 
     QSqlQuery query(db.database());
     const QString sql =
-        QStringLiteral("SELECT DocumentId, %1, %2, %3, %4 FROM Document ORDER BY DocumentId ASC")
-            .arg(mepsExpr, titleExpr, featureExpr, classExpr);
+        QStringLiteral(
+            "SELECT DocumentId, %1, %2, %3, %4, %5 FROM Document ORDER BY DocumentId ASC")
+            .arg(mepsExpr, titleExpr, subtitleExpr, featureExpr, classExpr);
     if (!query.exec(sql)) {
         return docs;
     }
@@ -214,8 +436,15 @@ std::vector<JwpubDocument> readDocuments(const ScopedReadOnlySqliteDb& db)
         doc.documentId = query.value(0).toLongLong();
         doc.mepsDocumentId = query.value(1).toLongLong();
         doc.title = query.value(2).toString().trimmed();
-        doc.featureTitle = query.value(3).toString().trimmed();
-        doc.classCode = query.value(4).toInt();
+        doc.subtitle = query.value(3).toString().trimmed();
+        doc.featureTitle = query.value(4).toString().trimmed();
+        doc.classCode = query.value(5).toInt();
+        const auto dateIt = datedRanges.constFind(doc.documentId);
+        if (dateIt != datedRanges.constEnd()) {
+            doc.firstDateOffset = dateIt->first;
+            doc.lastDateOffset = dateIt->second;
+        }
+        doc.maxParagraphOrdinal = maxParas.value(doc.documentId, 0);
         docs.push_back(std::move(doc));
     }
     return docs;
@@ -263,14 +492,102 @@ QHash<qint64, std::vector<JwpubVideoMarker>> readVideoMarkers(const ScopedReadOn
     return markers;
 }
 
-std::vector<JwpubMediaItem>
-readMultimediaItems(const ScopedReadOnlySqliteDb& db,
-                    const QHash<qint64, std::vector<JwpubVideoMarker>>& markerMap)
+bool isProjectionCategoryType(int categoryType)
+{
+    return categoryType == 4 || categoryType == 6 || categoryType == 9 || categoryType == 10 ||
+           categoryType == 25 || categoryType == 26;
+}
+
+void enrichMediaItemFromContext(JwpubMediaItem& item, const QHash<qint64, JwpubDocument>& docMap,
+                                const QHash<qint64, QHash<int, QString>>& questionLabels,
+                                const std::vector<JwpubExtractRef>& extracts)
+{
+    if (const auto docIt = docMap.constFind(item.documentId); docIt != docMap.constEnd()) {
+        item.documentClass = docIt->classCode;
+        item.mepsDocumentId = static_cast<int>(docIt->mepsDocumentId);
+        item.maxParagraphOrdinal = docIt->maxParagraphOrdinal;
+        if (item.documentTitle.isEmpty()) {
+            item.documentTitle = docIt->title;
+        }
+        if (item.documentSubtitle.isEmpty()) {
+            item.documentSubtitle = docIt->subtitle;
+        }
+    }
+
+    item.isFootnote = (item.beginParagraphOrdinal == 1500);
+    item.isPrinted = (item.majorType == 1 && !isProjectionCategoryType(item.categoryType));
+
+    const auto qDocIt = questionLabels.constFind(item.documentId);
+    if (qDocIt != questionLabels.constEnd() && item.beginParagraphOrdinal > 0) {
+        item.paragraphLabel = qDocIt->value(item.beginParagraphOrdinal);
+    }
+    if (item.paragraphLabel == QStringLiteral("*")) {
+        item.isFootnote = true;
+    }
+
+    if (item.beginParagraphOrdinal > 0 && item.maxParagraphOrdinal > 0 &&
+        item.beginParagraphOrdinal >= item.maxParagraphOrdinal - 2 &&
+        item.beginParagraphOrdinal < item.maxParagraphOrdinal) {
+        item.isCbsCandidate = true;
+    }
+
+    for (const JwpubExtractRef& ref : extracts) {
+        if (ref.documentId != item.documentId) {
+            continue;
+        }
+        const bool inRange = (item.beginParagraphOrdinal > 0 && ref.beginParagraphOrdinal > 0 &&
+                              item.beginParagraphOrdinal >= ref.beginParagraphOrdinal &&
+                              item.beginParagraphOrdinal <= (ref.endParagraphOrdinal > 0
+                                                                 ? ref.endParagraphOrdinal
+                                                                 : ref.beginParagraphOrdinal));
+        if (!inRange) {
+            continue;
+        }
+        if (!ref.caption.isEmpty() && item.groupCaption.isEmpty()) {
+            item.groupCaption = ref.caption;
+        }
+        if (!ref.refPubSymbol.isEmpty() && item.refPubSymbol.isEmpty()) {
+            item.refPubSymbol = ref.refPubSymbol;
+            item.refIssueTagNumber = ref.refIssueTagNumber;
+            item.refMepsDocumentId = ref.refMepsDocumentId;
+        }
+        if (ref.songNumber > 0 && item.songNumber == 0) {
+            item.songNumber = ref.songNumber;
+        }
+        if (ref.isCbsSource) {
+            item.isCbsCandidate = true;
+        }
+    }
+
+    if (item.isFootnote) {
+        item.tagType = QStringLiteral("footnote");
+        item.tagValue = QStringLiteral("*");
+    } else if (item.songNumber > 0) {
+        item.tagType = QStringLiteral("song");
+        item.tagValue = QStringLiteral("Song %1").arg(item.songNumber);
+    } else if (!item.paragraphLabel.isEmpty()) {
+        item.tagType = QStringLiteral("para");
+        item.tagValue = QStringLiteral("Para. %1").arg(item.paragraphLabel);
+    } else if (item.beginParagraphOrdinal > 0) {
+        item.tagType = QStringLiteral("para");
+        item.tagValue = QStringLiteral("Para. %1").arg(item.beginParagraphOrdinal);
+    }
+}
+
+std::vector<JwpubMediaItem> readMultimediaItems(
+    const ScopedReadOnlySqliteDb& db, const QHash<qint64, std::vector<JwpubVideoMarker>>& markerMap,
+    const std::vector<JwpubDocument>& documents, const std::vector<JwpubExtractRef>& extracts,
+    const QHash<qint64, QHash<int, QString>>& questionLabels)
 {
     std::vector<JwpubMediaItem> items;
     const QSet<QString> mmCols = db.tableColumns(QStringLiteral("Multimedia"));
     if (!mmCols.contains(QStringLiteral("MultimediaId"))) {
         return items;
+    }
+
+    QHash<qint64, JwpubDocument> docMap;
+    for (const JwpubDocument& d : documents) {
+        docMap.insert(d.documentId, d);
     }
 
     const QSet<QString> dmCols = db.tableColumns(QStringLiteral("DocumentMultimedia"));
@@ -321,6 +638,10 @@ readMultimediaItems(const ScopedReadOnlySqliteDb& db,
                      QStringLiteral("0")),
         beginParaExpr,
         endParaExpr,
+        colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("LinkMultimediaId"),
+                     QStringLiteral("0")),
+        colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("SuppressZoom"),
+                     QStringLiteral("0")),
     };
 
     const QString docMmJoin =
@@ -347,6 +668,7 @@ readMultimediaItems(const ScopedReadOnlySqliteDb& db,
         return items;
     }
 
+    QSet<qint64> seenMmIds;
     while (query.next()) {
         JwpubMediaItem item;
         item.multimediaId = query.value(0).toLongLong();
@@ -365,10 +687,100 @@ readMultimediaItems(const ScopedReadOnlySqliteDb& db,
         item.mepsLanguageIndex = query.value(13).toInt();
         item.beginParagraphOrdinal = query.value(14).toInt();
         item.endParagraphOrdinal = query.value(15).toInt();
+        item.linkMultimediaId = query.value(16).toLongLong();
+        item.suppressZoom = query.value(17).toInt() != 0;
         item.videoMarkers = markerMap.value(item.multimediaId);
+        enrichMediaItemFromContext(item, docMap, questionLabels, extracts);
+        seenMmIds.insert(item.multimediaId);
         items.push_back(std::move(item));
     }
+
+    // Include unlinked Memorial screen items (CategoryType == 26) or linked targets when
+    // DocumentMultimedia omits them.
+    if (hasDocMm && mmCols.contains(QStringLiteral("CategoryType"))) {
+        QSqlQuery unlinkedQuery(db.database());
+        const QString unlinkedSql =
+            QStringLiteral(
+                "SELECT %1 FROM Multimedia m WHERE m.CategoryType = 26 ORDER BY m.MultimediaId ASC")
+                .arg(QStringList{
+                    QStringLiteral("m.MultimediaId"),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("DocumentId"),
+                                 QStringLiteral("0")),
+                    QStringLiteral("''"),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("FilePath"),
+                                 QStringLiteral("''")),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("Label"),
+                                 QStringLiteral("''")),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("Caption"),
+                                 QStringLiteral("''")),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("MimeType"),
+                                 QStringLiteral("''")),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("MajorType"),
+                                 QStringLiteral("0")),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("MinorType"),
+                                 QStringLiteral("0")),
+                    QStringLiteral("m.CategoryType"),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("Track"),
+                                 QStringLiteral("0")),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("KeySymbol"),
+                                 QStringLiteral("''")),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("IssueTagNumber"),
+                                 QStringLiteral("0")),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("MepsLanguageIndex"),
+                                 QStringLiteral("0")),
+                    QStringLiteral("-1"),
+                    QStringLiteral("-1"),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("LinkMultimediaId"),
+                                 QStringLiteral("0")),
+                    colOrDefault(QStringLiteral("m"), mmCols, QStringLiteral("SuppressZoom"),
+                                 QStringLiteral("0")),
+                }
+                         .join(QStringLiteral(", ")));
+        if (unlinkedQuery.exec(unlinkedSql)) {
+            while (unlinkedQuery.next()) {
+                const qint64 mmId = unlinkedQuery.value(0).toLongLong();
+                if (seenMmIds.contains(mmId)) {
+                    continue;
+                }
+                JwpubMediaItem item;
+                item.multimediaId = mmId;
+                item.documentId = unlinkedQuery.value(1).toLongLong();
+                item.filePath = unlinkedQuery.value(3).toString().trimmed();
+                item.label = unlinkedQuery.value(4).toString().trimmed();
+                item.caption = unlinkedQuery.value(5).toString().trimmed();
+                item.mimeType = unlinkedQuery.value(6).toString().trimmed();
+                item.majorType = unlinkedQuery.value(7).toInt();
+                item.minorType = unlinkedQuery.value(8).toInt();
+                item.categoryType = unlinkedQuery.value(9).toInt();
+                item.track = unlinkedQuery.value(10).toInt();
+                item.keySymbol = unlinkedQuery.value(11).toString().trimmed();
+                item.issueTagNumber = unlinkedQuery.value(12).toInt();
+                item.mepsLanguageIndex = unlinkedQuery.value(13).toInt();
+                item.beginParagraphOrdinal = -1;
+                item.endParagraphOrdinal = -1;
+                item.linkMultimediaId = unlinkedQuery.value(16).toLongLong();
+                item.suppressZoom = unlinkedQuery.value(17).toInt() != 0;
+                item.videoMarkers = markerMap.value(item.multimediaId);
+                enrichMediaItemFromContext(item, docMap, questionLabels, extracts);
+                items.push_back(std::move(item));
+            }
+        }
+    }
+
     return items;
+}
+
+QDate mondayForDate(const QDate& date)
+{
+    if (!date.isValid()) {
+        return {};
+    }
+    return date.addDays(-(date.dayOfWeek() - 1));
+}
+
+int toDateOffsetInt(const QDate& date)
+{
+    return date.isValid() ? (date.year() * 10000 + date.month() * 100 + date.day()) : 0;
 }
 
 } // namespace
@@ -454,10 +866,170 @@ JwpubPackage JwpubParser::parse(const QString& jwpubPath)
 
     pkg.publication = readPublicationInfo(db, pkg.manifest);
     pkg.documents = readDocuments(db);
+    pkg.extracts = readExtracts(db);
     const QHash<qint64, std::vector<JwpubVideoMarker>> markers = readVideoMarkers(db);
-    pkg.mediaItems = readMultimediaItems(db, markers);
+    const QHash<qint64, QHash<int, QString>> questionLabels = readQuestionLabels(db);
+    pkg.mediaItems = readMultimediaItems(db, markers, pkg.documents, pkg.extracts, questionLabels);
     pkg.valid = true;
     return pkg;
+}
+
+JwpubPackage JwpubParser::parseForWeek(const QString& jwpubPath,
+                                       const JwpubWeekFilterOptions& options)
+{
+    const JwpubPackage raw = parse(jwpubPath);
+    if (!raw.valid) {
+        return raw;
+    }
+    return filterPackageForWeek(raw, options);
+}
+
+JwpubPackage JwpubParser::filterPackageForWeek(const JwpubPackage& package,
+                                               const JwpubWeekFilterOptions& options)
+{
+    if (!package.valid) {
+        return package;
+    }
+
+    JwpubPackage out = package;
+    const QString sym = options.pubSymbolHint.trimmed().isEmpty()
+                            ? package.publication.undatedSymbol.trimmed().toLower()
+                            : options.pubSymbolHint.trimmed().toLower();
+    const bool isWatchtower = (sym == QStringLiteral("w"));
+    const bool isMemorial = sym.startsWith(QStringLiteral("mi"));
+
+    QSet<qint64> matchedDocIds;
+    if (options.targetDate.isValid()) {
+        const int targetInt = toDateOffsetInt(options.targetDate);
+        const int mondayInt = toDateOffsetInt(mondayForDate(options.targetDate));
+        for (const JwpubDocument& doc : package.documents) {
+            if (doc.firstDateOffset > 0 &&
+                ((doc.firstDateOffset <= targetInt &&
+                  (doc.lastDateOffset == 0 || targetInt <= doc.lastDateOffset)) ||
+                 doc.firstDateOffset == mondayInt)) {
+                matchedDocIds.insert(doc.documentId);
+            }
+        }
+
+        if (matchedDocIds.isEmpty() && isWatchtower) {
+            std::vector<const JwpubDocument*> studyDocs;
+            for (const JwpubDocument& doc : package.documents) {
+                if (doc.classCode == 40) {
+                    studyDocs.push_back(&doc);
+                }
+            }
+            if (studyDocs.empty()) {
+                for (const JwpubDocument& doc : package.documents) {
+                    studyDocs.push_back(&doc);
+                }
+            }
+            if (!studyDocs.empty()) {
+                int weekIdx = 0;
+                const QDate targetMon = mondayForDate(options.targetDate);
+                if (package.publication.issueTagNumber >= 19000100) {
+                    const int y = package.publication.issueTagNumber / 10000;
+                    const int m = (package.publication.issueTagNumber / 100) % 100;
+                    const QDate issueMonthStart(y, m, 1);
+                    if (issueMonthStart.isValid()) {
+                        const QDate studyMonth = issueMonthStart.addMonths(2);
+                        QDate firstStudyMon = studyMonth;
+                        while (firstStudyMon.dayOfWeek() != Qt::Monday) {
+                            firstStudyMon = firstStudyMon.addDays(1);
+                        }
+                        weekIdx = static_cast<int>(firstStudyMon.daysTo(targetMon) / 7);
+                    }
+                } else {
+                    weekIdx = (targetMon.day() - 1) / 7;
+                }
+                weekIdx = std::clamp(weekIdx, 0, static_cast<int>(studyDocs.size()) - 1);
+                matchedDocIds.insert(studyDocs[static_cast<size_t>(weekIdx)]->documentId);
+            }
+        }
+    }
+
+    // Track primary video targets pointed to via LinkMultimediaId to drop duplicate crop stills.
+    QHash<qint64, const JwpubMediaItem*> idToItem;
+    for (const JwpubMediaItem& item : package.mediaItems) {
+        idToItem.insert(item.multimediaId, &item);
+    }
+
+    if (!matchedDocIds.isEmpty()) {
+        std::vector<JwpubDocument> filteredDocs;
+        for (const JwpubDocument& doc : package.documents) {
+            if (matchedDocIds.contains(doc.documentId)) {
+                filteredDocs.push_back(doc);
+            }
+        }
+        out.documents = std::move(filteredDocs);
+    }
+
+    std::vector<JwpubMediaItem> filteredMedia;
+    for (JwpubMediaItem item : package.mediaItems) {
+        if (item.suppressZoom) {
+            continue;
+        }
+        const bool keepUnlinkedMemorial =
+            isMemorial && item.categoryType == 26 && item.beginParagraphOrdinal == -1;
+        if (!matchedDocIds.isEmpty() && !keepUnlinkedMemorial &&
+            !matchedDocIds.contains(item.documentId)) {
+            continue;
+        }
+        if (options.excludeFootnotes && item.isFootnote) {
+            continue;
+        }
+        if (!options.includePrinted && item.isPrinted && !keepUnlinkedMemorial) {
+            continue;
+        }
+        if (options.excludeWtParagraphVideos && isWatchtower && item.majorType == 2 &&
+            item.beginParagraphOrdinal > 0) {
+            continue;
+        }
+        if (options.excludeTh &&
+            item.refPubSymbol.compare(QStringLiteral("th"), Qt::CaseInsensitive) == 0) {
+            continue;
+        }
+        if (options.excludeCbsPubs &&
+            (item.refPubSymbol.compare(QStringLiteral("wcg"), Qt::CaseInsensitive) == 0 ||
+             item.isCbsCandidate)) {
+            continue;
+        }
+        if (item.linkMultimediaId > 0 && item.majorType == 1) {
+            if (const auto linkedIt = idToItem.constFind(item.linkMultimediaId);
+                linkedIt != idToItem.constEnd() && linkedIt.value()->majorType == 2) {
+                continue;
+            }
+        }
+        filteredMedia.push_back(std::move(item));
+    }
+
+    // Propagate labels from linked thumbnail items onto their target videos when needed.
+    for (JwpubMediaItem& kept : filteredMedia) {
+        if (kept.majorType == 2 && kept.label.isEmpty()) {
+            for (const JwpubMediaItem& raw : package.mediaItems) {
+                if (raw.linkMultimediaId == kept.multimediaId && !raw.label.isEmpty()) {
+                    kept.label = raw.label;
+                    break;
+                }
+            }
+        }
+    }
+    out.mediaItems = std::move(filteredMedia);
+
+    std::vector<JwpubExtractRef> filteredExtracts;
+    for (const JwpubExtractRef& ref : package.extracts) {
+        if (!matchedDocIds.isEmpty() && !matchedDocIds.contains(ref.documentId)) {
+            continue;
+        }
+        if (options.excludeTh && ref.isTh) {
+            continue;
+        }
+        if (options.excludeCbsPubs && ref.isCbsSource) {
+            continue;
+        }
+        filteredExtracts.push_back(ref);
+    }
+    out.extracts = std::move(filteredExtracts);
+    return out;
 }
 
 bool JwpubParser::extractMediaAssets(const QString& jwpubPath, const QString& destDir,

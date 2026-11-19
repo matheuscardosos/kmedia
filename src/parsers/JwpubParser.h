@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDate>
 #include <QString>
 #include <QStringList>
 #include <QtGlobal>
@@ -45,8 +46,12 @@ struct JwpubDocument
     qint64 documentId{0};
     qint64 mepsDocumentId{0};
     QString title;
+    QString subtitle;
     QString featureTitle;
     int classCode{0};
+    int firstDateOffset{0};
+    int lastDateOffset{0};
+    int maxParagraphOrdinal{0};
 };
 
 struct JwpubMediaItem
@@ -54,6 +59,7 @@ struct JwpubMediaItem
     qint64 multimediaId{0};
     qint64 documentId{0};
     QString documentTitle;
+    QString documentSubtitle;
     QString filePath;
     QString label;
     QString caption;
@@ -65,9 +71,54 @@ struct JwpubMediaItem
     QString keySymbol;
     int issueTagNumber{0};
     int mepsLanguageIndex{0};
+    int documentClass{0};
+    int mepsDocumentId{0};
+    qint64 linkMultimediaId{0};
+    bool suppressZoom{false};
     int beginParagraphOrdinal{0};
     int endParagraphOrdinal{0};
+    int maxParagraphOrdinal{0};
+    bool isFootnote{false};
+    bool isPrinted{false};
+    bool isCbsCandidate{false};
+    QString paragraphLabel;
+    QString groupCaption;
+    QString tagType;
+    QString tagValue;
+    QString refPubSymbol;
+    int refIssueTagNumber{0};
+    qint64 refMepsDocumentId{0};
+    int songNumber{0};
     std::vector<JwpubVideoMarker> videoMarkers;
+};
+
+struct JwpubExtractRef
+{
+    qint64 documentId{0};
+    qint64 extractId{0};
+    int beginParagraphOrdinal{0};
+    int endParagraphOrdinal{0};
+    QString caption;
+    QString refPubSymbol;
+    int refIssueTagNumber{0};
+    int refMepsLanguageIndex{0};
+    qint64 refMepsDocumentId{0};
+    int refBeginParagraphOrdinal{0};
+    int refEndParagraphOrdinal{0};
+    int songNumber{0};
+    bool isTh{false};
+    bool isCbsSource{false};
+};
+
+struct JwpubWeekFilterOptions
+{
+    QDate targetDate;
+    QString pubSymbolHint;
+    bool includePrinted{false};
+    bool excludeFootnotes{true};
+    bool excludeWtParagraphVideos{false};
+    bool excludeTh{false};
+    bool excludeCbsPubs{false};
 };
 
 struct JwpubPackage
@@ -78,6 +129,7 @@ struct JwpubPackage
     JwpubPublicationInfo publication;
     std::vector<JwpubDocument> documents;
     std::vector<JwpubMediaItem> mediaItems;
+    std::vector<JwpubExtractRef> extracts;
     QStringList archiveFiles;
     QString errorMessage;
 };
@@ -89,6 +141,12 @@ class JwpubParser
 {
 public:
     [[nodiscard]] static JwpubPackage parse(const QString& jwpubPath);
+
+    [[nodiscard]] static JwpubPackage parseForWeek(const QString& jwpubPath,
+                                                   const JwpubWeekFilterOptions& options);
+
+    [[nodiscard]] static JwpubPackage filterPackageForWeek(const JwpubPackage& package,
+                                                           const JwpubWeekFilterOptions& options);
 
     [[nodiscard]] static bool extractMediaAssets(const QString& jwpubPath, const QString& destDir,
                                                  const std::vector<QString>& requestedArchivePaths,

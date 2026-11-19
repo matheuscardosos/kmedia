@@ -8,7 +8,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs v1 migrations", "[database][core]")
+TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs v2 migrations", "[database][core]")
 {
     QTemporaryDir tempDir;
     REQUIRE(tempDir.isValid());
@@ -18,7 +18,7 @@ TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs v1 migrations", "[d
     REQUIRE(db.open(dbPath));
     REQUIRE(db.isOpen());
     REQUIRE(QFileInfo::exists(dbPath));
-    REQUIRE(db.schemaVersion() == 1);
+    REQUIRE(db.schemaVersion() == 2);
     REQUIRE(db.pragmaValue(QStringLiteral("journal_mode")).toLower() == QStringLiteral("wal"));
     REQUIRE(db.pragmaValue(QStringLiteral("foreign_keys")) == QStringLiteral("1"));
 
@@ -27,7 +27,73 @@ TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs v1 migrations", "[d
 
     // Reopening an existing database preserves schema version without reapplying migrations
     REQUIRE(db.open(dbPath));
-    REQUIRE(db.schemaVersion() == 1);
+    REQUIRE(db.schemaVersion() == 2);
+}
+
+TEST_CASE("DatabaseManager supports date-keyed playlists and v2 entry metadata", "[database][core]")
+{
+    QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(tempDir.filePath(QStringLiteral("v2.db"))));
+
+    const kmedia::PlaylistRecord wednesday =
+        db.findOrCreatePlaylistForDate(QStringLiteral("2026-11-25"), QStringLiteral("midweek"),
+                                       QStringLiteral("Nov 25 | Midweek"));
+    REQUIRE(wednesday.id > 0);
+    const kmedia::PlaylistRecord sameWednesday = db.findOrCreatePlaylistForDate(
+        QStringLiteral("2026-11-25"), QStringLiteral("midweek"), QStringLiteral("Ignored"));
+    REQUIRE(sameWednesday.id == wednesday.id);
+
+    kmedia::PlaylistEntryRecord divider;
+    divider.playlistId = wednesday.id;
+    divider.sectionTitle = QStringLiteral("Treasures From God's Word");
+    divider.customTitle = QStringLiteral("Opening Transition");
+    divider.itemKind = QStringLiteral("divider");
+    divider.dividerColor = QStringLiteral("#C96442");
+    divider.groupKey = QStringLiteral("grp_treasures");
+    divider.hidden = true;
+    divider.tagType = QStringLiteral("para");
+    divider.tagValue = QStringLiteral("Para. 3");
+    divider.pubMediaId = QStringLiteral("pub-mwb_E_202611_VIDEO_1");
+    divider.streamUrl = QStringLiteral("https://cdn.example/video.mp4");
+    divider.playbackRate = 1.5;
+    divider.isCbs = true;
+    divider.originalSection = QStringLiteral("Living as Christians");
+    divider.sortOrderOriginal = 4;
+    divider.slideIntervalMs = 30000;
+    divider.pairedAudioPath = QStringLiteral("/tmp/song.mp3");
+
+    const qint64 divId = db.addPlaylistEntry(divider);
+    REQUIRE(divId > 0);
+
+    const auto loaded = db.listPlaylistEntries(wednesday.id);
+    REQUIRE(loaded.size() == 1);
+    REQUIRE(loaded[0].itemKind == QStringLiteral("divider"));
+    REQUIRE(loaded[0].dividerColor == QStringLiteral("#C96442"));
+    REQUIRE(loaded[0].groupKey == QStringLiteral("grp_treasures"));
+    REQUIRE(loaded[0].hidden);
+    REQUIRE(loaded[0].tagType == QStringLiteral("para"));
+    REQUIRE(loaded[0].tagValue == QStringLiteral("Para. 3"));
+    REQUIRE(loaded[0].pubMediaId == QStringLiteral("pub-mwb_E_202611_VIDEO_1"));
+    REQUIRE(loaded[0].streamUrl == QStringLiteral("https://cdn.example/video.mp4"));
+    REQUIRE(loaded[0].playbackRate == 1.5);
+    REQUIRE(loaded[0].isCbs);
+    REQUIRE(loaded[0].originalSection == QStringLiteral("Living as Christians"));
+    REQUIRE(loaded[0].sortOrderOriginal == 4);
+    REQUIRE(loaded[0].slideIntervalMs == 30000);
+    REQUIRE(loaded[0].pairedAudioPath == QStringLiteral("/tmp/song.mp3"));
+
+    kmedia::PlaylistEntryRecord updated = loaded[0];
+    updated.hidden = false;
+    updated.tagValue = QStringLiteral("Para. 5");
+    REQUIRE(db.updatePlaylistEntryFull(updated));
+    const auto reloaded = db.listPlaylistEntries(wednesday.id);
+    REQUIRE_FALSE(reloaded[0].hidden);
+    REQUIRE(reloaded[0].tagValue == QStringLiteral("Para. 5"));
+    REQUIRE(db.deletePlaylistEntry(divId, wednesday.id));
+    REQUIRE(db.listPlaylistEntries(wednesday.id).empty());
 }
 
 TEST_CASE("DatabaseManager supports media, playlist, cascade, and transaction rollback",

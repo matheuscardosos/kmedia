@@ -541,6 +541,21 @@ void ApplicationController::applyProfileSettings()
         m_meetingCatalog->setSelectedLanguageCode(mediaLang);
         m_calendarModel->setMediaLanguage(mediaLang);
     }
+    const QString fallbackLang = settings->stringValue(
+        QLatin1StringView(kmedia::settings_keys::kMediaFallbackLanguage), QStringLiteral("E"));
+    m_meetingCatalog->setFallbackLanguageCode(fallbackLang);
+    m_meetingCatalog->setIncludePrinted(settings->boolValue(
+        QLatin1StringView(kmedia::settings_keys::kFilterIncludePrinted), false));
+    m_meetingCatalog->setExcludeFootnotes(settings->boolValue(
+        QLatin1StringView(kmedia::settings_keys::kFilterExcludeFootnotes), true));
+    m_meetingCatalog->setExcludeWtParagraphVideos(settings->boolValue(
+        QLatin1StringView(kmedia::settings_keys::kFilterExcludeWtParagraphVideos), false));
+    m_meetingCatalog->setExcludeTh(
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kFilterExcludeTh), false));
+    m_meetingCatalog->setExcludeCbsPubs(settings->boolValue(
+        QLatin1StringView(kmedia::settings_keys::kFilterExcludeCbsPubs), false));
+    m_meetingCatalog->setAutoLoadWeekMedia(
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kAutoLoadWeekMedia), true));
 
     const int midDay =
         settings->intValue(QLatin1StringView(kmedia::settings_keys::kMeetingMidweekDay), 3);
@@ -555,7 +570,17 @@ void ApplicationController::applyProfileSettings()
     m_calendarModel->setScheduleDays(midDay, midTime, endDay, endTime);
     m_calendarModel->loadSpecialEventsJson(
         settings->stringValue(QLatin1StringView(kmedia::settings_keys::kMeetingSpecialEvents)));
+    m_calendarModel->loadTempSchedulesJson(settings->stringValue(
+        QLatin1StringView(kmedia::settings_keys::kMeetingTempScheduleChanges)));
     m_meetingCatalog->setSpecialWeekEvents(m_calendarModel->specialEventsMap());
+    if (!m_demoMode) {
+        const QString dateIso = m_calendarModel->selectedDateIso();
+        const QString kind = m_calendarModel->meetingKindForDate(dateIso);
+        const bool isCo =
+            (m_calendarModel->eventTypeForDate(dateIso) == QStringLiteral("co_visit"));
+        (void)m_playlistModel->openWorkspaceForDate(dateIso, kind, {}, isCo);
+        m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
+    }
 
     m_backgroundMusic->configureSchedules(
         kmedia::MeetingScheduleSpec{
@@ -712,6 +737,47 @@ void ApplicationController::wireIntegrations()
                 }
                 m_calendarModel->setMediaLanguage(m_meetingCatalog->selectedLanguageCode());
             });
+    connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::fallbackLanguageChanged, this,
+            [this]() {
+                if (m_demoMode) {
+                    return;
+                }
+                if (auto* settings = m_profileManager->activeSettings()) {
+                    (void)settings->setValue(
+                        QLatin1StringView(kmedia::settings_keys::kMediaFallbackLanguage),
+                        m_meetingCatalog->fallbackLanguageCode());
+                }
+            });
+    connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::filtersChanged, this, [this]() {
+        if (m_demoMode) {
+            return;
+        }
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(
+                QLatin1StringView(kmedia::settings_keys::kFilterIncludePrinted),
+                m_meetingCatalog->includePrinted());
+            (void)settings->setValue(
+                QLatin1StringView(kmedia::settings_keys::kFilterExcludeFootnotes),
+                m_meetingCatalog->excludeFootnotes());
+            (void)settings->setValue(
+                QLatin1StringView(kmedia::settings_keys::kFilterExcludeWtParagraphVideos),
+                m_meetingCatalog->excludeWtParagraphVideos());
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kFilterExcludeTh),
+                                     m_meetingCatalog->excludeTh());
+            (void)settings->setValue(
+                QLatin1StringView(kmedia::settings_keys::kFilterExcludeCbsPubs),
+                m_meetingCatalog->excludeCbsPubs());
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kAutoLoadWeekMedia),
+                                     m_meetingCatalog->autoLoadWeekMedia());
+        }
+    });
+    connect(
+        m_meetingCatalog.get(), &kmedia::MeetingCatalogService::congregationScheduleApplied, this,
+        [this](const QString& name, const QString&, int midDay, const QString& midTime, int endDay,
+               const QString& endTime) {
+            m_calendarModel->setScheduleDays(midDay, midTime, endDay, endTime);
+            showToast(tr("Applied congregation schedule: %1").arg(name), QStringLiteral("success"));
+        });
     connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::weekSynced, this,
             [this](int importedCount) {
                 m_calendarModel->refreshReadiness();
@@ -772,9 +838,30 @@ void ApplicationController::wireIntegrations()
                 }
             });
 
+    connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::tempSchedulesChanged, this,
+            [this]() {
+                if (m_demoMode) {
+                    return;
+                }
+                if (auto* settings = m_profileManager->activeSettings()) {
+                    (void)settings->setValue(
+                        QLatin1StringView(kmedia::settings_keys::kMeetingTempScheduleChanges),
+                        m_calendarModel->exportTempSchedulesJson());
+                }
+            });
+
+    connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::daySelected, this,
+            [this](const QDate& date, const QString& meetingKind, bool isCoVisit) {
+                const QString dateIso = date.toString(Qt::ISODate);
+                (void)m_playlistModel->openWorkspaceForDate(dateIso, meetingKind, {}, isCoVisit);
+                m_meetingCatalog->setTargetMeetingContext(date, meetingKind);
+            });
+
     connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::weekOpenRequested, this,
             [this](const QDate& weekMonday, bool syncNow) {
-                m_meetingCatalog->setTargetWeekDate(weekMonday);
+                const QString dateIso = m_calendarModel->selectedDateIso();
+                const QString kind = m_calendarModel->meetingKindForDate(dateIso);
+                m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
                 if (syncNow) {
                     m_meetingCatalog->syncCurrentWeekToPlaylist();
                 } else if (!m_calendarModel->selectedWeekEventType().isEmpty()) {
@@ -788,6 +875,25 @@ void ApplicationController::wireIntegrations()
                         (void)m_playlistModel->ensureSection(
                             m_calendarModel->selectedWeekEventLabel());
                     }
+                } else {
+                    m_meetingCatalog->setTargetWeekDate(weekMonday);
                 }
             });
+}
+
+void ApplicationController::openDateWorkspace(const QString& isoDate, bool forceSync)
+{
+    m_calendarModel->selectDate(isoDate);
+    const QString effectiveIso = m_calendarModel->selectedDateIso();
+    const QString kind = m_calendarModel->meetingKindForDate(effectiveIso);
+    const bool isCoVisit =
+        (m_calendarModel->eventTypeForDate(effectiveIso) == QStringLiteral("co_visit"));
+    (void)m_playlistModel->openWorkspaceForDate(effectiveIso, kind, {}, isCoVisit);
+    m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
+
+    if (!m_demoMode &&
+        (forceSync || (m_meetingCatalog->autoLoadWeekMedia() && m_playlistModel->count() == 0 &&
+                       kind != QStringLiteral("custom")))) {
+        m_meetingCatalog->syncCurrentWeekToPlaylist();
+    }
 }
