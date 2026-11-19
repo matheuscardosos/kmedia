@@ -60,6 +60,14 @@ TEST_CASE("PlaybackController detects kinds, normalizes trims, and preserves sta
     REQUIRE(MpvRendererItem::zoomScaleToMpvLog2(32.0) == Catch::Approx(3.0));
 
     kmedia::PlaybackController controller;
+    REQUIRE_FALSE(controller.isActivePresentation());
+    REQUIRE(controller.audioDevice() == QStringLiteral("auto"));
+
+    QSignalSpy audioSpy(&controller, &kmedia::PlaybackController::audioChanged);
+    controller.setAudioDevice(QStringLiteral("wasapi/{0.0.0.00000000}.{abc}"));
+    REQUIRE(controller.audioDevice() == QStringLiteral("wasapi/{0.0.0.00000000}.{abc}"));
+    REQUIRE(audioSpy.count() == 1);
+
     const QUrl imageUrl = QUrl::fromLocalFile(QStringLiteral("/tmp/illustration.png"));
     controller.loadMedia(imageUrl, QStringLiteral("Illustration"), 1000, 5000);
 
@@ -67,6 +75,21 @@ TEST_CASE("PlaybackController detects kinds, normalizes trims, and preserves sta
     REQUIRE(controller.source() == imageUrl);
     REQUIRE(controller.trimStartMs() == 1000);
     REQUIRE(controller.trimEndMs() == 5000);
+    REQUIRE(controller.isPaused());
+    REQUIRE(controller.isActivePresentation());
+
+    const QUrl videoUrl = QUrl::fromLocalFile(QStringLiteral("/tmp/talk.mp4"));
+    controller.loadMedia(videoUrl, QStringLiteral("Talk Video"), 0, 0);
+    REQUIRE(controller.mediaKind() == Kind::Video);
+    REQUIRE(controller.isPaused());
+    REQUIRE_FALSE(controller.isActivePresentation());
+    controller.play();
+    REQUIRE_FALSE(controller.isPaused());
+    REQUIRE(controller.isActivePresentation());
+    controller.stop();
+    REQUIRE_FALSE(controller.isActivePresentation());
+
+    controller.loadMedia(imageUrl, QStringLiteral("Illustration"), 1000, 5000);
 
     controller.setViewport(12.0, 2.0, -2.0);
     REQUIRE(controller.zoomScale() == Catch::Approx(8.0));

@@ -154,6 +154,7 @@ signals:
 
 private:
     void applyProfileSettings();
+    void syncAudioRouting();
     void wireIntegrations();
 
     static bool s_startupDemoMode;

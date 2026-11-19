@@ -108,6 +108,7 @@ TEST_CASE("ObsWebSocketClient computes v5 SHA-256 auth hash and automates scenes
     client.setPort(static_cast<int>(server.serverPort()));
     client.setPassword(QStringLiteral("supersecret"));
     client.setPlayScene(QStringLiteral("Media Playback"));
+    client.setPauseScene(QStringLiteral("Paused Camera"));
     client.setStandbyScene(QStringLiteral("Platform Camera"));
 
     QSignalSpy scenesSpy(&client, &kmedia::ObsWebSocketClient::availableScenesChanged);
@@ -124,6 +125,10 @@ TEST_CASE("ObsWebSocketClient computes v5 SHA-256 auth hash and automates scenes
     client.applyPlaybackState(true, false, false);
     REQUIRE(reqSpy.wait(2000));
     REQUIRE(lastSceneSet == QStringLiteral("Media Playback"));
+
+    client.applyPlaybackState(true, false, true);
+    REQUIRE(reqSpy.wait(2000));
+    REQUIRE(lastSceneSet == QStringLiteral("Platform Camera"));
 
     REQUIRE(client.startRecording());
     REQUIRE(reqSpy.wait(2000));

@@ -4,6 +4,12 @@ All notable changes to KMedia will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed OBS/Zoom actions in `SettingsView` (`connectToObs()` and `joinMeeting()`), kept static Image/PDF presentations mapped to the OBS play scene instead of `pauseScene`, routed `ZoomBridge::dedicatedAudioDevice` through `PlaybackController` and `BackgroundMusicEngine`, isolated `--demo` writes in `saveCloudFolder()` and `saveObsAndZoomSettings()`, and wired focus-safe local keyboard shortcuts (`Space`, `B`, `Ctrl+M`, `Escape`, `Delete`, `1`-`6`) in `Main.qml`.
+
 ## [0.1.2](https://github.com/matheuscardosos/kmedia/compare/v0.1.1...v0.1.2) (2026-11-19)
 
 

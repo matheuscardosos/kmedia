@@ -710,7 +710,7 @@ ColumnLayout {
                                         ApplicationController.obsClient.host = obsHostField.text.trim()
                                         ApplicationController.obsClient.port = parseInt(obsPortField.text, 10) || 4455
                                         ApplicationController.obsClient.enabled = true
-                                        ApplicationController.obsClient.connectToServer()
+                                        ApplicationController.obsClient.connectToObs()
                                         ApplicationController.zoomBridge.meetingId = zoomIdField.text.trim()
                                         ApplicationController.saveObsAndZoomSettings()
                                         ApplicationController.showToast(qsTr("Booth integration settings saved"), "success")
@@ -724,7 +724,11 @@ ColumnLayout {
                                 iconName: "external-link"
                                 text: qsTr("Launch Zoom Meeting")
                                 enabled: ApplicationController.zoomBridge.meetingId.length > 0
-                                onClicked: ApplicationController.zoomBridge.launchMeeting()
+                                onClicked: {
+                                    if (!ApplicationController.zoomBridge.joinMeeting()) {
+                                        ApplicationController.showToast(qsTr("Set a valid Zoom Meeting ID first"), "warning")
+                                    }
+                                }
                             }
                         }
                     }

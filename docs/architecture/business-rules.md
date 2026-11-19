@@ -56,8 +56,9 @@ This document defines the behavioral contracts and architectural invariants that
 ## 9. Hybrid Booth Integrations (OBS Studio and Zoom)
 
 - `ProcessMonitor` queries running processes (`OBS Studio` and `Zoom`) on a gentle `3 s` interval using lightweight native OS APIs without spawning child shell processes.
-- `ObsWebSocketClient` connects asynchronously via `Qt6::WebSockets` (`OpCode 0 Hello` -> SHA-256 challenge auth -> `OpCode 1 Identify` -> `OpCode 2 Identified`) only when OBS is detected or explicitly requested.
-- `ZoomBridge` launches meetings via `zoommtg://` and configures dedicated `libmpv` audio output selection so Kingdom Hall speakers never echo back into Zoom.
+- `ObsWebSocketClient` connects asynchronously via `Qt6::WebSockets` (`OpCode 0 Hello` -> SHA-256 challenge auth -> `OpCode 1 Identify` -> `OpCode 2 Identified`) only when OBS is detected or explicitly requested. Presenting static image or PDF media maps to the active play scene rather than the paused scene while Standby remains inactive.
+- `ZoomBridge` launches meetings via `zoommtg://` and configures dedicated `libmpv` audio output selection across both presentation playback and ambient background music engines so Kingdom Hall speakers never echo back into Zoom.
+- Direct workspace keyboard shortcuts (`Space`, `B`, `Esc`, `Delete`, `Ctrl+M`, `1`-`6`) automatically yield when any text input field or modal palette has focus, and demo-mode configuration edits stay isolated from persisted congregation settings.
 
 ## 10. UI Design System, Theme Persistence, and Meeting Section Grouping
 
