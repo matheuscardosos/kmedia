@@ -8,6 +8,7 @@ Thank you for helping improve **KMedia**. I appreciate bug reports, feature sugg
 kmedia/
 ├── cmake/                  # CMake find modules and platform workarounds
 ├── docs/                   # VitePress bilingual documentation website (EN / PT)
+├── packaging/              # Native installer definitions (Inno Setup for Windows)
 ├── resources/
 │   ├── icons/              # Application icons (.svg, .png, .ico, .icns, .rc)
 │   └── qml/                # Qt Quick (QML) interface and reusable components
@@ -54,7 +55,7 @@ The repository ships synchronized setups across common IDEs and coding agents so
 
 ## Releases
 
-Versioning and changelogs are automated via [`release-please-config.json`](release-please-config.json) (updating `CMakeLists.txt`, `vcpkg.json`, `docs/package.json`, and `CHANGELOG.md`). Publishing a release or pushing a `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/release.yml) to build and attach signed SHA-256 packages for Windows, macOS, and Linux.
+Versioning and changelogs are automated via [`release-please-config.json`](release-please-config.json) (updating `CMakeLists.txt`, `vcpkg.json`, `docs/package.json`, and `CHANGELOG.md`). Publishing a release or pushing a `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/release.yml) to build and attach signed SHA-256 packages for Windows (`kmedia-windows-x64-setup.exe` Inno Setup installer and `kmedia-windows-x64.zip` portable bundle), macOS (`kmedia-macos-arm64.dmg`), and Linux (`kmedia-linux-x64.tar.gz`).
 
 ## Building from Source
 
