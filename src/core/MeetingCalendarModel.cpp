@@ -146,13 +146,19 @@ QString MeetingCalendarModel::shortDayName(int qtDayOfWeek)
 
 QString MeetingCalendarModel::normalizeClockTime(const QString& raw, const QString& fallback)
 {
-    const QTime parsed = QTime::fromString(raw.trimmed(), QStringLiteral("HH:mm"));
-    if (parsed.isValid()) {
-        return parsed.toString(QStringLiteral("HH:mm"));
-    }
-    const QTime shortParsed = QTime::fromString(raw.trimmed(), QStringLiteral("H:mm"));
-    if (shortParsed.isValid()) {
-        return shortParsed.toString(QStringLiteral("HH:mm"));
+    const QString trimmed = raw.trimmed();
+    const QStringList parts = trimmed.split(QLatin1Char(':'));
+    if (parts.size() == 2) {
+        bool okHour = false;
+        bool okMinute = false;
+        const int hour = parts.at(0).toInt(&okHour);
+        const int minute = parts.at(1).toInt(&okMinute);
+        if (okHour && okMinute && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+            const QTime parsed(hour, minute);
+            if (parsed.isValid()) {
+                return parsed.toString(QStringLiteral("HH:mm"));
+            }
+        }
     }
     return fallback;
 }

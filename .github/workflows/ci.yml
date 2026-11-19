@@ -80,11 +80,17 @@ jobs:
       - name: Install Windows dependencies
         if: runner.os == 'Windows'
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           python -m pip install --quiet ninja
           $mpvDir = Join-Path $env:RUNNER_TEMP "mpv-dev"
           New-Item -ItemType Directory -Force -Path $mpvDir | Out-Null
-          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/latest"
+          $headers = @{ "User-Agent" = "kmedia-ci" }
+          if ($env:GH_TOKEN) {
+            $headers["Authorization"] = "Bearer $env:GH_TOKEN"
+          }
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/latest" -Headers $headers
           $asset = $release.assets | Where-Object { $_.name -like "mpv-dev-x86_64-*.7z" -and $_.name -notlike "*v3*" } | Select-Object -First 1
           $archive = Join-Path $env:RUNNER_TEMP "mpv-dev.7z"
           Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $archive
