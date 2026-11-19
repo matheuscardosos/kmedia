@@ -4,6 +4,19 @@ All notable changes to KMedia will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1](https://github.com/matheuscardosos/kmedia/compare/v0.1.0...v0.1.1) (2026-11-19)
+
+
+### Added
+
+* **integrations:** add ProcessMonitor, OBS WebSocket v5 client, and ZoomBridge ([3c5792b](https://github.com/matheuscardosos/kmedia/commit/3c5792be393d89841b3ee15a1188bd7e790038ef)), closes [#18](https://github.com/matheuscardosos/kmedia/issues/18) [#19](https://github.com/matheuscardosos/kmedia/issues/19)
+* **ui:** rebuild QML Studio workstation with section dividers, themes, and ActionPillBar ([10c219c](https://github.com/matheuscardosos/kmedia/commit/10c219c9bb5cc783c54472bd952c87788d112705)), closes [#20](https://github.com/matheuscardosos/kmedia/issues/20) [#21](https://github.com/matheuscardosos/kmedia/issues/21) [#22](https://github.com/matheuscardosos/kmedia/issues/22)
+
+
+### Fixed
+
+* **ci:** fix install-qt-action module list and pin zizmor-action v0.8.1 ([8625525](https://github.com/matheuscardosos/kmedia/commit/862552502c9f6a65a38adf41c50cfd1a2f7aa2cc)), closes [#20](https://github.com/matheuscardosos/kmedia/issues/20) [#21](https://github.com/matheuscardosos/kmedia/issues/21)
+
 ## [Unreleased]
 
 ### Added
