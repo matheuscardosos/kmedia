@@ -15,6 +15,9 @@ qt_add_executable(kmedia_tests
     test_jwlplaylist_parser.cpp
     test_download_service.cpp
     test_cloud_sync_watcher.cpp
+    test_process_monitor.cpp
+    test_obs_and_zoom.cpp
+    test_playlist_and_demo.cpp
 )
 
 kmedia_set_compiler_warnings(kmedia_tests)
@@ -28,6 +31,7 @@ target_link_libraries(kmedia_tests PRIVATE
     Qt6::Network
     Qt6::Sql
     Qt6::Test
+    Qt6::WebSockets
     LibMPV::LibMPV
 )
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 project(KMedia
-    VERSION 0.1.0
+    VERSION 0.1.0 # x-release-please-version
     DESCRIPTION "Native C++20, Qt 6, and libmpv congregation media presentation workstation"
     LANGUAGES CXX
 )
@@ -25,6 +25,7 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS
     Quick
     QuickControls2
     Sql
+    Svg
     Test
     WebSockets
 )
@@ -56,6 +57,12 @@ qt_add_library(kmedia_core STATIC
     src/core/SystemUtils.cpp
     src/integrations/DisplayManager.h
     src/integrations/DisplayManager.cpp
+    src/integrations/ObsWebSocketClient.h
+    src/integrations/ObsWebSocketClient.cpp
+    src/integrations/ProcessMonitor.h
+    src/integrations/ProcessMonitor.cpp
+    src/integrations/ZoomBridge.h
+    src/integrations/ZoomBridge.cpp
     src/media/BackgroundMusicEngine.h
     src/media/BackgroundMusicEngine.cpp
     src/media/MpvRendererItem.h
@@ -66,6 +73,8 @@ qt_add_library(kmedia_core STATIC
     src/media/PlaybackController.cpp
     src/media/ThumbnailCache.h
     src/media/ThumbnailCache.cpp
+    src/models/PlaylistModel.h
+    src/models/PlaylistModel.cpp
     src/network/CatalogClient.h
     src/network/CatalogClient.cpp
     src/network/DownloadService.h
@@ -92,6 +101,16 @@ target_include_directories(kmedia_core PUBLIC
 
 target_compile_definitions(kmedia_core PUBLIC
     KMEDIA_APP_VERSION="${PROJECT_VERSION}"
+)
+
+qt6_add_translation(KMEDIA_QM_FILES
+    resources/translations/kmedia_en.ts
+    resources/translations/kmedia_pt.ts
+)
+qt6_add_resources(kmedia_core "kmedia_translations"
+    PREFIX "/i18n"
+    BASE "${CMAKE_CURRENT_BINARY_DIR}"
+    FILES ${KMEDIA_QM_FILES}
 )
 
 target_link_libraries(kmedia_core
@@ -139,30 +158,59 @@ set_source_files_properties(resources/qml/Theme.qml PROPERTIES
     QT_QML_SINGLETON_TYPE TRUE
     QT_RESOURCE_ALIAS Theme.qml
 )
-set_source_files_properties(resources/qml/Main.qml PROPERTIES
-    QT_RESOURCE_ALIAS Main.qml
+set(KMEDIA_QML_ROOT_FILES
+    resources/qml/Main.qml
+    resources/qml/PresentationWindow.qml
 )
-set_source_files_properties(resources/qml/PresentationWindow.qml PROPERTIES
-    QT_RESOURCE_ALIAS PresentationWindow.qml
+set(KMEDIA_QML_SUBDIR_FILES
+    resources/qml/controls/StudioIcon.qml
+    resources/qml/controls/FocusRing.qml
+    resources/qml/controls/StudioButton.qml
+    resources/qml/controls/StudioSwitch.qml
+    resources/qml/controls/StudioSlider.qml
+    resources/qml/controls/StudioScrollBar.qml
+    resources/qml/controls/StudioCard.qml
+    resources/qml/controls/StudioBadge.qml
+    resources/qml/components/NavRailButton.qml
+    resources/qml/components/StatusRow.qml
+    resources/qml/components/LeftNavRail.qml
+    resources/qml/components/CompactBottomNav.qml
+    resources/qml/components/ToastBanner.qml
+    resources/qml/components/CommandPalette.qml
+    resources/qml/components/ActionPillBar.qml
+    resources/qml/components/TransportBar.qml
+    resources/qml/components/MeetingPlaylistView.qml
+    resources/qml/components/MediaLibraryView.qml
+    resources/qml/components/PlaylistsView.qml
+    resources/qml/components/DownloadsView.qml
+    resources/qml/components/SettingsView.qml
+    resources/qml/components/CenterWorkspace.qml
+    resources/qml/components/InspectorPanel.qml
 )
-set_source_files_properties(resources/qml/components/NavRailButton.qml PROPERTIES
-    QT_RESOURCE_ALIAS components/NavRailButton.qml
+foreach(qml_file IN LISTS KMEDIA_QML_ROOT_FILES KMEDIA_QML_SUBDIR_FILES)
+    file(RELATIVE_PATH qml_alias "${CMAKE_CURRENT_SOURCE_DIR}/resources/qml" "${CMAKE_CURRENT_SOURCE_DIR}/${qml_file}")
+    set_source_files_properties("${qml_file}" PROPERTIES QT_RESOURCE_ALIAS "${qml_alias}")
+endforeach()
+
+file(GLOB KMEDIA_BUNDLED_ICONS CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/lucide/*.svg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/custom/*.svg"
 )
-set_source_files_properties(resources/qml/components/StatusRow.qml PROPERTIES
-    QT_RESOURCE_ALIAS components/StatusRow.qml
+file(GLOB KMEDIA_BUNDLED_FONTS CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/resources/fonts/*.ttf"
 )
-set_source_files_properties(resources/qml/components/LeftNavRail.qml PROPERTIES
-    QT_RESOURCE_ALIAS components/LeftNavRail.qml
+set(KMEDIA_ASSET_RESOURCES
+    resources/icons/icon.png
+    resources/icons/logo.svg
 )
-set_source_files_properties(resources/qml/components/CenterWorkspace.qml PROPERTIES
-    QT_RESOURCE_ALIAS components/CenterWorkspace.qml
-)
-set_source_files_properties(resources/qml/components/InspectorPanel.qml PROPERTIES
-    QT_RESOURCE_ALIAS components/InspectorPanel.qml
-)
-set_source_files_properties(resources/icons/icon.png PROPERTIES
-    QT_RESOURCE_ALIAS icons/icon.png
-)
+foreach(abs_res IN LISTS KMEDIA_BUNDLED_ICONS KMEDIA_BUNDLED_FONTS)
+    file(RELATIVE_PATH rel_from_root "${CMAKE_CURRENT_SOURCE_DIR}" "${abs_res}")
+    list(APPEND KMEDIA_ASSET_RESOURCES "${rel_from_root}")
+endforeach()
+foreach(res_file IN LISTS KMEDIA_ASSET_RESOURCES)
+    file(RELATIVE_PATH res_alias "${CMAKE_CURRENT_SOURCE_DIR}/resources" "${CMAKE_CURRENT_SOURCE_DIR}/${res_file}")
+    set_source_files_properties("${res_file}" PROPERTIES QT_RESOURCE_ALIAS "${res_alias}")
+endforeach()
 
 qt_add_qml_module(kmedia
     URI KMedia.UI
@@ -174,15 +222,10 @@ qt_add_qml_module(kmedia
         src/app/QmlTypes.h
     QML_FILES
         resources/qml/Theme.qml
-        resources/qml/Main.qml
-        resources/qml/PresentationWindow.qml
-        resources/qml/components/NavRailButton.qml
-        resources/qml/components/StatusRow.qml
-        resources/qml/components/LeftNavRail.qml
-        resources/qml/components/CenterWorkspace.qml
-        resources/qml/components/InspectorPanel.qml
+        ${KMEDIA_QML_ROOT_FILES}
+        ${KMEDIA_QML_SUBDIR_FILES}
     RESOURCES
-        resources/icons/icon.png
+        ${KMEDIA_ASSET_RESOURCES}
 )
 
 target_include_directories(kmedia PRIVATE
@@ -197,6 +240,7 @@ target_link_libraries(kmedia PRIVATE
     Qt6::OpenGL
     Qt6::Quick
     Qt6::QuickControls2
+    Qt6::Svg
     LibMPV::LibMPV
 )
 

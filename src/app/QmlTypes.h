@@ -1,10 +1,14 @@
 #pragma once
 
 #include "integrations/DisplayManager.h"
+#include "integrations/ObsWebSocketClient.h"
+#include "integrations/ProcessMonitor.h"
+#include "integrations/ZoomBridge.h"
 #include "media/BackgroundMusicEngine.h"
 #include "media/MpvRendererItem.h"
 #include "media/PdfViewerController.h"
 #include "media/PlaybackController.h"
+#include "models/PlaylistModel.h"
 #include "network/DownloadService.h"
 #include "parsers/CloudSyncWatcher.h"
 
@@ -62,5 +66,37 @@ struct CloudSyncWatcherForeign
     Q_GADGET
     QML_FOREIGN(kmedia::CloudSyncWatcher)
     QML_NAMED_ELEMENT(CloudSyncWatcher)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct ProcessMonitorForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::ProcessMonitor)
+    QML_NAMED_ELEMENT(ProcessMonitor)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct ObsWebSocketClientForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::ObsWebSocketClient)
+    QML_NAMED_ELEMENT(ObsWebSocketClient)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct ZoomBridgeForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::ZoomBridge)
+    QML_NAMED_ELEMENT(ZoomBridge)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct PlaylistModelForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::PlaylistModel)
+    QML_NAMED_ELEMENT(PlaylistModel)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
