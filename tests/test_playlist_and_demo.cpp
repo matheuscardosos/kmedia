@@ -92,5 +92,8 @@ TEST_CASE("Embedded Qt Linguist Portuguese catalog translates QML interface stri
             QStringLiteral("Espaço da Reunião"));
     REQUIRE(translator.translate("SettingsView", "Appearance & Interface Language") ==
             QStringLiteral("Aparência e Idioma da Interface"));
-    REQUIRE(translator.translate("ActionPillBar", "Music") == QStringLiteral("Música"));
+    REQUIRE(translator.translate("ActionPillBar", "Background Music Controls") ==
+            QStringLiteral("Controles da Música Ambiente"));
+    REQUIRE(translator.translate("PillTimerPopover", "Meeting Timer") ==
+            QStringLiteral("Cronômetro da Reunião"));
 }
