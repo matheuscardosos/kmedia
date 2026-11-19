@@ -101,6 +101,11 @@ public:
 
     [[nodiscard]] qint64 addPlaylistEntry(const PlaylistEntryRecord& entry);
     [[nodiscard]] std::vector<PlaylistEntryRecord> listPlaylistEntries(qint64 playlistId) const;
+    [[nodiscard]] bool updatePlaylistEntrySection(qint64 entryId, qint64 playlistId,
+                                                  const QString& sectionTitle);
+    [[nodiscard]] bool renamePlaylistEntrySections(qint64 playlistId,
+                                                   const QString& oldSectionTitle,
+                                                   const QString& newSectionTitle);
     [[nodiscard]] bool reorderPlaylistEntries(qint64 playlistId,
                                               const std::vector<qint64>& orderedEntryIds);
 

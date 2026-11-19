@@ -32,6 +32,10 @@ ScrollView {
         id: schedulePopup
     }
 
+    CalendarEventPopup {
+        id: eventPopup
+    }
+
     ColumnLayout {
         width: parent.width
         spacing: Theme.spacingMd
@@ -183,7 +187,9 @@ ScrollView {
                             border.width: dayCell.modelData.isSelected ? 2 : 1
                             border.color: dayCell.modelData.isSelected
                                           ? Theme.accentPrimary
-                                          : (dayCell.modelData.isToday ? Theme.borderStrong : Theme.borderHairline)
+                                          : (dayCell.modelData.isSpecialEvent
+                                             ? Theme.accentBorder
+                                             : (dayCell.modelData.isToday ? Theme.borderStrong : Theme.borderHairline))
 
                             ColumnLayout {
                                 anchors.fill: parent
@@ -208,14 +214,16 @@ ScrollView {
                                     }
 
                                     Rectangle {
-                                        visible: dayCell.hasMeeting
+                                        visible: dayCell.hasMeeting || dayCell.modelData.isSpecialEvent
                                         Layout.preferredWidth: 7
                                         Layout.preferredHeight: 7
                                         radius: 4
                                         color: dayCell.modelData.mediaReady
                                                ? Theme.statusReady
-                                               : (dayCell.modelData.meetingKind === "midweek"
-                                                  ? Theme.accentPrimary : Theme.statusStandby)
+                                               : (dayCell.modelData.isSpecialEvent
+                                                  ? "#6B4E9B"
+                                                  : (dayCell.modelData.meetingKind === "midweek"
+                                                     ? Theme.accentPrimary : Theme.statusStandby))
                                     }
                                 }
 
@@ -298,6 +306,32 @@ ScrollView {
                         font.weight: Font.DemiBold
                         elide: Text.ElideRight
                         Layout.fillWidth: true
+                    }
+
+                    StudioBadge {
+                        visible: ApplicationController.calendar.selectedWeekEventLabel.length > 0
+                        text: ApplicationController.calendar.selectedWeekEventLabel
+                        showDot: true
+                        dotColor: ApplicationController.calendar.selectedWeekEventType === "co_visit"
+                                  ? "#3F7F5F" : "#6B4E9B"
+                        badgeColor: Theme.accentSoft
+                        textColor: Theme.accentPrimary
+                        hasBorder: true
+                    }
+
+                    StudioButton {
+                        id: eventBtn
+
+                        variant: "secondary"
+                        iconName: "users"
+                        text: root.compactMode ? "" : qsTr("Event")
+                        leftPadding: root.compactMode ? 0 : 10
+                        rightPadding: root.compactMode ? 0 : 10
+                        Layout.preferredWidth: root.compactMode ? 32 : eventBtn.implicitWidth
+                        Layout.preferredHeight: 30
+                        ToolTip.visible: eventBtn.hovered
+                        ToolTip.text: qsTr("Set Circuit Overseer visit or special week event")
+                        onClicked: eventPopup.open()
                     }
 
                     StudioButton {

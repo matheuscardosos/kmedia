@@ -192,8 +192,10 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/PillDownloadsPopover.qml
     resources/qml/components/TransportBar.qml
     resources/qml/components/MeetingPlaylistView.qml
+    resources/qml/components/CalendarEventPopup.qml
     resources/qml/components/CalendarSchedulePopup.qml
     resources/qml/components/CalendarView.qml
+    resources/qml/components/CustomSectionPopup.qml
     resources/qml/components/MediaLibraryView.qml
     resources/qml/components/PlaylistsView.qml
     resources/qml/components/DownloadsView.qml

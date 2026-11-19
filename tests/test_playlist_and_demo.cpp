@@ -97,3 +97,67 @@ TEST_CASE("Embedded Qt Linguist Portuguese catalog translates QML interface stri
     REQUIRE(translator.translate("PillTimerPopover", "Meeting Timer") ==
             QStringLiteral("Cronômetro da Reunião"));
 }
+
+TEST_CASE("PlaylistModel supports custom section builder, color customization, and persistence",
+          "[models][playlist][sections]")
+{
+    const QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+    const QString dbPath = tempDir.filePath(QStringLiteral("sections.db"));
+
+    const QString mediaA = tempDir.filePath(QStringLiteral("talkA.png"));
+    const QString mediaB = tempDir.filePath(QStringLiteral("talkB.png"));
+    QImage img(32, 32, QImage::Format_ARGB32);
+    img.fill(Qt::darkBlue);
+    REQUIRE(img.save(mediaA, "PNG"));
+    REQUIRE(img.save(mediaB, "PNG"));
+
+    {
+        kmedia::DatabaseManager db;
+        REQUIRE(db.open(dbPath));
+
+        kmedia::PlaylistModel model;
+        model.attachDatabase(&db);
+        REQUIRE(model.importLocalFile(mediaA, QStringLiteral("Treasures From God's Word")));
+        REQUIRE(model.importLocalFile(mediaB, QStringLiteral("Living as Christians")));
+
+        REQUIRE(model.createSection(QStringLiteral("Local Needs"), QStringLiteral("#1E88E5")));
+        REQUIRE_FALSE(
+            model.createSection(QStringLiteral("local needs"), QStringLiteral("#000000")));
+        REQUIRE(model.setSectionColor(QStringLiteral("Local Needs"), QStringLiteral("#2E7D32")));
+        REQUIRE(model.colorForSection(QStringLiteral("Local Needs")) == QStringLiteral("#2E7D32"));
+
+        REQUIRE(model.assignItemToSection(0, QStringLiteral("Local Needs")));
+        REQUIRE(model.data(model.index(1, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
+                QStringLiteral("Local Needs"));
+
+        REQUIRE(model.renameSection(QStringLiteral("Local Needs"), QStringLiteral("Special Talk")));
+        REQUIRE(model.data(model.index(1, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
+                QStringLiteral("Special Talk"));
+        REQUIRE(model.colorForSection(QStringLiteral("Special Talk")) == QStringLiteral("#2E7D32"));
+
+        // Non-empty section cannot be removed directly.
+        REQUIRE_FALSE(model.removeSection(QStringLiteral("Special Talk")));
+
+        // Move Special Talk ahead of Living as Christians and verify ordering updates items.
+        REQUIRE(model.moveSection(QStringLiteral("Special Talk"), -1));
+        REQUIRE(model.data(model.index(0, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
+                QStringLiteral("Special Talk"));
+        REQUIRE(model.data(model.index(0, 0), kmedia::PlaylistModel::TitleRole).toString() ==
+                QStringLiteral("talkA"));
+
+        REQUIRE(model.createSection(QStringLiteral("Temp Empty"), QStringLiteral("#8E24AA")));
+        REQUIRE(model.removeSection(QStringLiteral("Temp Empty")));
+    }
+
+    // Reopen database to verify custom section order and hex color survive restarts.
+    kmedia::DatabaseManager reopened;
+    REQUIRE(reopened.open(dbPath));
+    kmedia::PlaylistModel reloaded;
+    reloaded.attachDatabase(&reopened);
+    REQUIRE(reloaded.count() == 2);
+    REQUIRE(reloaded.colorForSection(QStringLiteral("Special Talk")) == QStringLiteral("#2E7D32"));
+    REQUIRE(
+        reloaded.data(reloaded.index(0, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
+        QStringLiteral("Special Talk"));
+}

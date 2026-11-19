@@ -433,6 +433,9 @@ void ApplicationController::applyProfileSettings()
         QLatin1StringView(kmedia::settings_keys::kMeetingWeekendTime),
         profile.has_value() ? profile->weekendSchedule : QStringLiteral("09:30"));
     m_calendarModel->setScheduleDays(midDay, midTime, endDay, endTime);
+    m_calendarModel->loadSpecialEventsJson(
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kMeetingSpecialEvents)));
+    m_meetingCatalog->setSpecialWeekEvents(m_calendarModel->specialEventsMap());
 
     m_backgroundMusic->configureSchedules(
         kmedia::MeetingScheduleSpec{
@@ -604,11 +607,35 @@ void ApplicationController::wireIntegrations()
         }
     });
 
+    connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::specialEventsChanged, this,
+            [this]() {
+                m_meetingCatalog->setSpecialWeekEvents(m_calendarModel->specialEventsMap());
+                if (m_demoMode) {
+                    return;
+                }
+                if (auto* settings = m_profileManager->activeSettings()) {
+                    (void)settings->setValue(
+                        QLatin1StringView(kmedia::settings_keys::kMeetingSpecialEvents),
+                        m_calendarModel->exportSpecialEventsJson());
+                }
+            });
+
     connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::weekOpenRequested, this,
             [this](const QDate& weekMonday, bool syncNow) {
                 m_meetingCatalog->setTargetWeekDate(weekMonday);
                 if (syncNow) {
                     m_meetingCatalog->syncCurrentWeekToPlaylist();
+                } else if (!m_calendarModel->selectedWeekEventType().isEmpty()) {
+                    m_playlistModel->setPlaylistSubtitle(
+                        QStringLiteral("%1 | %2").arg(m_calendarModel->selectedWeekLabel(),
+                                                      m_calendarModel->selectedWeekEventLabel()));
+                    if (m_calendarModel->selectedWeekEventType() == QStringLiteral("co_visit")) {
+                        (void)m_playlistModel->ensureSection(QStringLiteral("Circuit Overseer"),
+                                                             QStringLiteral("#3F7F5F"));
+                    } else {
+                        (void)m_playlistModel->ensureSection(
+                            m_calendarModel->selectedWeekEventLabel());
+                    }
                 }
             });
 }

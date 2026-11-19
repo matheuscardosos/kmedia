@@ -1,16 +1,25 @@
 #pragma once
 
 #include <QDate>
+#include <QHash>
 #include <QObject>
+#include <QPair>
 #include <QString>
 #include <QTime>
 #include <QVariantList>
 
 namespace kmedia {
 
+struct SpecialWeekEvent
+{
+    QString weekMondayIso;
+    QString eventType;
+    QString label;
+};
+
 /**
  * Pure Qt Core model providing monthly meeting calendar cells, congregation
- * midweek/weekend meeting days, and local cached media readiness counts.
+ * midweek/weekend meeting days, special week overrides, and local cached media readiness counts.
  */
 class MeetingCalendarModel : public QObject
 {
@@ -23,6 +32,10 @@ class MeetingCalendarModel : public QObject
     Q_PROPERTY(
         QString selectedWeekMondayIso READ selectedWeekMondayIso NOTIFY calendarChanged FINAL)
     Q_PROPERTY(QString selectedWeekLabel READ selectedWeekLabel NOTIFY calendarChanged FINAL)
+    Q_PROPERTY(
+        QString selectedWeekEventType READ selectedWeekEventType NOTIFY calendarChanged FINAL)
+    Q_PROPERTY(
+        QString selectedWeekEventLabel READ selectedWeekEventLabel NOTIFY calendarChanged FINAL)
     Q_PROPERTY(int midweekDay READ midweekDay NOTIFY scheduleChanged FINAL)
     Q_PROPERTY(int weekendDay READ weekendDay NOTIFY scheduleChanged FINAL)
     Q_PROPERTY(QString midweekTime READ midweekTime NOTIFY scheduleChanged FINAL)
@@ -30,6 +43,7 @@ class MeetingCalendarModel : public QObject
     Q_PROPERTY(QString scheduleSummary READ scheduleSummary NOTIFY scheduleChanged FINAL)
     Q_PROPERTY(QVariantList calendarDays READ calendarDays NOTIFY calendarChanged FINAL)
     Q_PROPERTY(QVariantList upcomingMeetings READ upcomingMeetings NOTIFY calendarChanged FINAL)
+    Q_PROPERTY(QVariantList specialEvents READ specialEvents NOTIFY specialEventsChanged FINAL)
 
 public:
     explicit MeetingCalendarModel(QObject* parent = nullptr);
@@ -57,9 +71,21 @@ public:
 
     [[nodiscard]] QVariantList calendarDays() const;
     [[nodiscard]] QVariantList upcomingMeetings() const;
+    [[nodiscard]] QVariantList specialEvents() const;
+    [[nodiscard]] QString selectedWeekEventType() const;
+    [[nodiscard]] QString selectedWeekEventLabel() const;
+
+    [[nodiscard]] Q_INVOKABLE QString eventTypeForDate(const QString& isoDate) const;
+    [[nodiscard]] Q_INVOKABLE QString eventLabelForDate(const QString& isoDate) const;
+    [[nodiscard]] QHash<QString, QPair<QString, QString>> specialEventsMap() const;
+    [[nodiscard]] QString exportSpecialEventsJson() const;
+    void loadSpecialEventsJson(const QString& json);
 
     [[nodiscard]] static QString shortDayName(int qtDayOfWeek);
     [[nodiscard]] static QString normalizeClockTime(const QString& raw, const QString& fallback);
+    [[nodiscard]] static QString normalizeEventType(const QString& raw);
+    [[nodiscard]] static QString defaultEventLabel(const QString& eventType);
+    [[nodiscard]] static bool isRegularStudySkippedForEvent(const QString& eventType);
     [[nodiscard]] static int countLocalIssueFiles(const QString& storageRoot,
                                                   const QString& languageCode,
                                                   const QString& pubSymbol, int issueTag);
@@ -72,11 +98,15 @@ public slots:
     void openWeekForDate(const QString& isoDate, bool syncNow = false);
     void setScheduleDays(int midweekDay, const QString& midweekTime, int weekendDay,
                          const QString& weekendTime);
+    void setWeekSpecialEvent(const QString& isoDate, const QString& eventType,
+                             const QString& customLabel = {});
+    void clearWeekSpecialEvent(const QString& isoDate);
     void refreshReadiness();
 
 signals:
     void calendarChanged();
     void scheduleChanged();
+    void specialEventsChanged();
     void weekOpenRequested(const QDate& weekMonday, bool syncNow);
 
 private:
@@ -91,6 +121,7 @@ private:
     int m_weekendDay{7};
     QString m_midweekTime{QStringLiteral("19:30")};
     QString m_weekendTime{QStringLiteral("09:30")};
+    QHash<QString, SpecialWeekEvent> m_specialEvents;
     QVariantList m_calendarDays;
     QVariantList m_upcomingMeetings;
 };

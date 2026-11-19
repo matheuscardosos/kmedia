@@ -6,10 +6,17 @@
 #include <QString>
 #include <QStringList>
 #include <QUrl>
+#include <QVariantList>
 
 #include <vector>
 
 namespace kmedia {
+
+struct PlaylistSectionEntry
+{
+    QString name;
+    QString colorHex;
+};
 
 class DatabaseManager;
 class PlaybackController;
@@ -74,6 +81,7 @@ class PlaylistModel : public QAbstractListModel
                    availablePlaylistsChanged FINAL)
     Q_PROPERTY(
         int activePlaylistIndex READ activePlaylistIndex NOTIFY availablePlaylistsChanged FINAL)
+    Q_PROPERTY(QVariantList sections READ sections NOTIFY sectionsChanged FINAL)
 
 public:
     enum Roles {
@@ -160,6 +168,19 @@ public:
     Q_INVOKABLE bool switchAdjacentPlaylist(int delta);
     Q_INVOKABLE bool createNewPlaylist(const QString& name);
 
+    [[nodiscard]] QVariantList sections() const;
+    Q_INVOKABLE [[nodiscard]] QString colorForSection(const QString& sectionName) const;
+    Q_INVOKABLE bool ensureSection(const QString& name, const QString& colorHex = {});
+    Q_INVOKABLE bool createSection(const QString& name, const QString& colorHex = {});
+    Q_INVOKABLE bool renameSection(const QString& oldName, const QString& newName);
+    Q_INVOKABLE bool setSectionColor(const QString& sectionName, const QString& colorHex);
+    Q_INVOKABLE bool removeSection(const QString& sectionName);
+    Q_INVOKABLE bool moveSection(const QString& sectionName, int delta);
+    Q_INVOKABLE bool assignItemToSection(int index, const QString& targetSection);
+
+    [[nodiscard]] static QString defaultColorForSection(const QString& sectionTitle);
+    [[nodiscard]] static QString normalizeHexColor(const QString& raw, const QString& fallback);
+
     void populateDemoWorkspace(const QString& demoAssetDir);
 
 signals:
@@ -168,6 +189,7 @@ signals:
     void playlistNameChanged();
     void playlistSubtitleChanged();
     void availablePlaylistsChanged();
+    void sectionsChanged();
     void activeItemEdited();
     void importNotice(const QString& message);
 
@@ -175,6 +197,10 @@ private:
     void refreshAvailablePlaylists();
     void loadFromDatabase();
     void persistReorder();
+    void loadSectionsForPlaylist();
+    void saveSectionsForPlaylist() const;
+    void syncSectionsFromItems();
+    [[nodiscard]] int findSectionIndex(const QString& name) const;
     static void enrichEntryMetadata(PlaylistEntryView& entry);
     [[nodiscard]] QString extractSubdirForPackage(const QString& archivePath) const;
     [[nodiscard]] static QString kindLabelForMediaKind(int kind);
@@ -190,6 +216,7 @@ private:
     std::vector<qint64> m_playlistIds;
     QStringList m_playlistNames;
     std::vector<PlaylistEntryView> m_items;
+    std::vector<PlaylistSectionEntry> m_sections;
     int m_activeIndex{-1};
 };
 
