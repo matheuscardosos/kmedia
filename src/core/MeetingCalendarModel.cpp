@@ -623,7 +623,7 @@ void MeetingCalendarModel::clearWeekSpecialEvent(const QString& isoDate)
     const QDate effective = parsed.isValid() ? parsed : m_selectedDate;
     const QString mondayIso =
         MeetingCatalogService::weekMondayForDate(effective).toString(Qt::ISODate);
-    if (m_specialEvents.remove(mondayIso) > 0) {
+    if (m_specialEvents.remove(mondayIso)) {
         emit specialEventsChanged();
         rebuild();
     }
@@ -658,7 +658,7 @@ void MeetingCalendarModel::clearTempWeekSchedule(const QString& isoDate)
     const QDate effective = parsed.isValid() ? parsed : m_selectedDate;
     const QString mondayIso =
         MeetingCatalogService::weekMondayForDate(effective).toString(Qt::ISODate);
-    if (m_tempSchedules.remove(mondayIso) > 0) {
+    if (m_tempSchedules.remove(mondayIso)) {
         emit tempSchedulesChanged();
         rebuild();
     }

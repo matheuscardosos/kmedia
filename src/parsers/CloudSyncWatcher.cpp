@@ -427,7 +427,7 @@ void CloudSyncWatcher::onFileChanged(const QString& filePath)
             m_watcher.removePath(cleanFile);
         }
         m_pending.remove(cleanFile);
-        if (m_trackedFiles.remove(cleanFile) > 0) {
+        if (m_trackedFiles.remove(cleanFile)) {
             emit mediaRemoved(cleanFile, rootFolder);
         }
         return;
@@ -533,7 +533,7 @@ void CloudSyncWatcher::processDebounceQueue()
         const QFileInfo info(filePath);
         if (!info.exists()) {
             m_pending.remove(filePath);
-            if (m_trackedFiles.remove(filePath) > 0) {
+            if (m_trackedFiles.remove(filePath)) {
                 emit mediaRemoved(filePath, change.rootFolder);
             }
             continue;

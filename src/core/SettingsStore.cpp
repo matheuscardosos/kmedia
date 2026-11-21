@@ -55,7 +55,7 @@ bool SettingsStore::remove(const QString& key)
             return false;
         }
     }
-    if (m_cache.remove(key) > 0) {
+    if (m_cache.remove(key)) {
         emit settingChanged(key, {});
     }
     return true;
