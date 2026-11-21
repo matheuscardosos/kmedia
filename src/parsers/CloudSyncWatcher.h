@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDate>
 #include <QElapsedTimer>
 #include <QFileSystemWatcher>
 #include <QHash>
@@ -24,6 +25,8 @@ class CloudSyncWatcher : public QObject
 
     Q_PROPERTY(int debounceMs READ debounceMs WRITE setDebounceMs NOTIFY debounceMsChanged FINAL)
     Q_PROPERTY(QStringList watchedFolders READ watchedFolders NOTIFY watchedFoldersChanged FINAL)
+    Q_PROPERTY(bool dayFoldersOnly READ dayFoldersOnly WRITE setDayFoldersOnly NOTIFY
+                   dayFoldersOnlyChanged FINAL)
 
 public:
     enum class CloudProvider {
@@ -61,6 +64,9 @@ public:
     [[nodiscard]] int debounceMs() const;
     void setDebounceMs(int debounceMs);
 
+    [[nodiscard]] bool dayFoldersOnly() const;
+    void setDayFoldersOnly(bool dayFoldersOnly);
+
     [[nodiscard]] QStringList watchedFolders() const;
     [[nodiscard]] QStringList watchedDirectories() const;
 
@@ -78,9 +84,13 @@ public:
 signals:
     void debounceMsChanged();
     void watchedFoldersChanged();
+    void dayFoldersOnlyChanged();
     void mediaDiscovered(const QString& filePath, kmedia::CloudSyncWatcher::MediaCategory category,
                          const QString& rootFolder,
                          kmedia::CloudSyncWatcher::CloudProvider provider);
+    void datedMediaDiscovered(const QString& filePath, const QDate& meetingDate,
+                              kmedia::CloudSyncWatcher::MediaCategory category,
+                              const QString& rootFolder);
     void mediaUpdated(const QString& filePath, kmedia::CloudSyncWatcher::MediaCategory category,
                       const QString& rootFolder, kmedia::CloudSyncWatcher::CloudProvider provider);
     void mediaRemoved(const QString& filePath, const QString& rootFolder);
@@ -118,6 +128,9 @@ private:
     void armDebounceTimer();
     [[nodiscard]] QString rootForPath(const QString& path) const;
     [[nodiscard]] bool isPathUnderWatchedRoot(const QString& path) const;
+    [[nodiscard]] bool shouldWatchDirectory(const QString& rootFolder,
+                                            const QString& dirPath) const;
+    [[nodiscard]] bool shouldTrackFilesIn(const QString& rootFolder, const QString& dirPath) const;
     [[nodiscard]] bool checkArchiveOrMediaReadiness(const QString& filePath, MediaCategory category,
                                                     QString* reason) const;
 
@@ -125,6 +138,7 @@ private:
     QTimer m_debounceTimer;
     QElapsedTimer m_clock;
     int m_debounceMs{500};
+    bool m_dayFoldersOnly{false};
 
     QStringList m_roots;
     QSet<QString> m_registeredDirs;

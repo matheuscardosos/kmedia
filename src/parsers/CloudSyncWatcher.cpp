@@ -1,5 +1,6 @@
 #include "parsers/CloudSyncWatcher.h"
 
+#include "core/DatedFolderLayout.h"
 #include "media/PlaybackController.h"
 #include "parsers/ZipArchiveReader.h"
 
@@ -57,6 +58,25 @@ void CloudSyncWatcher::setDebounceMs(int debounceMs)
     }
     m_debounceMs = clamped;
     emit debounceMsChanged();
+}
+
+bool CloudSyncWatcher::dayFoldersOnly() const
+{
+    return m_dayFoldersOnly;
+}
+
+void CloudSyncWatcher::setDayFoldersOnly(bool dayFoldersOnly)
+{
+    if (m_dayFoldersOnly == dayFoldersOnly) {
+        return;
+    }
+    m_dayFoldersOnly = dayFoldersOnly;
+    const QStringList roots = m_roots;
+    clearWatchedFolders();
+    for (const QString& root : roots) {
+        (void)addWatchedFolder(root);
+    }
+    emit dayFoldersOnlyChanged();
 }
 
 QStringList CloudSyncWatcher::watchedFolders() const
@@ -221,10 +241,35 @@ int CloudSyncWatcher::scanAndEmitExisting(const QString& rootDir)
     for (auto it = m_trackedFiles.constBegin(); it != m_trackedFiles.constEnd(); ++it) {
         if (it.value().rootFolder == cleanRoot) {
             emit mediaDiscovered(it.key(), it.value().category, cleanRoot, provider);
+            const QDate meetingDate = DatedFolderLayout::dateForFile(it.key());
+            if (meetingDate.isValid()) {
+                emit datedMediaDiscovered(it.key(), meetingDate, it.value().category, cleanRoot);
+            }
             ++count;
         }
     }
     return count;
+}
+
+bool CloudSyncWatcher::shouldWatchDirectory(const QString& rootFolder, const QString& dirPath) const
+{
+    if (!m_dayFoldersOnly || dirPath == rootFolder) {
+        return true;
+    }
+    // Only `YYYY-MM-DD` folders directly under the root hold meeting day media.
+    const QFileInfo dirInfo(dirPath);
+    const QString name = dirInfo.fileName();
+    return cleanNormalizedPath(dirInfo.absolutePath()) == rootFolder &&
+           DatedFolderLayout::isDayFolderName(name) &&
+           !DatedFolderLayout::isLongPastDayFolder(name, QDate::currentDate());
+}
+
+bool CloudSyncWatcher::shouldTrackFilesIn(const QString& rootFolder, const QString& dirPath) const
+{
+    if (!m_dayFoldersOnly) {
+        return true;
+    }
+    return dirPath != rootFolder && shouldWatchDirectory(rootFolder, dirPath);
 }
 
 void CloudSyncWatcher::registerDirectoryTree(const QString& rootFolder, const QString& currentDir,
@@ -236,21 +281,10 @@ void CloudSyncWatcher::registerDirectoryTree(const QString& rootFolder, const QS
         }
     };
 
-    watchDir(currentDir);
-
-    QDirIterator it(currentDir, QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot,
-                    QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        const QString entryPath = cleanNormalizedPath(it.next());
-        const QFileInfo info = it.fileInfo();
-        if (info.isDir()) {
-            watchDir(entryPath);
-            continue;
-        }
-
+    auto trackFile = [&](const QString& entryPath, const QFileInfo& info) {
         const MediaCategory category = classifyMediaFile(entryPath);
         if (category == MediaCategory::Unknown) {
-            continue;
+            return;
         }
 
         const qint64 modifiedMs = info.lastModified().toMSecsSinceEpoch();
@@ -269,6 +303,42 @@ void CloudSyncWatcher::registerDirectoryTree(const QString& rootFolder, const QS
             schedulePendingCheck(entryPath, rootFolder, info.size(), modifiedMs,
                                  m_trackedFiles.contains(entryPath));
         }
+    };
+
+    if (!shouldWatchDirectory(rootFolder, currentDir)) {
+        return;
+    }
+    watchDir(currentDir);
+
+    if (m_dayFoldersOnly) {
+        const QDir dir(currentDir);
+        if (currentDir == rootFolder) {
+            const QFileInfoList subDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+            for (const QFileInfo& subInfo : subDirs) {
+                const QString subPath = cleanNormalizedPath(subInfo.absoluteFilePath());
+                if (shouldWatchDirectory(rootFolder, subPath)) {
+                    registerDirectoryTree(rootFolder, subPath, recordBaselineOnly);
+                }
+            }
+            return;
+        }
+        const QFileInfoList files = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
+        for (const QFileInfo& fileInfo : files) {
+            trackFile(cleanNormalizedPath(fileInfo.absoluteFilePath()), fileInfo);
+        }
+        return;
+    }
+
+    QDirIterator it(currentDir, QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        const QString entryPath = cleanNormalizedPath(it.next());
+        const QFileInfo info = it.fileInfo();
+        if (info.isDir()) {
+            watchDir(entryPath);
+            continue;
+        }
+        trackFile(entryPath, info);
     }
 }
 
@@ -377,9 +447,12 @@ void CloudSyncWatcher::reconcileDirectory(const QString& dirPath, const QString&
     const QFileInfoList subDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
     for (const QFileInfo& subInfo : subDirs) {
         const QString subPath = cleanNormalizedPath(subInfo.absoluteFilePath());
-        if (!m_registeredDirs.contains(subPath)) {
+        if (!m_registeredDirs.contains(subPath) && shouldWatchDirectory(rootFolder, subPath)) {
             registerDirectoryTree(rootFolder, subPath, false);
         }
+    }
+    if (!shouldTrackFilesIn(rootFolder, dirPath)) {
+        return;
     }
 
     QSet<QString> currentMediaFiles;
@@ -515,6 +588,10 @@ void CloudSyncWatcher::processDebounceQueue()
             emit mediaUpdated(filePath, category, change.rootFolder, provider);
         } else {
             emit mediaDiscovered(filePath, category, change.rootFolder, provider);
+            const QDate meetingDate = DatedFolderLayout::dateForFile(filePath);
+            if (meetingDate.isValid()) {
+                emit datedMediaDiscovered(filePath, meetingDate, category, change.rootFolder);
+            }
         }
     }
 
