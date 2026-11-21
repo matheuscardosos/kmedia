@@ -148,6 +148,14 @@ public:
     [[nodiscard]] static JwpubPackage filterPackageForWeek(const JwpubPackage& package,
                                                            const JwpubWeekFilterOptions& options);
 
+    /**
+     * Unpacks the whole publication (database and media) into `destDir` once. A marker with the
+     * archive size and timestamp lets later calls reuse the folder. Returns the database path,
+     * or an empty string on failure.
+     */
+    [[nodiscard]] static QString extractContents(const QString& jwpubPath, const QString& destDir,
+                                                 QString* error = nullptr);
+
     [[nodiscard]] static bool extractMediaAssets(const QString& jwpubPath, const QString& destDir,
                                                  const std::vector<QString>& requestedArchivePaths,
                                                  std::vector<QString>* extractedPaths = nullptr,
