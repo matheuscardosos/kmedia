@@ -8,7 +8,10 @@
 #include <QSize>
 #include <QSizeF>
 #include <QString>
+#include <QStringList>
 #include <QUrl>
+
+#include <vector>
 
 namespace kmedia {
 
@@ -48,6 +51,11 @@ public:
     [[nodiscard]] QString errorMessage() const;
 
     [[nodiscard]] QImage renderPage(int pageIndex, const QSize& requestedSize);
+
+    [[nodiscard]] static std::vector<int> parsePageRange(const QString& rangeSpec, int pageCount);
+    [[nodiscard]] static QStringList
+    exportPagesToPng(const QString& pdfPath, const QString& destDir, const QString& pageRangeSpec,
+                     int targetWidth = 1920, QString* error = nullptr);
 
 public slots:
     [[nodiscard]] bool load(const QUrl& url);

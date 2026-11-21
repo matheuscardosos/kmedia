@@ -47,6 +47,8 @@ qt_add_library(kmedia_core STATIC
     src/core/BoothSecurity.cpp
     src/core/DatabaseManager.h
     src/core/DatabaseManager.cpp
+    src/core/DatedFolderLayout.h
+    src/core/DatedFolderLayout.cpp
     src/core/MeetingCalendarModel.h
     src/core/MeetingCalendarModel.cpp
     src/core/MeetingTimer.h
@@ -77,6 +79,8 @@ qt_add_library(kmedia_core STATIC
     src/media/PdfViewerController.cpp
     src/media/PlaybackController.h
     src/media/PlaybackController.cpp
+    src/media/PlaylistExporter.h
+    src/media/PlaylistExporter.cpp
     src/media/ThumbnailCache.h
     src/media/ThumbnailCache.cpp
     src/models/PlaylistModel.h

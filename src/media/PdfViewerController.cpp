@@ -1,8 +1,13 @@
 #include "media/PdfViewerController.h"
 
 #include <QDir>
+#include <QFileInfo>
 #include <QMetaObject>
+#include <QRegularExpression>
+#include <QSet>
 #include <QThread>
+
+#include <algorithm>
 
 namespace kmedia {
 
@@ -204,6 +209,113 @@ void PdfViewerController::resetViewport()
     setZoomScale(1.0);
     setPanX(0.0);
     setPanY(0.0);
+}
+
+std::vector<int> PdfViewerController::parsePageRange(const QString& rangeSpec, int pageCount)
+{
+    std::vector<int> pages;
+    if (pageCount <= 0) {
+        return pages;
+    }
+
+    const QString cleaned = rangeSpec.trimmed().toLower();
+    if (cleaned.isEmpty() || cleaned == QStringLiteral("all") || cleaned == QStringLiteral("*")) {
+        pages.reserve(static_cast<size_t>(pageCount));
+        for (int p = 1; p <= pageCount; ++p) {
+            pages.push_back(p);
+        }
+        return pages;
+    }
+
+    QSet<int> seen;
+    const QStringList tokens = cleaned.split(QLatin1Char(','), Qt::SkipEmptyParts);
+    for (const QString& rawToken : tokens) {
+        const QString token = rawToken.trimmed();
+        const qsizetype dashIdx = token.indexOf(QLatin1Char('-'));
+        if (dashIdx > 0) {
+            bool okA = false;
+            bool okB = false;
+            const int start = token.left(dashIdx).trimmed().toInt(&okA);
+            const int end = token.mid(dashIdx + 1).trimmed().toInt(&okB);
+            if (!okA || !okB) {
+                continue;
+            }
+            const int lo = qBound(1, std::min(start, end), pageCount);
+            const int hi = qBound(1, std::max(start, end), pageCount);
+            for (int p = lo; p <= hi; ++p) {
+                if (!seen.contains(p)) {
+                    seen.insert(p);
+                    pages.push_back(p);
+                }
+            }
+        } else {
+            bool ok = false;
+            const int single = token.toInt(&ok);
+            if (ok && single >= 1 && single <= pageCount && !seen.contains(single)) {
+                seen.insert(single);
+                pages.push_back(single);
+            }
+        }
+    }
+    return pages;
+}
+
+QStringList PdfViewerController::exportPagesToPng(const QString& pdfPath, const QString& destDir,
+                                                  const QString& pageRangeSpec, int targetWidth,
+                                                  QString* error)
+{
+    QStringList outPaths;
+    const QString cleanPdf = QDir::cleanPath(pdfPath.trimmed());
+    if (!QFileInfo::exists(cleanPdf)) {
+        if (error != nullptr) {
+            *error = QStringLiteral("PDF file does not exist");
+        }
+        return outPaths;
+    }
+
+    QPdfDocument doc;
+    if (doc.load(cleanPdf) != QPdfDocument::Error::None || doc.pageCount() <= 0) {
+        if (error != nullptr) {
+            *error = QStringLiteral("Unable to open PDF document");
+        }
+        return outPaths;
+    }
+
+    const std::vector<int> pages = parsePageRange(pageRangeSpec, doc.pageCount());
+    if (pages.empty()) {
+        if (error != nullptr) {
+            *error = QStringLiteral("No valid page numbers found in range");
+        }
+        return outPaths;
+    }
+
+    const QString cleanDest = QDir::cleanPath(destDir.trimmed());
+    if (!QDir().mkpath(cleanDest)) {
+        if (error != nullptr) {
+            *error = QStringLiteral("Failed to create PDF output folder");
+        }
+        return outPaths;
+    }
+
+    const int widthPx = qBound(640, targetWidth, 3840);
+    const QString baseName = QFileInfo(cleanPdf).completeBaseName();
+    for (const int oneBasedPage : pages) {
+        const int zeroIdx = oneBasedPage - 1;
+        const QSizeF pts = doc.pagePointSize(zeroIdx);
+        const int heightPx = (pts.width() > 0.0 && pts.height() > 0.0)
+                                 ? qMax(1, static_cast<int>((pts.height() * widthPx) / pts.width()))
+                                 : 1080;
+        const QImage rendered = doc.render(zeroIdx, QSize(widthPx, heightPx));
+        if (rendered.isNull()) {
+            continue;
+        }
+        const QString imgPath = QDir(cleanDest).filePath(
+            QStringLiteral("%1_p%2.png").arg(baseName).arg(oneBasedPage, 3, 10, QLatin1Char('0')));
+        if (rendered.save(imgPath, "PNG")) {
+            outPaths.append(imgPath);
+        }
+    }
+    return outPaths;
 }
 
 PdfPageImageProvider::PdfPageImageProvider(PdfViewerController* controller)
