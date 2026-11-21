@@ -5,6 +5,7 @@
 #include "network/DownloadService.h"
 
 #include <QCoreApplication>
+#include <QCryptographicHash>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
@@ -200,7 +201,7 @@ TEST_CASE("CatalogClient builds standardized endpoints and parses JW catalog JSO
     REQUIRE(assets.at(0).track == 1);
 }
 
-TEST_CASE("DownloadService streams files, validates ETags, checks SHA-256, retries, and bounds "
+TEST_CASE("DownloadService streams files, validates ETags, checks checksums, retries, and bounds "
           "concurrency",
           "[network][downloads]")
 {
@@ -239,7 +240,7 @@ TEST_CASE("DownloadService streams files, validates ETags, checks SHA-256, retri
     const auto info1 = service.taskInfo(t1);
     REQUIRE(info1.has_value());
     REQUIRE(info1->status == kmedia::DownloadService::Status::Completed);
-    REQUIRE(info1->actualSha256 == payloadSha);
+    REQUIRE(info1->actualChecksum == payloadSha);
     REQUIRE(QFileInfo(destPath).size() == payload.size());
 
     // 2. Conditional ETag request hits 304 Not Modified cleanly.
@@ -263,6 +264,24 @@ TEST_CASE("DownloadService streams files, validates ETags, checks SHA-256, retri
     REQUIRE(infoBad->status == kmedia::DownloadService::Status::Failed);
     REQUIRE_FALSE(QFileInfo::exists(badDest));
     REQUIRE_FALSE(QFileInfo::exists(badDest + QStringLiteral(".kmedia.part")));
+
+    // 3b. JW.org publishes MD5 checksums: a matching one verifies, a wrong one fails.
+    const QString payloadMd5 =
+        QString::fromLatin1(QCryptographicHash::hash(payload, QCryptographicHash::Md5).toHex());
+    const QString md5Dest = tempDir.filePath(QStringLiteral("media/md5.mp4"));
+    const QString tMd5 =
+        service.enqueue(server.urlFor(QStringLiteral("/file.mp4")), md5Dest, payloadMd5);
+    REQUIRE(finishedSpy.wait(3000));
+    REQUIRE(service.taskInfo(tMd5)->status == kmedia::DownloadService::Status::Completed);
+    REQUIRE(service.taskInfo(tMd5)->actualChecksum == payloadMd5);
+    REQUIRE(QFileInfo(md5Dest).size() == payload.size());
+
+    const QString badMd5Dest = tempDir.filePath(QStringLiteral("media/bad-md5.mp4"));
+    const QString tBadMd5 = service.enqueue(server.urlFor(QStringLiteral("/file.mp4")), badMd5Dest,
+                                            QStringLiteral("00000000000000000000000000000000"));
+    REQUIRE(finishedSpy.wait(3000));
+    REQUIRE(service.taskInfo(tBadMd5)->status == kmedia::DownloadService::Status::Failed);
+    REQUIRE_FALSE(QFileInfo::exists(badMd5Dest));
 
     // 4. Retry backoff recovers cleanly from transient 503.
     const QString flakyDest = tempDir.filePath(QStringLiteral("media/flaky.mp4"));

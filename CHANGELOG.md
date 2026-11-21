@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- Fixed JW.org downloads always failing checksum verification: GETPUBMEDIALINKS and the Mediator publish MD5 checksums, which `DownloadService` compared against a SHA-256 hash and then deleted the file. Downloads now verify with the algorithm the expected checksum belongs to (MD5 or SHA-256).
 - Opening a day no longer reads every image from disk or queries each media item separately, and removing a custom section keeps its media under *Added Media* instead of refusing.
 - Fixed OBS/Zoom actions in `SettingsView` (`connectToObs()` and `joinMeeting()`), kept static Image/PDF presentations mapped to the OBS play scene instead of `pauseScene`, routed `ZoomBridge::dedicatedAudioDevice` through `PlaybackController` and `BackgroundMusicEngine`, isolated `--demo` writes in `saveCloudFolder()` and `saveObsAndZoomSettings()`, and wired focus-safe local keyboard shortcuts (`Space`, `B`, `Ctrl+M`, `Escape`, `Delete`, `1`-`6`) in `Main.qml`.
 
