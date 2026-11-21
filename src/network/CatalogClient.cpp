@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QPointer>
 #include <QSaveFile>
 #include <QUrlQuery>
 
@@ -382,9 +383,14 @@ CatalogClient::parseCongregationSearchJson(const QByteArray& json)
 }
 
 template <typename Callback>
-void CatalogClient::fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult)
+void CatalogClient::fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult,
+                                       std::function<void(const QString&)> onError)
 {
     if (!endpoint.isValid()) {
+        if (onError) {
+            onError(QStringLiteral("Invalid catalog endpoint URL"));
+            return;
+        }
         emit requestFailed(endpoint.toString(), QStringLiteral("Invalid catalog endpoint URL"));
         return;
     }
@@ -406,7 +412,8 @@ void CatalogClient::fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult
     QNetworkReply* reply =
         m_network->accessManager()->get(m_network->buildRequest(endpoint, etag, lastModified));
     connect(reply, &QNetworkReply::finished, this,
-            [this, reply, endpoint, cachedBodyPath, handler = std::forward<Callback>(onResult)]() {
+            [this, reply, endpoint, cachedBodyPath, handler = std::forward<Callback>(onResult),
+             onError]() {
                 const HttpCacheHeaders headers = NetworkManager::extractCacheHeaders(reply);
                 const QByteArray body = reply->readAll();
                 const QNetworkReply::NetworkError netErr = reply->error();
@@ -425,6 +432,10 @@ void CatalogClient::fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult
                     return;
                 }
                 if (netErr != QNetworkReply::NoError || headers.statusCode >= 400) {
+                    if (onError) {
+                        onError(errText);
+                        return;
+                    }
                     emit requestFailed(endpoint.toString(), errText);
                     return;
                 }
@@ -485,6 +496,27 @@ void CatalogClient::fetchMediatorMedia(const QUrl& endpoint, const QString& pubM
         emit mediatorAssetsLoaded(pubMediaKey, parseMediatorMediaJson(body, pubMediaKey),
                                   fromCache);
     });
+}
+
+void CatalogClient::requestPubMediaLinks(const QUrl& endpoint, const QString& preferredLangCode,
+                                         QObject* context, AssetsCallback callback)
+{
+    const QPointer<QObject> guard(context);
+    fetchWithEtagCache(
+        endpoint,
+        [guard, preferredLangCode, callback](const QByteArray& body, bool) {
+            if (guard.isNull()) {
+                return;
+            }
+            callback(!body.isEmpty(), body.isEmpty()
+                                          ? std::vector<CatalogMediaAsset>{}
+                                          : parsePubMediaLinksJson(body, preferredLangCode));
+        },
+        [guard, callback](const QString&) {
+            if (!guard.isNull()) {
+                callback(false, {});
+            }
+        });
 }
 
 void CatalogClient::searchCongregations(const QString& queryText)

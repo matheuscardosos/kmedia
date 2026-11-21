@@ -20,6 +20,7 @@ Q_MOC_INCLUDE("media/PlaybackController.h")
 Q_MOC_INCLUDE("models/PlaylistModel.h")
 Q_MOC_INCLUDE("network/DownloadService.h")
 Q_MOC_INCLUDE("network/MeetingCatalogService.h")
+Q_MOC_INCLUDE("network/MeetingSyncEngine.h")
 Q_MOC_INCLUDE("parsers/CloudSyncWatcher.h")
 
 class MpvRendererItem;
@@ -35,6 +36,7 @@ class DisplayManager;
 class DownloadService;
 class MeetingCalendarModel;
 class MeetingCatalogService;
+class MeetingSyncEngine;
 class MeetingTimer;
 class NetworkManager;
 class ObsWebSocketClient;
@@ -43,6 +45,7 @@ class PlaybackController;
 class PlaylistModel;
 class ProcessMonitor;
 class ProfileManager;
+class PublicationStore;
 class ThumbnailCache;
 class ZoomBridge;
 } // namespace kmedia
@@ -83,6 +86,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(kmedia::MeetingTimer* meetingTimer READ meetingTimer CONSTANT FINAL)
     Q_PROPERTY(kmedia::MeetingCatalogService* catalog READ catalog CONSTANT FINAL)
     Q_PROPERTY(kmedia::MeetingCalendarModel* calendar READ calendar CONSTANT FINAL)
+    Q_PROPERTY(kmedia::MeetingSyncEngine* sync READ syncEngine CONSTANT FINAL)
 
 public:
     static void setStartupDemoMode(bool enabled);
@@ -125,6 +129,7 @@ public:
     [[nodiscard]] kmedia::MeetingTimer* meetingTimer() const;
     [[nodiscard]] kmedia::MeetingCatalogService* catalog() const;
     [[nodiscard]] kmedia::MeetingCalendarModel* calendar() const;
+    [[nodiscard]] kmedia::MeetingSyncEngine* syncEngine() const;
 
     Q_INVOKABLE void bindPresentationMpv(MpvRendererItem* mpvItem);
     Q_INVOKABLE bool setUiLanguage(const QString& languageCode);
@@ -156,6 +161,7 @@ signals:
 private:
     void applyProfileSettings();
     void syncAudioRouting();
+    void applySyncSettings(bool resetWhenChanged);
     void wireIntegrations();
 
     static bool s_startupDemoMode;
@@ -189,4 +195,6 @@ private:
     std::unique_ptr<kmedia::MeetingTimer> m_meetingTimer;
     std::unique_ptr<kmedia::MeetingCatalogService> m_meetingCatalog;
     std::unique_ptr<kmedia::MeetingCalendarModel> m_calendarModel;
+    std::unique_ptr<kmedia::PublicationStore> m_publicationStore;
+    std::unique_ptr<kmedia::MeetingSyncEngine> m_syncEngine;
 };

@@ -367,7 +367,8 @@ ScrollView {
                         iconName: "refresh-cw"
                         text: root.compactMode ? qsTr("Sync Week") : qsTr("Fetch & Auto-Fill Week")
                         enabled: !ApplicationController.catalog.busy
-                        onClicked: ApplicationController.catalog.syncCurrentWeekToPlaylist()
+                        onClicked: ApplicationController.sync.resyncDay(
+                            ApplicationController.calendar.selectedDateIso)
                     }
 
                     StudioButton {

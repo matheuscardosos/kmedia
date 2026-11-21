@@ -76,6 +76,7 @@ public:
     [[nodiscard]] QString selectedLanguageCode() const;
     void setSelectedLanguageCode(const QString& code);
     [[nodiscard]] QString selectedLanguageLabel() const;
+    [[nodiscard]] bool isSignLanguage(const QString& code) const;
     [[nodiscard]] QString fallbackLanguageCode() const;
     void setFallbackLanguageCode(const QString& code);
 

@@ -1204,6 +1204,23 @@ bool DatabaseManager::deletePlaylistEntry(qint64 entryId, qint64 playlistId)
     return true;
 }
 
+bool DatabaseManager::deletePlaylistEntriesBySource(qint64 playlistId, const QString& source)
+{
+    if (!m_isOpen || playlistId <= 0 || source.trimmed().isEmpty()) {
+        return false;
+    }
+    QSqlQuery query(databaseHandle());
+    query.prepare(QStringLiteral(
+        "DELETE FROM playlist_items WHERE playlist_id = :playlist_id AND source = :source"));
+    query.bindValue(QStringLiteral(":playlist_id"), playlistId);
+    query.bindValue(QStringLiteral(":source"), source.trimmed());
+    if (!query.exec()) {
+        setLastError(query.lastError().text());
+        return false;
+    }
+    return true;
+}
+
 bool DatabaseManager::updatePlaylistEntrySection(qint64 entryId, qint64 playlistId,
                                                  const QString& sectionId)
 {
