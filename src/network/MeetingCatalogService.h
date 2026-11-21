@@ -162,7 +162,7 @@ private:
     struct PendingDownloadTarget
     {
         QString localPath;
-        QString sectionTitle;
+        QString sectionId;
         QString fileFormat;
         QString tagType;
         QString tagValue;
@@ -178,7 +178,7 @@ private:
     void enqueueMissingAutoSyncAssets();
     void resolveLinkedJwpubMedia(const QString& jwpubPath);
     void resolveSingleLinkedMedia(const QString& pubSymbol, int issueTag, qint64 docId, int track,
-                                  const QString& title, const QString& sectionTitle,
+                                  const QString& title, const QString& sectionId,
                                   const QString& groupKey, const QString& tagType,
                                   const QString& tagValue, bool isCbs);
     void applyWeekEventSection();

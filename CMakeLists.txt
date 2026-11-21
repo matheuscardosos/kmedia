@@ -51,6 +51,8 @@ qt_add_library(kmedia_core STATIC
     src/core/DatedFolderLayout.cpp
     src/core/MeetingCalendarModel.h
     src/core/MeetingCalendarModel.cpp
+    src/core/MeetingSections.h
+    src/core/MeetingSections.cpp
     src/core/MeetingTimer.h
     src/core/MeetingTimer.cpp
     src/core/NetworkManager.h

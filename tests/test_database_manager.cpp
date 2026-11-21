@@ -2,13 +2,16 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QTemporaryDir>
 
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs v2 migrations", "[database][core]")
+TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs schema migrations", "[database][core]")
 {
     QTemporaryDir tempDir;
     REQUIRE(tempDir.isValid());
@@ -18,7 +21,7 @@ TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs v2 migrations", "[d
     REQUIRE(db.open(dbPath));
     REQUIRE(db.isOpen());
     REQUIRE(QFileInfo::exists(dbPath));
-    REQUIRE(db.schemaVersion() == 2);
+    REQUIRE(db.schemaVersion() == 3);
     REQUIRE(db.pragmaValue(QStringLiteral("journal_mode")).toLower() == QStringLiteral("wal"));
     REQUIRE(db.pragmaValue(QStringLiteral("foreign_keys")) == QStringLiteral("1"));
 
@@ -27,7 +30,7 @@ TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs v2 migrations", "[d
 
     // Reopening an existing database preserves schema version without reapplying migrations
     REQUIRE(db.open(dbPath));
-    REQUIRE(db.schemaVersion() == 2);
+    REQUIRE(db.schemaVersion() == 3);
 }
 
 TEST_CASE("DatabaseManager supports date-keyed playlists and v2 entry metadata", "[database][core]")
@@ -182,4 +185,94 @@ TEST_CASE("DatabaseManager supports media, playlist, cascade, and transaction ro
     REQUIRE(loadedCache.has_value());
     REQUIRE(loadedCache->etag == QStringLiteral("\"v1\""));
     REQUIRE(loadedCache->lastModified.isEmpty());
+}
+
+TEST_CASE("DatabaseManager migrates title-based sections to stable section ids",
+          "[database][migration]")
+{
+    const QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+    const QString dbPath = tempDir.filePath(QStringLiteral("legacy.db"));
+    qint64 playlistId = 0;
+
+    {
+        kmedia::DatabaseManager db;
+        REQUIRE(db.open(dbPath));
+
+        kmedia::PlaylistRecord playlist;
+        playlist.name = QStringLiteral("Legacy Midweek");
+        playlist.meetingDate = QStringLiteral("2026-11-25");
+        playlist.meetingType = QStringLiteral("midweek");
+        playlist.sectionsJson =
+            QStringLiteral(R"([{"name":"Treasures From God's Word","color":"#5F6B73"},)"
+                           R"({"name":"Local Needs","color":"#1E88E5","collapsed":true}])");
+        playlistId = db.createPlaylist(playlist);
+        REQUIRE(playlistId > 0);
+
+        kmedia::MediaItemRecord synced;
+        synced.filePath = tempDir.filePath(QStringLiteral("catalog/T/mwb_202611/picture.jpg"));
+        synced.sourceKind = QStringLiteral("jwpub");
+        const qint64 syncedId = db.upsertMediaItem(synced);
+
+        kmedia::MediaItemRecord local;
+        local.filePath = tempDir.filePath(QStringLiteral("talk.png"));
+        local.sourceKind = QStringLiteral("local");
+        const qint64 localId = db.upsertMediaItem(local);
+
+        kmedia::PlaylistEntryRecord treasures;
+        treasures.playlistId = playlistId;
+        treasures.mediaItemId = syncedId;
+        treasures.sectionTitle = QStringLiteral("Treasures From God's Word");
+        treasures.originalSection = QStringLiteral("Treasures From God's Word");
+        treasures.sortOrder = 0;
+        REQUIRE(db.addPlaylistEntry(treasures) > 0);
+
+        kmedia::PlaylistEntryRecord custom;
+        custom.playlistId = playlistId;
+        custom.mediaItemId = localId;
+        custom.sectionTitle = QStringLiteral("Local Needs");
+        custom.sortOrder = 1;
+        REQUIRE(db.addPlaylistEntry(custom) > 0);
+
+        // Roll the file back to schema V2 so the next open migrates these legacy rows.
+        REQUIRE(db.executeTransaction([](QSqlDatabase& handle) {
+            QSqlQuery query(handle);
+            return query.exec(QStringLiteral("DELETE FROM schema_migrations WHERE version = 3")) &&
+                   query.exec(QStringLiteral("UPDATE playlist_items SET section_id = '', "
+                                             "source = 'additional'"));
+        }));
+    }
+
+    kmedia::DatabaseManager reopened;
+    REQUIRE(reopened.open(dbPath));
+    REQUIRE(reopened.schemaVersion() == 3);
+
+    const auto entries = reopened.listPlaylistEntries(playlistId);
+    REQUIRE(entries.size() == 2);
+    REQUIRE(entries[0].sectionId == QStringLiteral("tgw"));
+    REQUIRE(entries[0].originalSection == QStringLiteral("tgw"));
+    REQUIRE(entries[0].source == QStringLiteral("dynamic"));
+    REQUIRE(entries[1].sectionId.startsWith(QStringLiteral("custom-")));
+    REQUIRE(entries[1].source == QStringLiteral("additional"));
+
+    const auto migrated = reopened.findPlaylistById(playlistId);
+    REQUIRE(migrated.has_value());
+    const QJsonArray sections = QJsonDocument::fromJson(migrated->sectionsJson.toUtf8()).array();
+    REQUIRE(sections.size() == 2);
+    REQUIRE(sections.at(0).toObject().value(QStringLiteral("id")).toString() ==
+            QStringLiteral("tgw"));
+    REQUIRE(sections.at(0).toObject().value(QStringLiteral("color")).toString() ==
+            QStringLiteral("#5F6B73"));
+    REQUIRE(sections.at(1).toObject().value(QStringLiteral("id")).toString() ==
+            entries[1].sectionId);
+    REQUIRE(sections.at(1).toObject().value(QStringLiteral("label")).toString() ==
+            QStringLiteral("Local Needs"));
+    REQUIRE(sections.at(1).toObject().value(QStringLiteral("collapsed")).toBool());
+
+    const auto rows = reopened.listPlaylistItemRows(playlistId);
+    REQUIRE(rows.size() == 2);
+    REQUIRE(rows[0].media.has_value());
+    REQUIRE(rows[0].media->sourceKind == QStringLiteral("jwpub"));
+    REQUIRE(reopened.setPlaylistSyncStatus(playlistId, QStringLiteral("complete")));
+    REQUIRE(reopened.findPlaylistById(playlistId)->syncStatus == QStringLiteral("complete"));
 }

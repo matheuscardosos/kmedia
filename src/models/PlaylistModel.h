@@ -15,10 +15,12 @@ namespace kmedia {
 
 struct PlaylistSectionEntry
 {
-    QString name;
+    QString id;
+    QString label;
     QString colorHex;
     bool repeatable{false};
     bool collapsed{false};
+    QString documentTitle;
 };
 
 class DatabaseManager;
@@ -34,7 +36,7 @@ struct PlaylistEntryView
     qint64 mediaItemId{0};
     QString title;
     QString subtitle;
-    QString sectionTitle;
+    QString sectionId;
     QString filePath;
     QString thumbnailUrl;
     QString kindLabel;
@@ -66,6 +68,10 @@ struct PlaylistEntryView
     QString dividerColor;
     int slideIntervalMs{0};
     QString pairedAudioPath;
+    QString source{QStringLiteral("additional")};
+    QString uniqueKey;
+    int width{0};
+    int height{0};
 };
 
 /**
@@ -150,6 +156,8 @@ public:
         SlideIntervalMsRole,
         PairedAudioPathRole,
         RowVisibleRole,
+        SectionLabelRole,
+        SourceRole,
     };
     Q_ENUM(Roles)
 
@@ -191,12 +199,10 @@ public:
 
     [[nodiscard]] const std::vector<PlaylistEntryView>& items() const;
 
-    Q_INVOKABLE int importUrls(const QList<QUrl>& urls,
-                               const QString& defaultSection = QStringLiteral("Meeting"));
-    Q_INVOKABLE bool importLocalFile(const QString& filePath,
-                                     const QString& sectionTitle = QStringLiteral("Meeting"));
+    Q_INVOKABLE int importUrls(const QList<QUrl>& urls, const QString& sectionId = {});
+    Q_INVOKABLE bool importLocalFile(const QString& filePath, const QString& sectionId = {});
     int importJwpubForWeek(const QString& filePath, const JwpubWeekFilterOptions& options,
-                           const QString& fallbackSection, bool isCoVisit,
+                           const QString& fallbackSectionId, bool isCoVisit,
                            QString* outWatchtowerSubtitle = nullptr,
                            std::vector<JwpubMediaItem>* outUnresolvedLinked = nullptr,
                            std::vector<JwpubExtractRef>* outExtracts = nullptr);
@@ -216,14 +222,15 @@ public:
     Q_INVOKABLE bool createNewPlaylist(const QString& name);
 
     [[nodiscard]] QVariantList sections() const;
-    Q_INVOKABLE [[nodiscard]] QString colorForSection(const QString& sectionName) const;
-    Q_INVOKABLE bool ensureSection(const QString& name, const QString& colorHex = {});
-    Q_INVOKABLE bool createSection(const QString& name, const QString& colorHex = {});
-    Q_INVOKABLE bool renameSection(const QString& oldName, const QString& newName);
-    Q_INVOKABLE bool setSectionColor(const QString& sectionName, const QString& colorHex);
-    Q_INVOKABLE bool removeSection(const QString& sectionName);
-    Q_INVOKABLE bool moveSection(const QString& sectionName, int delta);
-    Q_INVOKABLE bool assignItemToSection(int index, const QString& targetSection);
+    Q_INVOKABLE [[nodiscard]] QString colorForSection(const QString& sectionId) const;
+    Q_INVOKABLE [[nodiscard]] QString sectionLabel(const QString& sectionId) const;
+    Q_INVOKABLE bool ensureSection(const QString& sectionId, const QString& colorHex = {});
+    Q_INVOKABLE QString createSection(const QString& label, const QString& colorHex = {});
+    Q_INVOKABLE bool renameSection(const QString& sectionId, const QString& newLabel);
+    Q_INVOKABLE bool setSectionColor(const QString& sectionId, const QString& colorHex);
+    Q_INVOKABLE bool removeSection(const QString& sectionId);
+    Q_INVOKABLE bool moveSection(const QString& sectionId, int delta);
+    Q_INVOKABLE bool assignItemToSection(int index, const QString& sectionId);
 
     [[nodiscard]] QString currentDateIso() const;
     [[nodiscard]] QString currentMeetingKind() const;
@@ -235,7 +242,7 @@ public:
 
     Q_INVOKABLE bool openWorkspaceForDate(const QString& dateIso, const QString& meetingKind,
                                           const QString& displayTitle = {}, bool isCoVisit = false);
-    Q_INVOKABLE bool addDivider(const QString& title, const QString& sectionTitle,
+    Q_INVOKABLE bool addDivider(const QString& title, const QString& sectionId,
                                 const QString& colorHex = QStringLiteral("#D47B2A"),
                                 int afterIndex = -1);
     Q_INVOKABLE bool setItemHidden(int index, bool hidden);
@@ -246,11 +253,11 @@ public:
     Q_INVOKABLE bool setItemSlideInterval(int index, int intervalMs);
     Q_INVOKABLE bool pairAudioWithItem(int index, const QString& audioFilePath);
     Q_INVOKABLE bool toggleGroupExpanded(const QString& groupKey);
-    Q_INVOKABLE bool setSectionRepeatable(const QString& sectionName, bool repeatable);
-    Q_INVOKABLE bool toggleSectionCollapsed(const QString& sectionName);
+    Q_INVOKABLE bool setSectionRepeatable(const QString& sectionId, bool repeatable);
+    Q_INVOKABLE bool toggleSectionCollapsed(const QString& sectionId);
     Q_INVOKABLE bool resetSortOrder();
 
-    [[nodiscard]] static QString defaultColorForSection(const QString& sectionTitle);
+    [[nodiscard]] static QString defaultColorForSection(const QString& sectionId);
     [[nodiscard]] static QString normalizeHexColor(const QString& raw, const QString& fallback);
 
     void populateDemoWorkspace(const QString& demoAssetDir);
@@ -278,7 +285,7 @@ private:
     void saveSectionsForPlaylist() const;
     void syncSectionsFromItems();
     void ensureFixedMeetingSections(const QString& meetingKind, bool isCoVisit);
-    [[nodiscard]] int findSectionIndex(const QString& name) const;
+    [[nodiscard]] int findSectionIndex(const QString& sectionId) const;
     [[nodiscard]] bool isRowVisible(int row) const;
     [[nodiscard]] int groupItemCount(const QString& groupKey) const;
     [[nodiscard]] bool isGroupStart(int row) const;

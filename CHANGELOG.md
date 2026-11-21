@@ -8,12 +8,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Meeting sections are stored by stable id (`tgw`, `ayfm`, `lac`, `pt`, `wt`, `circuit-overseer`, `imported-media`, `custom-<n>`), so their names follow the interface language and their default colors match the meeting workbook. Database schema V3 migrates existing days in place and adds a per-day sync status plus synced and added media tracking for the upcoming background sync.
 - Implemented date-keyed daily meeting workspaces (`DatabaseManager` V2 schema + `PlaylistModel`) isolating `midweek`, `weekend`, `memorial`, and custom non-meeting days per congregation profile with collapsible extract groups, colored dividers, editable media tags, hidden item toggles, per-section repeat, slide intervals, search filter (`Ctrl+F`), and sort-order reset.
 - Added `YYYY-MM-DD` day folder support shared by the watched folder and the media auto-export (`DatedFolderLayout`, `PlaylistExporter`): the date comes from the parent folder, placements live in a per-folder `.section-order.json`, exports use numbered `NN Section - NN Title` names that stay in sync between runs, day folders are removed once their week is over, images and audio can become MP4 clips through FFmpeg, and `CloudSyncWatcher` gains an opt-in mode that only watches recent day folders. `PdfViewerController` can also export a page range as PNG images.
 - Upgraded `JwpubParser`, `CatalogClient`, `MeetingCalendarModel`, and `MeetingCatalogService` with `DatedText` week matching, `[6, 8, 10, 12]`-week *Watchtower* `Class = 40` resolution, `DocumentExtract` song/reference parsing, `SuppressZoom` / `LinkMultimediaId` filtering, Mediator `v1/media-items` + `GETPUBMEDIALINKS` + secondary language fallback, `2100 s` stream-only threshold, CO Tuesday shift + hidden CBS/closing song rules, Memorial suppression + `mi<YY>` support, temporary schedule overrides, extraction filter toggles, and `hub.jw.org` Congregation Lookup UI.
 
 ### Fixed
 
+- Opening a day no longer reads every image from disk or queries each media item separately, and removing a custom section keeps its media under *Added Media* instead of refusing.
 - Fixed OBS/Zoom actions in `SettingsView` (`connectToObs()` and `joinMeeting()`), kept static Image/PDF presentations mapped to the OBS play scene instead of `pauseScene`, routed `ZoomBridge::dedicatedAudioDevice` through `PlaybackController` and `BackgroundMusicEngine`, isolated `--demo` writes in `saveCloudFolder()` and `saveObsAndZoomSettings()`, and wired focus-safe local keyboard shortcuts (`Space`, `B`, `Ctrl+M`, `Escape`, `Delete`, `1`-`6`) in `Main.qml`.
 
 ## [0.1.2](https://github.com/matheuscardosos/kmedia/compare/v0.1.1...v0.1.2) (2026-11-19)

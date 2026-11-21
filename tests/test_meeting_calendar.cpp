@@ -136,10 +136,12 @@ TEST_CASE(
     REQUIRE(catalog.weekEventType() == QStringLiteral("co_visit"));
     catalog.syncCurrentWeekToPlaylist();
     REQUIRE(playlist.sections().size() == 1);
+    REQUIRE(playlist.sections().at(0).toMap().value(QStringLiteral("id")).toString() ==
+            QStringLiteral("circuit-overseer"));
     REQUIRE(playlist.sections().at(0).toMap().value(QStringLiteral("name")).toString() ==
             QStringLiteral("Circuit Overseer"));
-    REQUIRE(playlist.colorForSection(QStringLiteral("Circuit Overseer")) ==
-            QStringLiteral("#3F7F5F"));
+    REQUIRE(playlist.colorForSection(QStringLiteral("circuit-overseer")) ==
+            QStringLiteral("#945EB5"));
 
     catalog.setTargetWeekDate(QDate(2026, 6, 24));
     catalog.syncCurrentWeekToPlaylist();

@@ -22,13 +22,13 @@ TEST_CASE("MeetingCatalogService resolves weekly dates, issue tags, sections, an
 
     REQUIRE(MCS::inferMeetingSection(QStringLiteral("mwb"),
                                      QStringLiteral("Treasures From God's Word"),
-                                     {}) == QStringLiteral("Treasures From God's Word"));
+                                     {}) == QStringLiteral("tgw"));
     REQUIRE(MCS::inferMeetingSection(QStringLiteral("mwb"), QStringLiteral("Nossa Vida Cristã"),
-                                     {}) == QStringLiteral("Living as Christians"));
+                                     {}) == QStringLiteral("lac"));
     REQUIRE(MCS::inferMeetingSection(QStringLiteral("w"), QStringLiteral("Lesson 10"), {}) ==
-            QStringLiteral("Watchtower Study"));
+            QStringLiteral("wt"));
     REQUIRE(MCS::inferMeetingSection(QStringLiteral("S-34"), QStringLiteral("Talk 42"), {}) ==
-            QStringLiteral("Public Talk"));
+            QStringLiteral("pt"));
 
     std::vector<kmedia::CatalogMediaAsset> raw;
     kmedia::CatalogMediaAsset vid360;

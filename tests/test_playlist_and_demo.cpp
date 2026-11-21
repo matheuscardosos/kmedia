@@ -34,8 +34,8 @@ TEST_CASE("PlaylistModel supports drag-and-drop moves, jwlplaylist import, trims
     REQUIRE(img.save(slideA, "PNG"));
     REQUIRE(img.save(slideB, "PNG"));
 
-    REQUIRE(model.importLocalFile(slideA, QStringLiteral("Treasures")));
-    REQUIRE(model.importLocalFile(slideB, QStringLiteral("Living")));
+    REQUIRE(model.importLocalFile(slideA, QStringLiteral("tgw")));
+    REQUIRE(model.importLocalFile(slideB, QStringLiteral("lac")));
     REQUIRE(model.count() == 2);
 
     REQUIRE(model.activateIndex(0));
@@ -60,10 +60,12 @@ TEST_CASE("PlaylistModel supports drag-and-drop moves, jwlplaylist import, trims
     REQUIRE(model.activeIndex() == 0);
     REQUIRE(QFileInfo::exists(QUrl(model.activeThumbnailUrl()).toLocalFile()));
     REQUIRE(model.data(model.index(0, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
-            QStringLiteral("Treasures From God's Word"));
+            QStringLiteral("tgw"));
     REQUIRE(model.data(model.index(3, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
-            QStringLiteral("Apply Yourself to the Field Ministry"));
+            QStringLiteral("ayfm"));
     REQUIRE(model.data(model.index(7, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
+            QStringLiteral("lac"));
+    REQUIRE(model.data(model.index(7, 0), kmedia::PlaylistModel::SectionLabelRole).toString() ==
             QStringLiteral("Living as Christians"));
 
     // Enriched metadata used by the inspector and playlist table.
@@ -107,6 +109,7 @@ TEST_CASE("PlaylistModel supports custom section builder, color customization, a
 
     const QString mediaA = tempDir.filePath(QStringLiteral("talkA.png"));
     const QString mediaB = tempDir.filePath(QStringLiteral("talkB.png"));
+    QString localNeeds;
     QImage img(32, 32, QImage::Format_ARGB32);
     img.fill(Qt::darkBlue);
     REQUIRE(img.save(mediaA, "PNG"));
@@ -118,36 +121,47 @@ TEST_CASE("PlaylistModel supports custom section builder, color customization, a
 
         kmedia::PlaylistModel model;
         model.attachDatabase(&db);
-        REQUIRE(model.importLocalFile(mediaA, QStringLiteral("Treasures From God's Word")));
-        REQUIRE(model.importLocalFile(mediaB, QStringLiteral("Living as Christians")));
+        REQUIRE(model.importLocalFile(mediaA, QStringLiteral("tgw")));
+        REQUIRE(model.importLocalFile(mediaB, QStringLiteral("lac")));
 
-        REQUIRE(model.createSection(QStringLiteral("Local Needs"), QStringLiteral("#1E88E5")));
-        REQUIRE_FALSE(
-            model.createSection(QStringLiteral("local needs"), QStringLiteral("#000000")));
-        REQUIRE(model.setSectionColor(QStringLiteral("Local Needs"), QStringLiteral("#2E7D32")));
-        REQUIRE(model.colorForSection(QStringLiteral("Local Needs")) == QStringLiteral("#2E7D32"));
+        localNeeds = model.createSection(QStringLiteral("Local Needs"), QStringLiteral("#1E88E5"));
+        REQUIRE(localNeeds.startsWith(QStringLiteral("custom-")));
+        REQUIRE(model.createSection(QStringLiteral("local needs"), QStringLiteral("#000000"))
+                    .isEmpty());
+        REQUIRE(model.setSectionColor(localNeeds, QStringLiteral("#2E7D32")));
+        REQUIRE(model.colorForSection(localNeeds) == QStringLiteral("#2E7D32"));
 
-        REQUIRE(model.assignItemToSection(0, QStringLiteral("Local Needs")));
+        REQUIRE(model.assignItemToSection(0, localNeeds));
         REQUIRE(model.data(model.index(1, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
-                QStringLiteral("Local Needs"));
+                localNeeds);
 
-        REQUIRE(model.renameSection(QStringLiteral("Local Needs"), QStringLiteral("Special Talk")));
-        REQUIRE(model.data(model.index(1, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
+        // Renaming changes only the label; items keep pointing at the same section id.
+        REQUIRE(model.renameSection(localNeeds, QStringLiteral("Special Talk")));
+        REQUIRE(model.sectionLabel(localNeeds) == QStringLiteral("Special Talk"));
+        REQUIRE(model.data(model.index(1, 0), kmedia::PlaylistModel::SectionLabelRole).toString() ==
                 QStringLiteral("Special Talk"));
-        REQUIRE(model.colorForSection(QStringLiteral("Special Talk")) == QStringLiteral("#2E7D32"));
+        REQUIRE(model.colorForSection(localNeeds) == QStringLiteral("#2E7D32"));
 
-        // Non-empty section cannot be removed directly.
-        REQUIRE_FALSE(model.removeSection(QStringLiteral("Special Talk")));
+        // Meeting sections keep their translated names and cannot be removed.
+        REQUIRE_FALSE(model.renameSection(QStringLiteral("tgw"), QStringLiteral("Other")));
+        REQUIRE_FALSE(model.removeSection(QStringLiteral("lac")));
+        REQUIRE(model.sectionLabel(QStringLiteral("tgw")) ==
+                QStringLiteral("Treasures From God's Word"));
 
         // Move Special Talk ahead of Living as Christians and verify ordering updates items.
-        REQUIRE(model.moveSection(QStringLiteral("Special Talk"), -1));
+        REQUIRE(model.moveSection(localNeeds, -1));
         REQUIRE(model.data(model.index(0, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
-                QStringLiteral("Special Talk"));
+                localNeeds);
         REQUIRE(model.data(model.index(0, 0), kmedia::PlaylistModel::TitleRole).toString() ==
                 QStringLiteral("talkA"));
 
-        REQUIRE(model.createSection(QStringLiteral("Temp Empty"), QStringLiteral("#8E24AA")));
-        REQUIRE(model.removeSection(QStringLiteral("Temp Empty")));
+        // Removing a custom section keeps its media under the added media section.
+        const QString temporary =
+            model.createSection(QStringLiteral("Temp"), QStringLiteral("#8E24AA"));
+        REQUIRE(model.assignItemToSection(1, temporary));
+        REQUIRE(model.removeSection(temporary));
+        REQUIRE(model.data(model.index(1, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
+                QStringLiteral("imported-media"));
     }
 
     // Reopen database to verify custom section order and hex color survive restarts.
@@ -156,10 +170,11 @@ TEST_CASE("PlaylistModel supports custom section builder, color customization, a
     kmedia::PlaylistModel reloaded;
     reloaded.attachDatabase(&reopened);
     REQUIRE(reloaded.count() == 2);
-    REQUIRE(reloaded.colorForSection(QStringLiteral("Special Talk")) == QStringLiteral("#2E7D32"));
+    REQUIRE(reloaded.colorForSection(localNeeds) == QStringLiteral("#2E7D32"));
+    REQUIRE(reloaded.sectionLabel(localNeeds) == QStringLiteral("Special Talk"));
     REQUIRE(
         reloaded.data(reloaded.index(0, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
-        QStringLiteral("Special Talk"));
+        localNeeds);
 }
 
 TEST_CASE(
@@ -187,7 +202,7 @@ TEST_CASE(
 
         kmedia::PlaylistEntryView a;
         a.title = QStringLiteral("Opening Song 126");
-        a.sectionTitle = QStringLiteral("Treasures From God's Word");
+        a.sectionId = QStringLiteral("tgw");
         a.filePath = imgA;
         a.tagType = QStringLiteral("song");
         a.tagValue = QStringLiteral("Song 126");
@@ -196,13 +211,12 @@ TEST_CASE(
 
         kmedia::PlaylistEntryView b;
         b.title = QStringLiteral("Gems Image");
-        b.sectionTitle = QStringLiteral("Treasures From God's Word");
+        b.sectionId = QStringLiteral("tgw");
         b.filePath = imgB;
         b.groupKey = QStringLiteral("grp_intro");
         REQUIRE(model.appendEntry(b));
 
-        REQUIRE(model.addDivider(QStringLiteral("Transition Break"),
-                                 QStringLiteral("Treasures From God's Word"),
+        REQUIRE(model.addDivider(QStringLiteral("Transition Break"), QStringLiteral("tgw"),
                                  QStringLiteral("#D47B2A"), 0));
         REQUIRE(model.count() == 3);
         REQUIRE(model.data(model.index(1, 0), kmedia::PlaylistModel::ItemKindRole).toString() ==
@@ -218,7 +232,7 @@ TEST_CASE(
         REQUIRE(model.toggleGroupExpanded(QStringLiteral("grp_intro")));
         REQUIRE(model.updateItemTag(0, QStringLiteral("para"), QStringLiteral("Para. 2")));
         REQUIRE(model.setItemSlideInterval(0, 30000));
-        REQUIRE(model.setSectionRepeatable(QStringLiteral("Treasures From God's Word"), true));
+        REQUIRE(model.setSectionRepeatable(QStringLiteral("tgw"), true));
 
         // Switch to another date and back to confirm isolation per date.
         REQUIRE(model.openWorkspaceForDate(QStringLiteral("2026-11-29"), QStringLiteral("weekend"),
