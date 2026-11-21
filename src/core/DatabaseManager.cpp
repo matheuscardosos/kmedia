@@ -22,7 +22,7 @@ namespace {
 
 std::atomic<quint64> g_connectionCounter{0};
 
-constexpr int kLatestSchemaVersion = 3;
+constexpr int kLatestSchemaVersion = 4;
 
 QString utcIsoTimestamp()
 {
@@ -421,6 +421,20 @@ bool applyMigrationV3(QSqlDatabase& db, QString& errorOut)
     return recordMigration(db, 3, errorOut);
 }
 
+// V4: synced media keeps the path of its preview picture, so videos show a real thumbnail.
+bool applyMigrationV4(QSqlDatabase& db, QString& errorOut)
+{
+    if (!tableHasColumn(db, QStringLiteral("playlist_items"), QStringLiteral("thumbnail_path"))) {
+        QSqlQuery query(db);
+        if (!query.exec(QStringLiteral("ALTER TABLE playlist_items ADD COLUMN thumbnail_path "
+                                       "TEXT NOT NULL DEFAULT ''"))) {
+            errorOut = query.lastError().text();
+            return false;
+        }
+    }
+    return recordMigration(db, 4, errorOut);
+}
+
 PlaylistRecord readPlaylistRow(const QSqlQuery& query)
 {
     PlaylistRecord record;
@@ -444,8 +458,9 @@ constexpr auto kPlaylistEntryColumns =
     "pi.pdf_page, pi.is_repeatable, pi.group_key, pi.item_kind, pi.hidden, pi.tag_type, "
     "pi.tag_value, pi.pub_media_id, pi.stream_url, pi.marker_ranges_json, pi.playback_rate, "
     "pi.is_cbs, pi.original_section, pi.sort_order_original, pi.divider_color, "
-    "pi.slide_interval_ms, pi.paired_audio_path, pi.section_id, pi.source, pi.unique_key";
-constexpr int kPlaylistEntryColumnCount = 31;
+    "pi.slide_interval_ms, pi.paired_audio_path, pi.section_id, pi.source, pi.unique_key, "
+    "pi.thumbnail_path";
+constexpr int kPlaylistEntryColumnCount = 32;
 
 PlaylistEntryRecord readPlaylistEntryRow(const QSqlQuery& query)
 {
@@ -483,6 +498,7 @@ PlaylistEntryRecord readPlaylistEntryRow(const QSqlQuery& query)
     entry.source = query.value(29).toString().isEmpty() ? QStringLiteral("additional")
                                                         : query.value(29).toString();
     entry.uniqueKey = query.value(30).toString();
+    entry.thumbnailPath = query.value(31).toString();
     return entry;
 }
 
@@ -965,6 +981,26 @@ std::vector<PlaylistRecord> DatabaseManager::listPlaylists() const
     return result;
 }
 
+QStringList DatabaseManager::listDatesWithAddedMedia() const
+{
+    QStringList dates;
+    if (!m_isOpen) {
+        return dates;
+    }
+    QSqlQuery query(databaseHandle());
+    if (!query.exec(QStringLiteral("SELECT DISTINCT p.meeting_date FROM playlists p "
+                                   "JOIN playlist_items pi ON pi.playlist_id = p.id "
+                                   "WHERE pi.source = 'additional' AND pi.item_kind <> 'divider' "
+                                   "AND p.meeting_date <> '' ORDER BY p.meeting_date"))) {
+        m_lastError = query.lastError().text();
+        return dates;
+    }
+    while (query.next()) {
+        dates << query.value(0).toString();
+    }
+    return dates;
+}
+
 bool DatabaseManager::setPlaylistSyncStatus(qint64 playlistId, const QString& syncStatus)
 {
     if (!m_isOpen || playlistId <= 0) {
@@ -1014,14 +1050,15 @@ qint64 DatabaseManager::addPlaylistEntry(const PlaylistEntryRecord& entry)
         "trim_start_ms, trim_end_ms, zoom_scale, pan_x, pan_y, pdf_page, is_repeatable, "
         "group_key, item_kind, hidden, tag_type, tag_value, pub_media_id, stream_url, "
         "marker_ranges_json, playback_rate, is_cbs, original_section, sort_order_original, "
-        "divider_color, slide_interval_ms, paired_audio_path, section_id, source, unique_key) "
+        "divider_color, slide_interval_ms, paired_audio_path, section_id, source, unique_key, "
+        "thumbnail_path) "
         "VALUES "
         "(:playlist_id, :media_item_id, :section_title, :custom_title, :sort_order, "
         ":trim_start_ms, :trim_end_ms, :zoom_scale, :pan_x, :pan_y, :pdf_page, :is_repeatable, "
         ":group_key, :item_kind, :hidden, :tag_type, :tag_value, :pub_media_id, :stream_url, "
         ":marker_ranges_json, :playback_rate, :is_cbs, :original_section, :sort_order_original, "
         ":divider_color, :slide_interval_ms, :paired_audio_path, :section_id, :source, "
-        ":unique_key)"));
+        ":unique_key, :thumbnail_path)"));
     query.bindValue(QStringLiteral(":playlist_id"), entry.playlistId);
     query.bindValue(QStringLiteral(":media_item_id"),
                     entry.mediaItemId > 0 ? QVariant(entry.mediaItemId) : QVariant());
@@ -1056,6 +1093,7 @@ qint64 DatabaseManager::addPlaylistEntry(const PlaylistEntryRecord& entry)
     query.bindValue(QStringLiteral(":source"),
                     entry.source.isEmpty() ? QStringLiteral("additional") : entry.source);
     query.bindValue(QStringLiteral(":unique_key"), nonNullText(entry.uniqueKey));
+    query.bindValue(QStringLiteral(":thumbnail_path"), nonNullText(entry.thumbnailPath));
     if (!query.exec()) {
         setLastError(query.lastError().text());
         return 0;
@@ -1146,8 +1184,8 @@ bool DatabaseManager::updatePlaylistEntryFull(const PlaylistEntryRecord& entry)
         "is_cbs = :is_cbs, original_section = :original_section, "
         "sort_order_original = :sort_order_original, divider_color = :divider_color, "
         "slide_interval_ms = :slide_interval_ms, paired_audio_path = :paired_audio_path, "
-        "section_id = :section_id, source = :source, unique_key = :unique_key "
-        "WHERE id = :id AND playlist_id = :playlist_id"));
+        "section_id = :section_id, source = :source, unique_key = :unique_key, "
+        "thumbnail_path = :thumbnail_path WHERE id = :id AND playlist_id = :playlist_id"));
     query.bindValue(QStringLiteral(":section_title"), nonNullText(entry.sectionTitle));
     query.bindValue(QStringLiteral(":custom_title"), nonNullText(entry.customTitle));
     query.bindValue(QStringLiteral(":trim_start_ms"), entry.trimStartMs);
@@ -1178,6 +1216,7 @@ bool DatabaseManager::updatePlaylistEntryFull(const PlaylistEntryRecord& entry)
     query.bindValue(QStringLiteral(":source"),
                     entry.source.isEmpty() ? QStringLiteral("additional") : entry.source);
     query.bindValue(QStringLiteral(":unique_key"), nonNullText(entry.uniqueKey));
+    query.bindValue(QStringLiteral(":thumbnail_path"), nonNullText(entry.thumbnailPath));
     query.bindValue(QStringLiteral(":id"), entry.id);
     query.bindValue(QStringLiteral(":playlist_id"), entry.playlistId);
     if (!query.exec()) {
@@ -1361,6 +1400,9 @@ bool DatabaseManager::runMigrations(QSqlDatabase& db)
     }
     if (ok && currentVersion < 3) {
         ok = applyMigrationV3(db, migrationError);
+    }
+    if (ok && currentVersion < 4) {
+        ok = applyMigrationV4(db, migrationError);
     }
 
     if (!ok) {

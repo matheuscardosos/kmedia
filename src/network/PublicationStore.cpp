@@ -253,28 +253,44 @@ void PublicationStore::tryResolveLanguage(const MediaFileRequest& request, int l
             resolved.ok = true;
             resolved.title = best->title;
             resolved.durationSeconds = best->durationSeconds;
+            const QDir folder(publicationFolder(bySymbol ? request.keySymbol
+                                                         : QString::number(request.mepsDocumentId),
+                                                language, bySymbol ? request.issueTagNumber : 0));
+
+            // The preview picture is tiny and goes first, so the row shows it while the media
+            // itself still downloads.
+            const QString imageName = QFileInfo(QUrl(best->imageUrl).path()).fileName();
+            if (!imageName.isEmpty()) {
+                resolved.thumbnailPath = folder.filePath(imageName);
+                queueFileDownload(QUrl(best->imageUrl), resolved.thumbnailPath, {},
+                                  DownloadService::Priority::High, {});
+            }
             if (best->durationSeconds > kStreamOnlySeconds) {
                 resolved.streamUrl = best->url;
                 callback(resolved);
                 return;
             }
-
-            const QString folderSymbol =
-                bySymbol ? request.keySymbol : QString::number(request.mepsDocumentId);
             const QString fileName = QFileInfo(QUrl(best->url).path()).fileName();
-            resolved.filePath = QDir(publicationFolder(folderSymbol, language,
-                                                       bySymbol ? request.issueTagNumber : 0))
-                                    .filePath(fileName);
-            const bool alreadyQueued = std::find(m_mediaTasks.cbegin(), m_mediaTasks.cend(),
-                                                 resolved.filePath) != m_mediaTasks.cend();
-            if (!fileName.isEmpty() && QFileInfo(resolved.filePath).size() <= 0 && !alreadyQueued &&
-                m_downloadService != nullptr) {
-                const QString taskId = m_downloadService->enqueue(
-                    QUrl(best->url), resolved.filePath, best->sha256, priority, {}, best->title);
-                m_mediaTasks.insert(taskId, resolved.filePath);
+            resolved.filePath = folder.filePath(fileName);
+            if (!fileName.isEmpty()) {
+                queueFileDownload(QUrl(best->url), resolved.filePath, best->sha256, priority,
+                                  best->title);
             }
             callback(resolved);
         });
+}
+
+void PublicationStore::queueFileDownload(const QUrl& url, const QString& filePath,
+                                         const QString& checksum,
+                                         DownloadService::Priority priority, const QString& title)
+{
+    const bool alreadyQueued =
+        std::find(m_mediaTasks.cbegin(), m_mediaTasks.cend(), filePath) != m_mediaTasks.cend();
+    if (QFileInfo(filePath).size() > 0 || alreadyQueued || m_downloadService == nullptr) {
+        return;
+    }
+    const QString taskId = m_downloadService->enqueue(url, filePath, checksum, priority, {}, title);
+    m_mediaTasks.insert(taskId, filePath);
 }
 
 void PublicationStore::onDownloadFinished(const QString& taskId, bool success)

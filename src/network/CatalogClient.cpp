@@ -33,6 +33,33 @@ QString normalizedBaseDomain(const QString& baseDomain)
     return clean.isEmpty() ? QStringLiteral("jw.org") : clean;
 }
 
+// The preview picture of a media item: a wide picture first, at the smallest size from "sm" up.
+QString bestImageUrl(const QJsonObject& images)
+{
+    static constexpr QLatin1StringView kTypes[] = {
+        QLatin1StringView("wss"), QLatin1StringView("lsr"), QLatin1StringView("sqr"),
+        QLatin1StringView("pnr")};
+    static constexpr QLatin1StringView kSizes[] = {QLatin1StringView("sm"), QLatin1StringView("md"),
+                                                   QLatin1StringView("lg"),
+                                                   QLatin1StringView("xl")};
+    for (const QLatin1StringView type : kTypes) {
+        const QJsonObject sizes = images.value(type).toObject();
+        for (const QLatin1StringView size : kSizes) {
+            const QString url = sizes.value(size).toString().trimmed();
+            if (!url.isEmpty()) {
+                return url;
+            }
+        }
+        for (auto it = sizes.constBegin(); it != sizes.constEnd(); ++it) {
+            const QString url = it.value().toString().trimmed();
+            if (!url.isEmpty()) {
+                return url;
+            }
+        }
+    }
+    return {};
+}
+
 void parseAssetObject(const QJsonObject& obj, const QString& pubSymbol, int issueTag,
                       const QString& formatKey, std::vector<CatalogMediaAsset>& out)
 {
@@ -56,6 +83,11 @@ void parseAssetObject(const QJsonObject& obj, const QString& pubSymbol, int issu
     asset.durationSeconds = obj.value(QStringLiteral("duration")).toDouble(0.0);
     asset.modifiedDatetime = fileObj.value(QStringLiteral("modifiedDatetime")).toString().trimmed();
     asset.streamOnly = asset.durationSeconds > CatalogClient::kLongMediaDurationSeconds;
+    asset.imageUrl = obj.value(QStringLiteral("trackImage"))
+                         .toObject()
+                         .value(QStringLiteral("url"))
+                         .toString()
+                         .trimmed();
     out.push_back(std::move(asset));
 }
 
@@ -291,6 +323,7 @@ std::vector<CatalogMediaAsset> CatalogClient::parseMediatorMediaJson(const QByte
         const QString title = mediaObj.value(QStringLiteral("title")).toString().trimmed();
         const double durationSec = mediaObj.value(QStringLiteral("duration")).toDouble(0.0);
         const QString mediaKey = mediaObj.value(QStringLiteral("naturalKey")).toString().trimmed();
+        const QString imageUrl = bestImageUrl(mediaObj.value(QStringLiteral("images")).toObject());
         const QJsonArray files = mediaObj.value(QStringLiteral("files")).toArray();
         for (const QJsonValue& fileVal : files) {
             if (!fileVal.isObject()) {
@@ -313,6 +346,7 @@ std::vector<CatalogMediaAsset> CatalogClient::parseMediatorMediaJson(const QByte
             asset.durationSeconds = fObj.value(QStringLiteral("duration")).toDouble(durationSec);
             asset.pubMediaId = pubMediaKey.isEmpty() ? mediaKey : pubMediaKey;
             asset.streamOnly = asset.durationSeconds > kLongMediaDurationSeconds;
+            asset.imageUrl = imageUrl;
             if (asset.mimeType.contains(QStringLiteral("audio"), Qt::CaseInsensitive) ||
                 url.endsWith(QStringLiteral(".mp3"), Qt::CaseInsensitive)) {
                 asset.fileFormat = QStringLiteral("MP3");

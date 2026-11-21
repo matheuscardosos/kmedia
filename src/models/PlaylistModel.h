@@ -39,6 +39,8 @@ struct PlaylistEntryView
     QString sectionId;
     QString filePath;
     QString thumbnailUrl;
+    QString thumbnailPath;
+    QString thumbnailKey;
     QString kindLabel;
     QString formatLabel;
     QString resolutionLabel;
@@ -91,7 +93,8 @@ class PlaylistModel : public QAbstractListModel
     Q_PROPERTY(qint64 totalDurationMs READ totalDurationMs NOTIFY countChanged FINAL)
     Q_PROPERTY(QString formattedTotalDuration READ formattedTotalDuration NOTIFY countChanged FINAL)
     Q_PROPERTY(QString activeTitle READ activeTitle NOTIFY activeIndexChanged FINAL)
-    Q_PROPERTY(QString activeThumbnailUrl READ activeThumbnailUrl NOTIFY activeIndexChanged FINAL)
+    Q_PROPERTY(
+        QString activeThumbnailUrl READ activeThumbnailUrl NOTIFY activeThumbnailChanged FINAL)
     Q_PROPERTY(QString activeFileName READ activeFileName NOTIFY activeIndexChanged FINAL)
     Q_PROPERTY(QString activeFormatLabel READ activeFormatLabel NOTIFY activeIndexChanged FINAL)
     Q_PROPERTY(
@@ -110,6 +113,7 @@ class PlaylistModel : public QAbstractListModel
     Q_PROPERTY(QVariantList sections READ sections NOTIFY sectionsChanged FINAL)
     Q_PROPERTY(QString currentDateIso READ currentDateIso NOTIFY workspaceDateChanged FINAL)
     Q_PROPERTY(QString currentMeetingKind READ currentMeetingKind NOTIFY workspaceDateChanged FINAL)
+    Q_PROPERTY(bool currentIsCoWeek READ currentIsCoWeek NOTIFY workspaceDateChanged FINAL)
     Q_PROPERTY(bool showHidden READ showHidden WRITE setShowHidden NOTIFY showHiddenChanged FINAL)
     Q_PROPERTY(
         QString searchQuery READ searchQuery WRITE setSearchQuery NOTIFY searchQueryChanged FINAL)
@@ -234,6 +238,7 @@ public:
 
     [[nodiscard]] QString currentDateIso() const;
     [[nodiscard]] QString currentMeetingKind() const;
+    [[nodiscard]] bool currentIsCoWeek() const;
     [[nodiscard]] bool showHidden() const;
     void setShowHidden(bool showHidden);
     [[nodiscard]] QString searchQuery() const;
@@ -276,6 +281,7 @@ signals:
     void searchQueryChanged();
     void groupStateChanged();
     void activeItemEdited();
+    void activeThumbnailChanged();
     void importNotice(const QString& message);
 
 private:
@@ -292,6 +298,8 @@ private:
     [[nodiscard]] int groupItemCount(const QString& groupKey) const;
     [[nodiscard]] bool isGroupStart(int row) const;
     static void enrichEntryMetadata(PlaylistEntryView& entry);
+    void applyThumbnail(PlaylistEntryView& entry);
+    void onThumbnailReady(const QString& key, const QString& cachedPath);
     [[nodiscard]] QString extractSubdirForPackage(const QString& archivePath) const;
     [[nodiscard]] static QString kindLabelForMediaKind(int kind);
 
@@ -305,6 +313,7 @@ private:
     QString m_playlistSubtitle;
     QString m_currentDateIso;
     QString m_currentMeetingKind{QStringLiteral("midweek")};
+    bool m_currentIsCoWeek{false};
     bool m_showHidden{false};
     QString m_searchQuery;
     QSet<QString> m_collapsedGroups;

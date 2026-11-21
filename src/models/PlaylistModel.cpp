@@ -235,7 +235,10 @@ QString aspectRatioLabel(int width, int height)
 
 } // namespace
 
-PlaylistModel::PlaylistModel(QObject* parent) : QAbstractListModel(parent) {}
+PlaylistModel::PlaylistModel(QObject* parent) : QAbstractListModel(parent)
+{
+    connect(this, &PlaylistModel::activeIndexChanged, this, &PlaylistModel::activeThumbnailChanged);
+}
 
 void PlaylistModel::attachDatabase(DatabaseManager* database, qint64 playlistId)
 {
@@ -273,7 +276,14 @@ void PlaylistModel::attachPlaybackController(PlaybackController* playback)
 
 void PlaylistModel::attachThumbnailCache(ThumbnailCache* thumbnailCache)
 {
+    if (m_thumbnailCache != nullptr) {
+        disconnect(m_thumbnailCache, nullptr, this, nullptr);
+    }
     m_thumbnailCache = thumbnailCache;
+    if (m_thumbnailCache != nullptr) {
+        connect(m_thumbnailCache, &ThumbnailCache::thumbnailReady, this,
+                &PlaylistModel::onThumbnailReady);
+    }
 }
 
 void PlaylistModel::setPackageExtractDir(const QString& extractDir)
@@ -657,6 +667,7 @@ bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sect
             if (!je.thumbnailArchivePath.isEmpty()) {
                 const QString thumbPath = QDir(outDir).filePath(je.thumbnailArchivePath);
                 if (QFileInfo::exists(thumbPath)) {
+                    entry.thumbnailPath = thumbPath;
                     entry.thumbnailUrl = QUrl::fromLocalFile(thumbPath).toString();
                 }
             }
@@ -823,6 +834,7 @@ bool PlaylistModel::appendEntry(const PlaylistEntryView& input)
         entry.originalSection = entry.sectionId;
     }
     enrichEntryMetadata(entry);
+    applyThumbnail(entry);
 
     if (m_database != nullptr && m_database->isOpen() && m_playlistId > 0) {
         if (!entry.filePath.trimmed().isEmpty()) {
@@ -868,24 +880,16 @@ bool PlaylistModel::appendEntry(const PlaylistEntryView& input)
         rowRec.pairedAudioPath = entry.pairedAudioPath;
         rowRec.source = entry.source;
         rowRec.uniqueKey = entry.uniqueKey;
+        rowRec.thumbnailPath = entry.thumbnailPath;
         entry.entryId = m_database->addPlaylistEntry(rowRec);
     }
 
-    const QString thumbSource = entry.filePath;
-    const int mediaKind = entry.mediaKind;
     const int insertRow = static_cast<int>(m_items.size());
     beginInsertRows(QModelIndex(), insertRow, insertRow);
     m_items.push_back(std::move(entry));
     endInsertRows();
     emit countChanged();
     syncSectionsFromItems();
-
-    if (m_thumbnailCache != nullptr && !thumbSource.isEmpty() &&
-        (mediaKind == static_cast<int>(PlaybackController::MediaKind::Image) ||
-         mediaKind == static_cast<int>(PlaybackController::MediaKind::Pdf))) {
-        m_thumbnailCache->requestThumbnail(ThumbnailCache::makeKeyForFile(thumbSource),
-                                           thumbSource);
-    }
     return true;
 }
 
@@ -1256,6 +1260,11 @@ void PlaylistModel::loadFromDatabase()
 
     if (const auto rec = m_database->findPlaylistById(m_playlistId)) {
         setPlaylistName(rec->name);
+        if (rec->meetingDate != m_currentDateIso) {
+            // Another day was picked from the playlist list; its stored flag is the best guess.
+            m_currentIsCoWeek =
+                rec->isSpecialEvent && rec->meetingType != QStringLiteral("memorial");
+        }
         m_currentDateIso = rec->meetingDate;
         if (!rec->meetingType.isEmpty()) {
             m_currentMeetingKind = rec->meetingType;
@@ -1321,7 +1330,9 @@ void PlaylistModel::loadFromDatabase()
         view.pairedAudioPath = row.pairedAudioPath;
         view.source = row.source;
         view.uniqueKey = row.uniqueKey;
+        view.thumbnailPath = row.thumbnailPath;
         enrichEntryMetadata(view);
+        applyThumbnail(view);
         m_items.push_back(std::move(view));
     }
 
@@ -1769,6 +1780,61 @@ void PlaylistModel::saveSectionsForPlaylist() const
     }
 }
 
+void PlaylistModel::applyThumbnail(PlaylistEntryView& entry)
+{
+    const bool picture = entry.mediaKind == static_cast<int>(PlaybackController::MediaKind::Image);
+    const bool pdf = entry.mediaKind == static_cast<int>(PlaybackController::MediaKind::Pdf);
+    // Videos and audio covers need a frame extractor; without one they keep their icon.
+    const bool playable =
+        (entry.mediaKind == static_cast<int>(PlaybackController::MediaKind::Video) ||
+         entry.mediaKind == static_cast<int>(PlaybackController::MediaKind::Audio)) &&
+        m_thumbnailCache != nullptr && m_thumbnailCache->hasCustomExtractor();
+    QString source;
+    if (!entry.thumbnailPath.isEmpty() && QFileInfo::exists(entry.thumbnailPath)) {
+        source = entry.thumbnailPath;
+    } else if ((picture || pdf || playable) && entry.fileExists && !entry.filePath.isEmpty()) {
+        source = entry.filePath;
+    }
+    if (source.isEmpty()) {
+        if (picture && !entry.fileExists) {
+            entry.thumbnailUrl.clear();
+        }
+        return;
+    }
+    if (m_thumbnailCache == nullptr || m_thumbnailCache->cacheDir().isEmpty()) {
+        if (source != entry.filePath || picture) {
+            entry.thumbnailUrl = QUrl::fromLocalFile(source).toString();
+        }
+        return;
+    }
+
+    // Rows show a small picture decoded once on a worker thread, never the full-size file.
+    entry.thumbnailKey = ThumbnailCache::makeKeyForFile(source);
+    const QString cached = m_thumbnailCache->cachedPathIfPresent(entry.thumbnailKey);
+    if (!cached.isEmpty()) {
+        entry.thumbnailUrl = QUrl::fromLocalFile(cached).toString();
+        return;
+    }
+    entry.thumbnailUrl.clear();
+    m_thumbnailCache->requestThumbnail(entry.thumbnailKey, source);
+}
+
+void PlaylistModel::onThumbnailReady(const QString& key, const QString& cachedPath)
+{
+    const QString url = QUrl::fromLocalFile(cachedPath).toString();
+    for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
+        PlaylistEntryView& item = m_items[static_cast<size_t>(i)];
+        if (item.thumbnailKey != key || item.thumbnailUrl == url) {
+            continue;
+        }
+        item.thumbnailUrl = url;
+        emit dataChanged(createIndex(i, 0), createIndex(i, 0), {ThumbnailUrlRole});
+        if (i == m_activeIndex) {
+            emit activeThumbnailChanged();
+        }
+    }
+}
+
 void PlaylistModel::enrichEntryMetadata(PlaylistEntryView& entry)
 {
     if (entry.itemKind == QStringLiteral("divider")) {
@@ -1919,6 +1985,7 @@ void PlaylistModel::persistEntryAt(int index) const
     rec.pairedAudioPath = view.pairedAudioPath;
     rec.source = view.source;
     rec.uniqueKey = view.uniqueKey;
+    rec.thumbnailPath = view.thumbnailPath;
     (void)m_database->updatePlaylistEntryFull(rec);
 }
 
@@ -1930,6 +1997,11 @@ QString PlaylistModel::currentDateIso() const
 QString PlaylistModel::currentMeetingKind() const
 {
     return m_currentMeetingKind;
+}
+
+bool PlaylistModel::currentIsCoWeek() const
+{
+    return m_currentIsCoWeek;
 }
 
 bool PlaylistModel::showHidden() const
@@ -1994,7 +2066,7 @@ void PlaylistModel::reloadFromDatabase()
             ? m_items.at(static_cast<size_t>(m_activeIndex)).entryId
             : 0;
     loadFromDatabase();
-    ensureFixedMeetingSections(m_currentMeetingKind, false);
+    ensureFixedMeetingSections(m_currentMeetingKind, m_currentIsCoWeek);
     if (activeEntryId <= 0) {
         return;
     }
@@ -2020,6 +2092,7 @@ bool PlaylistModel::openWorkspaceForDate(const QString& dateIso, const QString& 
 
     m_currentDateIso = cleanDate;
     m_currentMeetingKind = cleanKind;
+    m_currentIsCoWeek = isCoVisit;
     m_collapsedGroups.clear();
 
     if (m_database != nullptr && m_database->isOpen()) {

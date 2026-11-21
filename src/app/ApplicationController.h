@@ -17,6 +17,7 @@ Q_MOC_INCLUDE("media/BackgroundMusicEngine.h")
 Q_MOC_INCLUDE("media/MpvRendererItem.h")
 Q_MOC_INCLUDE("media/PdfViewerController.h")
 Q_MOC_INCLUDE("media/PlaybackController.h")
+Q_MOC_INCLUDE("models/MeetingDayModel.h")
 Q_MOC_INCLUDE("models/PlaylistModel.h")
 Q_MOC_INCLUDE("network/DownloadService.h")
 Q_MOC_INCLUDE("network/MeetingCatalogService.h")
@@ -36,6 +37,7 @@ class DisplayManager;
 class DownloadService;
 class MeetingCalendarModel;
 class MeetingCatalogService;
+class MeetingDayModel;
 class MeetingSyncEngine;
 class MeetingTimer;
 class NetworkManager;
@@ -83,6 +85,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(kmedia::ObsWebSocketClient* obsClient READ obsClient CONSTANT FINAL)
     Q_PROPERTY(kmedia::ZoomBridge* zoomBridge READ zoomBridge CONSTANT FINAL)
     Q_PROPERTY(kmedia::PlaylistModel* playlist READ playlist CONSTANT FINAL)
+    Q_PROPERTY(kmedia::MeetingDayModel* meetingDay READ meetingDay CONSTANT FINAL)
     Q_PROPERTY(kmedia::MeetingTimer* meetingTimer READ meetingTimer CONSTANT FINAL)
     Q_PROPERTY(kmedia::MeetingCatalogService* catalog READ catalog CONSTANT FINAL)
     Q_PROPERTY(kmedia::MeetingCalendarModel* calendar READ calendar CONSTANT FINAL)
@@ -126,6 +129,7 @@ public:
     [[nodiscard]] kmedia::ObsWebSocketClient* obsClient() const;
     [[nodiscard]] kmedia::ZoomBridge* zoomBridge() const;
     [[nodiscard]] kmedia::PlaylistModel* playlist() const;
+    [[nodiscard]] kmedia::MeetingDayModel* meetingDay() const;
     [[nodiscard]] kmedia::MeetingTimer* meetingTimer() const;
     [[nodiscard]] kmedia::MeetingCatalogService* catalog() const;
     [[nodiscard]] kmedia::MeetingCalendarModel* calendar() const;
@@ -192,6 +196,7 @@ private:
     std::unique_ptr<kmedia::ObsWebSocketClient> m_obsClient;
     std::unique_ptr<kmedia::ZoomBridge> m_zoomBridge;
     std::unique_ptr<kmedia::PlaylistModel> m_playlistModel;
+    std::unique_ptr<kmedia::MeetingDayModel> m_meetingDayModel;
     std::unique_ptr<kmedia::MeetingTimer> m_meetingTimer;
     std::unique_ptr<kmedia::MeetingCatalogService> m_meetingCatalog;
     std::unique_ptr<kmedia::MeetingCalendarModel> m_calendarModel;

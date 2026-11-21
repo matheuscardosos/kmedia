@@ -39,6 +39,7 @@ public:
     [[nodiscard]] QByteArray imageFormat() const;
 
     void setCustomExtractor(CustomExtractor extractor);
+    [[nodiscard]] bool hasCustomExtractor() const;
 
     [[nodiscard]] QString cachedPathIfPresent(const QString& key);
     void requestThumbnail(const QString& key, const QString& sourcePath);
@@ -77,6 +78,7 @@ private:
     std::list<CacheEntry> m_lruList;
     QHash<QString, std::list<CacheEntry>::iterator> m_index;
     QSet<QString> m_inFlight;
+    QSet<QString> m_failed;
     QThreadPool m_pool;
     std::atomic<quint64> m_generation{1};
     std::atomic<bool> m_shuttingDown{false};
