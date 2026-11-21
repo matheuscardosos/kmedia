@@ -21,7 +21,7 @@ class NetworkManager;
 
 /**
  * Bounded concurrent downloader with HTTP ETag/Last-Modified validation,
- * chunked disk streaming via `.part` temporary files, SHA-256 verification,
+ * chunked disk streaming via `.part` temporary files, MD5 or SHA-256 checksum verification,
  * pause/resume/cancel controls, and exponential retry backoff.
  */
 class DownloadService : public QObject
@@ -60,8 +60,8 @@ public:
         QString displayTitle;
         QUrl url;
         QString destinationPath;
-        QString expectedSha256;
-        QString actualSha256;
+        QString expectedChecksum;
+        QString actualChecksum;
         QString etag;
         QString lastModified;
         QString errorMessage;
@@ -89,7 +89,7 @@ public:
     void setRetryBaseDelayMs(int baseDelayMs);
 
     QString enqueue(const QUrl& url, const QString& destinationPath,
-                    const QString& expectedSha256 = {}, Priority priority = Priority::Normal,
+                    const QString& expectedChecksum = {}, Priority priority = Priority::Normal,
                     const QString& customId = {}, const QString& displayTitle = {});
 
     Q_INVOKABLE bool pause(const QString& taskId);

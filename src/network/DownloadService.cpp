@@ -91,6 +91,25 @@ bool isTerminalStatus(DownloadService::Status status)
            status == DownloadService::Status::Failed;
 }
 
+// JW.org publishes MD5 checksums (32 hex characters); other sources use SHA-256.
+QCryptographicHash::Algorithm checksumAlgorithmFor(const QString& expectedChecksum)
+{
+    return expectedChecksum.size() == 32 ? QCryptographicHash::Md5 : QCryptographicHash::Sha256;
+}
+
+QString hashFile(const QString& filePath, QCryptographicHash::Algorithm algorithm)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return {};
+    }
+    QCryptographicHash hash(algorithm);
+    if (!hash.addData(&file)) {
+        return {};
+    }
+    return QString::fromLatin1(hash.result().toHex());
+}
+
 } // namespace
 
 struct DownloadService::InternalTask
@@ -98,7 +117,7 @@ struct DownloadService::InternalTask
     TaskInfo info;
     QPointer<QNetworkReply> reply;
     std::unique_ptr<QFile> partFile;
-    QCryptographicHash hasher{QCryptographicHash::Sha256};
+    std::unique_ptr<QCryptographicHash> hasher;
     QElapsedTimer progressNotifyClock;
     AbortIntent abortIntent{AbortIntent::None};
     bool resumedFromPartial{false};
@@ -175,7 +194,7 @@ void DownloadService::setRetryBaseDelayMs(int baseDelayMs)
 }
 
 QString DownloadService::enqueue(const QUrl& url, const QString& destinationPath,
-                                 const QString& expectedSha256, Priority priority,
+                                 const QString& expectedChecksum, Priority priority,
                                  const QString& customId, const QString& displayTitle)
 {
     const QString id = customId.trimmed().isEmpty()
@@ -187,7 +206,9 @@ QString DownloadService::enqueue(const QUrl& url, const QString& destinationPath
     task->info.displayTitle = displayTitle.trimmed();
     task->info.url = url;
     task->info.destinationPath = destinationPath;
-    task->info.expectedSha256 = expectedSha256.trimmed().toLower();
+    task->info.expectedChecksum = expectedChecksum.trimmed().toLower();
+    task->hasher =
+        std::make_unique<QCryptographicHash>(checksumAlgorithmFor(task->info.expectedChecksum));
     task->info.priority = priority;
     task->info.status = Status::Queued;
     task->progressNotifyClock.start();
@@ -471,8 +492,8 @@ void DownloadService::startTask(const std::shared_ptr<InternalTask>& task)
                 m_database->findDownloadCache(task->info.url.toString());
             cached.has_value()) {
             const bool shaMatchesExpected =
-                task->info.expectedSha256.isEmpty() ||
-                cached->contentHash.compare(task->info.expectedSha256, Qt::CaseInsensitive) == 0;
+                task->info.expectedChecksum.isEmpty() ||
+                cached->contentHash.compare(task->info.expectedChecksum, Qt::CaseInsensitive) == 0;
             if (shaMatchesExpected) {
                 etag = cached->etag;
                 lastModified = cached->lastModified;
@@ -487,7 +508,7 @@ void DownloadService::startTask(const std::shared_ptr<InternalTask>& task)
     task->responseInitialized = false;
     task->statusCode = 0;
     task->abortIntent = AbortIntent::None;
-    task->hasher.reset();
+    task->hasher->reset();
 
     const QFileInfo partInfo(partFilePathFor(task->info.destinationPath));
     if (etag.isEmpty() && lastModified.isEmpty() && partInfo.exists() && partInfo.size() > 0) {
@@ -579,7 +600,7 @@ void DownloadService::startTask(const std::shared_ptr<InternalTask>& task)
             return;
         }
         if (!task->resumedFromPartial) {
-            task->hasher.addData(chunk);
+            task->hasher->addData(chunk);
         }
     });
 
@@ -611,7 +632,7 @@ void DownloadService::finalizeReply(const std::shared_ptr<InternalTask>& task)
         const QByteArray tail = reply->readAll();
         if (!tail.isEmpty()) {
             if (task->partFile->write(tail) == tail.size() && !task->resumedFromPartial) {
-                task->hasher.addData(tail);
+                task->hasher->addData(tail);
             }
         }
     }
@@ -643,7 +664,7 @@ void DownloadService::finalizeReply(const std::shared_ptr<InternalTask>& task)
             if (const std::optional<DownloadCacheRecord> existing =
                     m_database->findDownloadCache(task->info.url.toString());
                 existing.has_value()) {
-                task->info.actualSha256 = existing->contentHash;
+                task->info.actualChecksum = existing->contentHash;
                 DownloadCacheRecord updated = *existing;
                 if (!headers.etag.isEmpty()) {
                     updated.etag = headers.etag;
@@ -696,16 +717,17 @@ void DownloadService::finalizeReply(const std::shared_ptr<InternalTask>& task)
     const QString partPath = task->partFile->fileName();
     task->partFile.reset();
 
-    const QString computedHash = task->resumedFromPartial
-                                     ? SystemUtils::sha256File(partPath)
-                                     : QString::fromLatin1(task->hasher.result().toHex());
-    task->info.actualSha256 = computedHash;
+    const QString computedHash =
+        task->resumedFromPartial
+            ? hashFile(partPath, checksumAlgorithmFor(task->info.expectedChecksum))
+            : QString::fromLatin1(task->hasher->result().toHex());
+    task->info.actualChecksum = computedHash;
 
-    if (!task->info.expectedSha256.isEmpty() &&
-        computedHash.compare(task->info.expectedSha256, Qt::CaseInsensitive) != 0) {
+    if (!task->info.expectedChecksum.isEmpty() &&
+        computedHash.compare(task->info.expectedChecksum, Qt::CaseInsensitive) != 0) {
         QFile::remove(partPath);
-        task->info.errorMessage = QStringLiteral("SHA-256 checksum mismatch (expected %1, got %2)")
-                                      .arg(task->info.expectedSha256, computedHash);
+        task->info.errorMessage = QStringLiteral("Checksum mismatch (expected %1, got %2)")
+                                      .arg(task->info.expectedChecksum, computedHash);
         updateStatus(task, Status::Failed);
         emit taskFinished(task->info.id, false);
         dispatchNext();
