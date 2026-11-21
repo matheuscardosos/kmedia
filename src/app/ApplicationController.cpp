@@ -3,6 +3,7 @@
 #include "core/BoothSecurity.h"
 #include "core/DatabaseManager.h"
 #include "core/MeetingCalendarModel.h"
+#include "core/MeetingSections.h"
 #include "core/MeetingTimer.h"
 #include "core/NetworkManager.h"
 #include "core/ProfileManager.h"
@@ -713,9 +714,8 @@ void ApplicationController::wireIntegrations()
 
     connect(m_cloudWatcher.get(), &kmedia::CloudSyncWatcher::mediaDiscovered, this,
             [this](const QString& filePath, kmedia::CloudSyncWatcher::MediaCategory, const QString&,
-                   kmedia::CloudSyncWatcher::CloudProvider provider) {
-                (void)m_playlistModel->importLocalFile(
-                    filePath, kmedia::CloudSyncWatcher::providerDisplayName(provider));
+                   kmedia::CloudSyncWatcher::CloudProvider) {
+                (void)m_playlistModel->importLocalFile(filePath);
             });
 
     connect(m_playlistModel.get(), &kmedia::PlaylistModel::importNotice, this,
@@ -869,11 +869,8 @@ void ApplicationController::wireIntegrations()
                         QStringLiteral("%1 | %2").arg(m_calendarModel->selectedWeekLabel(),
                                                       m_calendarModel->selectedWeekEventLabel()));
                     if (m_calendarModel->selectedWeekEventType() == QStringLiteral("co_visit")) {
-                        (void)m_playlistModel->ensureSection(QStringLiteral("Circuit Overseer"),
-                                                             QStringLiteral("#3F7F5F"));
-                    } else {
                         (void)m_playlistModel->ensureSection(
-                            m_calendarModel->selectedWeekEventLabel());
+                            kmedia::MeetingSections::kCircuitOverseer);
                     }
                 } else {
                     m_meetingCatalog->setTargetWeekDate(weekMonday);

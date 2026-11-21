@@ -20,30 +20,21 @@ Item {
         return ApplicationController.playlist.colorForSection(title)
     }
 
-    function sectionGlyph(title) {
-        if (ApplicationController.demoMode) {
+    readonly property var sectionGlyphs: ({
+        "tgw": "section-treasures",
+        "ayfm": "section-ministry",
+        "lac": "section-living",
+        "pt": "section-public-talk",
+        "wt": "section-watchtower",
+        "circuit-overseer": "section-overseer"
+    })
+
+    function sectionGlyph(sectionId) {
+        const glyph = root.sectionGlyphs[sectionId]
+        if (ApplicationController.demoMode || glyph === undefined) {
             return { category: "lucide", name: "list-video" }
         }
-        const t = (title || "").toLowerCase()
-        if (t.indexOf("treasure") >= 0 || t.indexOf("tesouro") >= 0) {
-            return { category: "custom", name: "section-treasures" }
-        }
-        if (t.indexOf("apply yourself") >= 0 || t.indexOf("ministério") >= 0) {
-            return { category: "custom", name: "section-ministry" }
-        }
-        if (t.indexOf("living") >= 0 || t.indexOf("vida cristã") >= 0) {
-            return { category: "custom", name: "section-living" }
-        }
-        if (t.indexOf("public talk") >= 0 || t.indexOf("discurso") >= 0) {
-            return { category: "custom", name: "section-public-talk" }
-        }
-        if (t.indexOf("watchtower") >= 0 || t.indexOf("sentinela") >= 0) {
-            return { category: "custom", name: "section-watchtower" }
-        }
-        if (t.indexOf("overseer") >= 0 || t.indexOf("superintendente") >= 0) {
-            return { category: "custom", name: "section-overseer" }
-        }
-        return { category: "lucide", name: "list-video" }
+        return { category: "custom", name: glyph }
     }
 
     CustomSectionPopup {
@@ -568,7 +559,7 @@ Item {
                         onClicked: ApplicationController.playlist.addDivider(
                             qsTr("Part Transition"),
                             ApplicationController.playlist.sections.length > 0
-                                ? ApplicationController.playlist.sections[0].name
+                                ? ApplicationController.playlist.sections[0].id
                                 : qsTr("Meeting"),
                             "#D47B2A",
                             ApplicationController.playlist.activeIndex)
@@ -704,9 +695,8 @@ Item {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: sectionPopup.openEdit(
-                                    secChip.modelData.name,
-                                    secChip.modelData.color,
-                                    secChip.modelData.itemCount === 0)
+                                    secChip.modelData.id,
+                                    secChip.modelData.color)
                             }
                         }
                     }
@@ -814,11 +804,11 @@ Item {
                         readonly property var secMeta: {
                             const list = ApplicationController.playlist.sections
                             for (let i = 0; i < list.length; ++i) {
-                                if (list[i].name.toLowerCase() === sectionHeader.section.toLowerCase()) {
+                                if (list[i].id === sectionHeader.section) {
                                     return list[i]
                                 }
                             }
-                            return { name: sectionHeader.section, color: "#945EB5", repeatable: false, collapsed: false, itemCount: 0 }
+                            return { id: sectionHeader.section, name: sectionHeader.section, color: "#945EB5", repeatable: false, collapsed: false, itemCount: 0 }
                         }
                         readonly property string resolvedColorHex: {
                             const _watch = ApplicationController.playlist.sections
@@ -869,7 +859,10 @@ Item {
                             Text {
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
-                                text: sectionHeader.section.length > 0 ? sectionHeader.section : qsTr("Imported Media")
+                                text: {
+                                    const _watch = ApplicationController.playlist.sections
+                                    return ApplicationController.playlist.sectionLabel(sectionHeader.section)
+                                }
                                 color: Theme.textPrimary
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSizeXs
@@ -905,7 +898,7 @@ Item {
                                 rightPadding: 0
                                 Layout.preferredWidth: 24
                                 Layout.preferredHeight: 24
-                                onClicked: sectionPopup.openEdit(sectionHeader.section, sectionHeader.resolvedColorHex, false)
+                                onClicked: sectionPopup.openEdit(sectionHeader.section, sectionHeader.resolvedColorHex)
                                 ToolTip.visible: editSecBtn.hovered
                                 ToolTip.text: qsTr("Customize or reorder section")
                             }

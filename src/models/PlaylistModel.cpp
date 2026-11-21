@@ -1,6 +1,7 @@
 #include "models/PlaylistModel.h"
 
 #include "core/DatabaseManager.h"
+#include "core/MeetingSections.h"
 #include "core/SystemUtils.h"
 #include "media/PlaybackController.h"
 #include "media/ThumbnailCache.h"
@@ -11,6 +12,7 @@
 #include <QDate>
 #include <QDir>
 #include <QFileInfo>
+#include <QHash>
 #include <QImage>
 #include <QImageReader>
 #include <QJsonArray>
@@ -299,7 +301,7 @@ QVariant PlaylistModel::data(const QModelIndex& index, int role) const
     case SubtitleRole:
         return item.subtitle;
     case SectionTitleRole:
-        return item.sectionTitle;
+        return item.sectionId;
     case FilePathRole:
         return item.filePath;
     case ThumbnailUrlRole:
@@ -371,6 +373,10 @@ QVariant PlaylistModel::data(const QModelIndex& index, int role) const
         return item.pairedAudioPath;
     case RowVisibleRole:
         return isRowVisible(index.row());
+    case SectionLabelRole:
+        return sectionLabel(item.sectionId);
+    case SourceRole:
+        return item.source;
     default:
         return {};
     }
@@ -418,6 +424,8 @@ QHash<int, QByteArray> PlaylistModel::roleNames() const
         {SlideIntervalMsRole, "slideIntervalMs"},
         {PairedAudioPathRole, "pairedAudioPath"},
         {RowVisibleRole, "rowVisible"},
+        {SectionLabelRole, "sectionLabel"},
+        {SourceRole, "source"},
     };
 }
 
@@ -588,30 +596,33 @@ const std::vector<PlaylistEntryView>& PlaylistModel::items() const
     return m_items;
 }
 
-int PlaylistModel::importUrls(const QList<QUrl>& urls, const QString& defaultSection)
+int PlaylistModel::importUrls(const QList<QUrl>& urls, const QString& sectionId)
 {
     int added = 0;
     for (const QUrl& url : urls) {
         const QString localPath = url.isLocalFile() ? url.toLocalFile() : url.toString();
-        if (importLocalFile(localPath, defaultSection)) {
+        if (importLocalFile(localPath, sectionId)) {
             ++added;
         }
     }
     return added;
 }
 
-bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sectionTitle)
+bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sectionId)
 {
     const QFileInfo info(filePath);
     if (!info.exists() || !info.isFile()) {
         return false;
     }
+    const QString targetSection = sectionId.trimmed().isEmpty()
+                                      ? QString(MeetingSections::kImportedMedia)
+                                      : sectionId.trimmed();
 
     const QString ext = info.suffix().toLower();
     if (ext == QStringLiteral("jwpub")) {
         JwpubWeekFilterOptions opts;
         opts.pubSymbolHint = info.completeBaseName().section(QLatin1Char('_'), 0, 0).toLower();
-        return importJwpubForWeek(filePath, opts, sectionTitle, false) > 0;
+        return importJwpubForWeek(filePath, opts, targetSection, false) > 0;
     }
 
     if (ext == QStringLiteral("jwlplaylist")) {
@@ -641,7 +652,7 @@ bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sect
             if (entry.title.isEmpty()) {
                 entry.title = QFileInfo(target).completeBaseName();
             }
-            entry.sectionTitle = pkg.playlistName.isEmpty() ? sectionTitle : pkg.playlistName;
+            entry.sectionId = targetSection;
             entry.filePath = target;
             if (!je.thumbnailArchivePath.isEmpty()) {
                 const QString thumbPath = QDir(outDir).filePath(je.thumbnailArchivePath);
@@ -663,7 +674,7 @@ bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sect
 
     PlaylistEntryView entry;
     entry.title = info.completeBaseName();
-    entry.sectionTitle = sectionTitle;
+    entry.sectionId = targetSection;
     entry.filePath = info.absoluteFilePath();
     entry.sourceKind = QStringLiteral("local");
     return appendEntry(entry);
@@ -671,7 +682,7 @@ bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sect
 
 int PlaylistModel::importJwpubForWeek(const QString& filePath,
                                       const JwpubWeekFilterOptions& options,
-                                      const QString& fallbackSection, bool isCoVisit,
+                                      const QString& fallbackSectionId, bool isCoVisit,
                                       QString* outWatchtowerSubtitle,
                                       std::vector<JwpubMediaItem>* outUnresolvedLinked,
                                       std::vector<JwpubExtractRef>* outExtracts)
@@ -715,14 +726,12 @@ int PlaylistModel::importJwpubForWeek(const QString& filePath,
         return 0;
     }
 
-    const auto sectionForJwpubItem = [&](const JwpubMediaItem& mm) {
+    const auto sectionForJwpubItem = [&](const JwpubMediaItem& mm) -> QString {
         if (sym.startsWith(QStringLiteral("mi"))) {
-            return (mm.categoryType == 26 || mm.beginParagraphOrdinal <= 0)
-                       ? QStringLiteral("Welcome Video")
-                       : QStringLiteral("Memorial Talk");
+            return MeetingSections::kImportedMedia;
         }
         if (sym == QStringLiteral("w")) {
-            return QStringLiteral("Watchtower Study");
+            return MeetingSections::kWatchtowerStudy;
         }
         if (sym == QStringLiteral("mwb")) {
             const QString combined = (mm.documentTitle + QLatin1Char(' ') + mm.groupCaption +
@@ -731,24 +740,22 @@ int PlaylistModel::importJwpubForWeek(const QString& filePath,
             if (combined.contains(QStringLiteral("treasure")) ||
                 combined.contains(QStringLiteral("tesouro")) ||
                 combined.contains(QStringLiteral("gems"))) {
-                return QStringLiteral("Treasures From God's Word");
+                return MeetingSections::kTreasures;
             }
             if (combined.contains(QStringLiteral("apply yourself")) ||
                 combined.contains(QStringLiteral("ministry")) ||
                 combined.contains(QStringLiteral("ministério")) ||
                 combined.contains(QStringLiteral("disciples"))) {
-                return QStringLiteral("Apply Yourself to the Field Ministry");
+                return MeetingSections::kApplyYourself;
             }
             if (mm.isCbsCandidate || combined.contains(QStringLiteral("living")) ||
                 combined.contains(QStringLiteral("vida cristã")) ||
                 combined.contains(QStringLiteral("bible study"))) {
-                return QStringLiteral("Living as Christians");
-            }
-            if (!mm.documentTitle.isEmpty()) {
-                return mm.documentTitle;
+                return MeetingSections::kLivingAsChristians;
             }
         }
-        return mm.documentTitle.isEmpty() ? fallbackSection : mm.documentTitle;
+        return fallbackSectionId.isEmpty() ? QString(MeetingSections::kImportedMedia)
+                                           : fallbackSectionId;
     };
 
     int added = 0;
@@ -767,7 +774,7 @@ int PlaylistModel::importJwpubForWeek(const QString& filePath,
         if (entry.title.isEmpty()) {
             entry.title = QFileInfo(target).completeBaseName();
         }
-        entry.sectionTitle = sectionForJwpubItem(mm);
+        entry.sectionId = sectionForJwpubItem(mm);
         entry.filePath = target;
         entry.sourceKind = QStringLiteral("jwpub");
         entry.groupKey = mm.groupCaption;
@@ -809,8 +816,11 @@ bool PlaylistModel::appendEntry(const PlaylistEntryView& input)
     if (entry.sortOrderOriginal <= 0) {
         entry.sortOrderOriginal = static_cast<int>(m_items.size());
     }
+    if (entry.sectionId.isEmpty()) {
+        entry.sectionId = MeetingSections::kImportedMedia;
+    }
     if (entry.originalSection.isEmpty()) {
-        entry.originalSection = entry.sectionTitle;
+        entry.originalSection = entry.sectionId;
     }
     enrichEntryMetadata(entry);
 
@@ -822,6 +832,8 @@ bool PlaylistModel::appendEntry(const PlaylistEntryView& input)
             mediaRec.mediaType = entry.kindLabel.toLower();
             mediaRec.durationMs = entry.durationMs;
             mediaRec.fileSize = entry.fileSizeBytes;
+            mediaRec.width = entry.width;
+            mediaRec.height = entry.height;
             mediaRec.sourceKind = entry.sourceKind;
             entry.mediaItemId = m_database->upsertMediaItem(mediaRec);
         }
@@ -829,7 +841,8 @@ bool PlaylistModel::appendEntry(const PlaylistEntryView& input)
         PlaylistEntryRecord rowRec;
         rowRec.playlistId = m_playlistId;
         rowRec.mediaItemId = entry.mediaItemId;
-        rowRec.sectionTitle = entry.sectionTitle;
+        rowRec.sectionId = entry.sectionId;
+        rowRec.sectionTitle = sectionLabel(entry.sectionId);
         rowRec.customTitle = entry.title;
         rowRec.sortOrder = static_cast<int>(m_items.size());
         rowRec.trimStartMs = entry.trimStartMs;
@@ -853,6 +866,8 @@ bool PlaylistModel::appendEntry(const PlaylistEntryView& input)
         rowRec.dividerColor = entry.dividerColor;
         rowRec.slideIntervalMs = entry.slideIntervalMs;
         rowRec.pairedAudioPath = entry.pairedAudioPath;
+        rowRec.source = entry.source;
+        rowRec.uniqueKey = entry.uniqueKey;
         entry.entryId = m_database->addPlaylistEntry(rowRec);
     }
 
@@ -882,14 +897,14 @@ bool PlaylistModel::moveItem(int fromIndex, int toIndex)
         return false;
     }
 
-    const QString targetSection = m_items.at(static_cast<size_t>(toIndex)).sectionTitle;
+    const QString targetSection = m_items.at(static_cast<size_t>(toIndex)).sectionId;
     const int destRow = (toIndex > fromIndex) ? (toIndex + 1) : toIndex;
     beginMoveRows(QModelIndex(), fromIndex, fromIndex, QModelIndex(), destRow);
 
     PlaylistEntryView moved = m_items.at(static_cast<size_t>(fromIndex));
-    const bool sectionChanged = !targetSection.isEmpty() && moved.sectionTitle != targetSection;
+    const bool sectionChanged = !targetSection.isEmpty() && moved.sectionId != targetSection;
     if (sectionChanged) {
-        moved.sectionTitle = targetSection;
+        moved.sectionId = targetSection;
     }
     m_items.erase(m_items.begin() + fromIndex);
     m_items.insert(m_items.begin() + toIndex, moved);
@@ -909,7 +924,7 @@ bool PlaylistModel::moveItem(int fromIndex, int toIndex)
         if (m_database != nullptr && m_database->isOpen() && m_playlistId > 0 &&
             moved.entryId > 0) {
             (void)m_database->updatePlaylistEntrySection(moved.entryId, m_playlistId,
-                                                         moved.sectionTitle);
+                                                         moved.sectionId);
         }
         syncSectionsFromItems();
     }
@@ -1145,22 +1160,21 @@ void PlaylistModel::populateDemoWorkspace(const QString& demoAssetDir)
     // Midweek sections mirror the meeting workbook order: Treasures From God's Word,
     // Apply Yourself to the Field Ministry, and Living as Christians.
     const std::vector<DemoSeed> midweekSeeds = {
-        {"demo_01_opening.png", "Treasures From God's Word", "Opening Song", "Visual (16:9)",
+        {"demo_01_opening.png", "tgw", "Opening Song", "Visual (16:9)",
          static_cast<int>(PlaybackController::MediaKind::Image), 12000, 0, 12000, 0},
-        {"demo_02_song_126.png", "Treasures From God's Word", "Song 126", "Image (16:9)",
+        {"demo_02_song_126.png", "tgw", "Song 126", "Image (16:9)",
          static_cast<int>(PlaybackController::MediaKind::Image), 64000, 0, 0, 1},
-        {"demo_03_bible_reading.png", "Treasures From God's Word", "Bible Reading: Proverbs 15:1-4",
-         "Image (16:9)", static_cast<int>(PlaybackController::MediaKind::Image), 43000, 0, 0, 2},
-        {"demo_04_talk_peaceable.png", "Apply Yourself to the Field Ministry",
-         "Talk: Being Peaceable", "Visual (16:9)",
+        {"demo_03_bible_reading.png", "tgw", "Bible Reading: Proverbs 15:1-4", "Image (16:9)",
+         static_cast<int>(PlaybackController::MediaKind::Image), 43000, 0, 0, 2},
+        {"demo_04_talk_peaceable.png", "ayfm", "Talk: Being Peaceable", "Visual (16:9)",
          static_cast<int>(PlaybackController::MediaKind::Image), 755000, 5000, 755000, 3},
-        {"demo_05_song_129.png", "Living as Christians", "Song 129", "Image (16:9)",
+        {"demo_05_song_129.png", "lac", "Song 129", "Image (16:9)",
          static_cast<int>(PlaybackController::MediaKind::Image), 62000, 0, 0, 4},
-        {"demo_06_study.png", "Living as Christians", "Congregation Bible Study", "Visual (16:9)",
+        {"demo_06_study.png", "lac", "Congregation Bible Study", "Visual (16:9)",
          static_cast<int>(PlaybackController::MediaKind::Image), 1100000, 0, 0, 5},
-        {"demo_07_song_130.png", "Living as Christians", "Song 130", "Image (16:9)",
+        {"demo_07_song_130.png", "lac", "Song 130", "Image (16:9)",
          static_cast<int>(PlaybackController::MediaKind::Image), 63000, 0, 0, 6},
-        {"demo_08_closing.png", "Living as Christians", "Closing Song", "Visual (16:9)",
+        {"demo_08_closing.png", "lac", "Closing Song", "Visual (16:9)",
          static_cast<int>(PlaybackController::MediaKind::Image), 28000, 0, 0, 7},
     };
 
@@ -1171,7 +1185,7 @@ void PlaylistModel::populateDemoWorkspace(const QString& demoAssetDir)
         PlaylistEntryView entry;
         entry.title = QString::fromUtf8(seed.title);
         entry.subtitle = QString::fromUtf8(seed.subtitle);
-        entry.sectionTitle = QString::fromUtf8(seed.section);
+        entry.sectionId = QString::fromUtf8(seed.section);
         entry.filePath = imgPath;
         entry.thumbnailUrl = QUrl::fromLocalFile(imgPath).toString();
         entry.mediaKind = seed.mediaKind;
@@ -1205,7 +1219,8 @@ void PlaylistModel::populateDemoWorkspace(const QString& demoAssetDir)
                 PlaylistEntryRecord row;
                 row.playlistId = weekendId;
                 row.mediaItemId = mediaId;
-                row.sectionTitle = QStringLiteral("Watchtower Study");
+                row.sectionId = MeetingSections::kWatchtowerStudy;
+                row.sectionTitle = MeetingSections::translatedLabel(row.sectionId);
                 row.customTitle = rec.title;
                 row.sortOrder = 0;
                 (void)m_database->addPlaylistEntry(row);
@@ -1247,13 +1262,15 @@ void PlaylistModel::loadFromDatabase()
         }
     }
 
-    const std::vector<PlaylistEntryRecord> rows = m_database->listPlaylistEntries(m_playlistId);
+    // One joined query per day instead of one media lookup per row.
+    const std::vector<PlaylistItemRow> rows = m_database->listPlaylistItemRows(m_playlistId);
     beginResetModel();
     m_items.clear();
     m_activeIndex = -1;
 
-    for (const PlaylistEntryRecord& row : rows) {
-        const std::optional<MediaItemRecord> media = m_database->findMediaItemById(row.mediaItemId);
+    for (const PlaylistItemRow& itemRow : rows) {
+        const PlaylistEntryRecord& row = itemRow.entry;
+        const std::optional<MediaItemRecord>& media = itemRow.media;
         const bool isStandalone = (row.itemKind == QStringLiteral("divider")) ||
                                   !row.streamUrl.trimmed().isEmpty() ||
                                   !row.customTitle.trimmed().isEmpty();
@@ -1266,9 +1283,17 @@ void PlaylistModel::loadFromDatabase()
         view.title = !row.customTitle.isEmpty()
                          ? row.customTitle
                          : (media.has_value() ? media->title : QStringLiteral("Media"));
-        view.sectionTitle = row.sectionTitle;
+        view.sectionId = row.sectionId;
+        if (view.sectionId.isEmpty()) {
+            view.sectionId = MeetingSections::idForLegacyTitle(row.sectionTitle);
+        }
+        if (view.sectionId.isEmpty()) {
+            view.sectionId = MeetingSections::kImportedMedia;
+        }
         view.filePath = media.has_value() ? media->filePath : QString();
         view.durationMs = media.has_value() ? media->durationMs : 0;
+        view.width = media.has_value() ? media->width : 0;
+        view.height = media.has_value() ? media->height : 0;
         view.trimStartMs = row.trimStartMs;
         view.trimEndMs = row.trimEndMs;
         view.zoomScale = row.zoomScale;
@@ -1289,12 +1314,13 @@ void PlaylistModel::loadFromDatabase()
         view.streamUrl = row.streamUrl;
         view.playbackRate = row.playbackRate > 0.0 ? row.playbackRate : 1.0;
         view.isCbs = row.isCbs;
-        view.originalSection =
-            row.originalSection.isEmpty() ? row.sectionTitle : row.originalSection;
+        view.originalSection = row.originalSection.isEmpty() ? view.sectionId : row.originalSection;
         view.sortOrderOriginal = row.sortOrderOriginal;
         view.dividerColor = row.dividerColor;
         view.slideIntervalMs = row.slideIntervalMs;
         view.pairedAudioPath = row.pairedAudioPath;
+        view.source = row.source;
+        view.uniqueKey = row.uniqueKey;
         enrichEntryMetadata(view);
         m_items.push_back(std::move(view));
     }
@@ -1309,66 +1335,45 @@ void PlaylistModel::loadFromDatabase()
 
 QVariantList PlaylistModel::sections() const
 {
+    struct SectionStats
+    {
+        int itemCount{0};
+        int firstIndex{-1};
+    };
+    QHash<QString, SectionStats> stats;
+    for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
+        const PlaylistEntryView& item = m_items.at(static_cast<size_t>(i));
+        SectionStats& entry = stats[item.sectionId];
+        if (entry.firstIndex < 0) {
+            entry.firstIndex = i;
+        }
+        if (item.itemKind != QStringLiteral("divider") && (!item.hidden || m_showHidden)) {
+            ++entry.itemCount;
+        }
+    }
+
     QVariantList list;
     list.reserve(static_cast<qsizetype>(m_sections.size()));
     for (const PlaylistSectionEntry& sec : m_sections) {
-        int itemCount = 0;
-        int firstIdx = -1;
-        for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
-            const PlaylistEntryView& item = m_items.at(static_cast<size_t>(i));
-            if (item.sectionTitle.compare(sec.name, Qt::CaseInsensitive) == 0) {
-                if (item.itemKind != QStringLiteral("divider") && (!item.hidden || m_showHidden)) {
-                    ++itemCount;
-                }
-                if (firstIdx < 0) {
-                    firstIdx = i;
-                }
-            }
-        }
+        const SectionStats sectionStats = stats.value(sec.id);
         QVariantMap map;
-        map.insert(QStringLiteral("name"), sec.name);
+        map.insert(QStringLiteral("id"), sec.id);
+        map.insert(QStringLiteral("name"), sectionLabel(sec.id));
         map.insert(QStringLiteral("color"), sec.colorHex);
         map.insert(QStringLiteral("repeatable"), sec.repeatable);
         map.insert(QStringLiteral("collapsed"), sec.collapsed);
-        map.insert(QStringLiteral("itemCount"), itemCount);
-        map.insert(QStringLiteral("firstItemIndex"), firstIdx);
+        map.insert(QStringLiteral("documentTitle"), sec.documentTitle);
+        map.insert(QStringLiteral("isMeetingSection"), MeetingSections::isMeetingSection(sec.id));
+        map.insert(QStringLiteral("itemCount"), sectionStats.itemCount);
+        map.insert(QStringLiteral("firstItemIndex"), sectionStats.firstIndex);
         list.append(map);
     }
     return list;
 }
 
-QString PlaylistModel::defaultColorForSection(const QString& sectionTitle)
+QString PlaylistModel::defaultColorForSection(const QString& sectionId)
 {
-    const QString t = sectionTitle.trimmed().toLower();
-    if (t.contains(QStringLiteral("treasure")) || t.contains(QStringLiteral("tesouro"))) {
-        return QStringLiteral("#5F6B73");
-    }
-    if (t.contains(QStringLiteral("apply yourself")) || t.contains(QStringLiteral("ministério")) ||
-        t.contains(QStringLiteral("ministerio"))) {
-        return QStringLiteral("#B7801F");
-    }
-    if (t.contains(QStringLiteral("living")) || t.contains(QStringLiteral("vida cristã")) ||
-        t.contains(QStringLiteral("vida crista"))) {
-        return QStringLiteral("#9A1F33");
-    }
-    if (t.contains(QStringLiteral("public talk")) || t.contains(QStringLiteral("discurso"))) {
-        return QStringLiteral("#3E6EA8");
-    }
-    if (t.contains(QStringLiteral("watchtower")) || t.contains(QStringLiteral("sentinela"))) {
-        return QStringLiteral("#2F7D8C");
-    }
-    if (t.contains(QStringLiteral("overseer")) || t.contains(QStringLiteral("superintendente"))) {
-        return QStringLiteral("#3F7F5F");
-    }
-    if (t.contains(QStringLiteral("welcome")) || t.contains(QStringLiteral("memorial")) ||
-        t.contains(QStringLiteral("celebração"))) {
-        return QStringLiteral("#8C3B66");
-    }
-    if (t.contains(QStringLiteral("assembly")) || t.contains(QStringLiteral("convention")) ||
-        t.contains(QStringLiteral("assembleia")) || t.contains(QStringLiteral("congresso"))) {
-        return QStringLiteral("#6B4E9B");
-    }
-    return QStringLiteral("#945EB5");
+    return MeetingSections::defaultColor(sectionId);
 }
 
 QString PlaylistModel::normalizeHexColor(const QString& raw, const QString& fallback)
@@ -1381,22 +1386,28 @@ QString PlaylistModel::normalizeHexColor(const QString& raw, const QString& fall
     return fallback;
 }
 
-QString PlaylistModel::colorForSection(const QString& sectionName) const
+QString PlaylistModel::colorForSection(const QString& sectionId) const
 {
-    const QString key = sectionName.trimmed();
-    if (key.isEmpty()) {
-        return QStringLiteral("#945EB5");
-    }
-    const int idx = findSectionIndex(key);
+    const int idx = findSectionIndex(sectionId);
     if (idx >= 0) {
         return m_sections.at(static_cast<size_t>(idx)).colorHex;
     }
-    return defaultColorForSection(key);
+    return defaultColorForSection(sectionId.trimmed());
 }
 
-bool PlaylistModel::ensureSection(const QString& name, const QString& colorHex)
+QString PlaylistModel::sectionLabel(const QString& sectionId) const
 {
-    const QString cleaned = name.trimmed();
+    const int idx = findSectionIndex(sectionId);
+    if (idx >= 0 && !m_sections.at(static_cast<size_t>(idx)).label.isEmpty()) {
+        return m_sections.at(static_cast<size_t>(idx)).label;
+    }
+    const QString translated = MeetingSections::translatedLabel(sectionId.trimmed());
+    return translated.isEmpty() ? sectionId.trimmed() : translated;
+}
+
+bool PlaylistModel::ensureSection(const QString& sectionId, const QString& colorHex)
+{
+    const QString cleaned = sectionId.trimmed();
     if (cleaned.isEmpty()) {
         return false;
     }
@@ -1406,69 +1417,61 @@ bool PlaylistModel::ensureSection(const QString& name, const QString& colorHex)
         }
         return true;
     }
-    const QString resolvedColor = normalizeHexColor(colorHex, defaultColorForSection(cleaned));
-    m_sections.push_back(PlaylistSectionEntry{cleaned, resolvedColor});
+    PlaylistSectionEntry section;
+    section.id = cleaned;
+    section.colorHex = normalizeHexColor(colorHex, defaultColorForSection(cleaned));
+    m_sections.push_back(section);
     saveSectionsForPlaylist();
     emit sectionsChanged();
     return true;
 }
 
-bool PlaylistModel::createSection(const QString& name, const QString& colorHex)
+QString PlaylistModel::createSection(const QString& label, const QString& colorHex)
 {
-    const QString cleaned = name.trimmed();
-    if (cleaned.isEmpty() || findSectionIndex(cleaned) >= 0) {
-        return false;
-    }
-    m_sections.push_back(PlaylistSectionEntry{
-        cleaned, normalizeHexColor(colorHex, defaultColorForSection(cleaned))});
-    saveSectionsForPlaylist();
-    emit sectionsChanged();
-    return true;
-}
-
-bool PlaylistModel::renameSection(const QString& oldName, const QString& newName)
-{
-    const QString oldClean = oldName.trimmed();
-    const QString newClean = newName.trimmed();
-    if (oldClean.isEmpty() || newClean.isEmpty()) {
-        return false;
-    }
-    const int idx = findSectionIndex(oldClean);
-    if (idx < 0) {
-        return false;
-    }
-    const int clashIdx = findSectionIndex(newClean);
-    if (clashIdx >= 0 && clashIdx != idx) {
-        return false;
-    }
-
-    const QString previousExact = m_sections.at(static_cast<size_t>(idx)).name;
-    m_sections[static_cast<size_t>(idx)].name = newClean;
-
-    bool updatedAnyRow = false;
-    for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
-        PlaylistEntryView& entry = m_items[static_cast<size_t>(i)];
-        if (entry.sectionTitle.compare(previousExact, Qt::CaseInsensitive) == 0 ||
-            entry.sectionTitle.compare(oldClean, Qt::CaseInsensitive) == 0) {
-            entry.sectionTitle = newClean;
-            updatedAnyRow = true;
-            const QModelIndex rowIdx = createIndex(i, 0);
-            emit dataChanged(rowIdx, rowIdx, {SectionTitleRole});
+    const QString cleanedLabel = label.trimmed();
+    for (const PlaylistSectionEntry& existing : m_sections) {
+        if (!cleanedLabel.isEmpty() &&
+            sectionLabel(existing.id).compare(cleanedLabel, Qt::CaseInsensitive) == 0) {
+            return {};
         }
     }
-
-    if (updatedAnyRow && m_database != nullptr && m_database->isOpen() && m_playlistId > 0) {
-        (void)m_database->renamePlaylistEntrySections(m_playlistId, previousExact, newClean);
-    }
-
+    PlaylistSectionEntry section;
+    section.id = MeetingSections::createCustomId();
+    section.label = cleanedLabel;
+    section.colorHex = normalizeHexColor(colorHex, MeetingSections::randomCustomColor());
+    m_sections.push_back(section);
     saveSectionsForPlaylist();
     emit sectionsChanged();
+    return section.id;
+}
+
+bool PlaylistModel::renameSection(const QString& sectionId, const QString& newLabel)
+{
+    const QString cleanedLabel = newLabel.trimmed();
+    const int idx = findSectionIndex(sectionId);
+    if (idx < 0 || cleanedLabel.isEmpty() ||
+        !MeetingSections::isCustomSection(sectionId.trimmed())) {
+        return false;
+    }
+    for (int i = 0; i < static_cast<int>(m_sections.size()); ++i) {
+        if (i != idx && sectionLabel(m_sections.at(static_cast<size_t>(i)).id)
+                                .compare(cleanedLabel, Qt::CaseInsensitive) == 0) {
+            return false;
+        }
+    }
+    m_sections[static_cast<size_t>(idx)].label = cleanedLabel;
+    saveSectionsForPlaylist();
+    emit sectionsChanged();
+    if (!m_items.empty()) {
+        emit dataChanged(createIndex(0, 0), createIndex(static_cast<int>(m_items.size()) - 1, 0),
+                         {SectionLabelRole});
+    }
     return true;
 }
 
-bool PlaylistModel::setSectionColor(const QString& sectionName, const QString& colorHex)
+bool PlaylistModel::setSectionColor(const QString& sectionId, const QString& colorHex)
 {
-    const QString cleaned = sectionName.trimmed();
+    const QString cleaned = sectionId.trimmed();
     if (cleaned.isEmpty()) {
         return false;
     }
@@ -1477,9 +1480,12 @@ bool PlaylistModel::setSectionColor(const QString& sectionName, const QString& c
         return false;
     }
 
-    int idx = findSectionIndex(cleaned);
+    const int idx = findSectionIndex(cleaned);
     if (idx < 0) {
-        m_sections.push_back(PlaylistSectionEntry{cleaned, normalized});
+        PlaylistSectionEntry section;
+        section.id = cleaned;
+        section.colorHex = normalized;
+        m_sections.push_back(section);
     } else {
         if (m_sections.at(static_cast<size_t>(idx)).colorHex == normalized) {
             return true;
@@ -1492,30 +1498,45 @@ bool PlaylistModel::setSectionColor(const QString& sectionName, const QString& c
     return true;
 }
 
-bool PlaylistModel::removeSection(const QString& sectionName)
+bool PlaylistModel::removeSection(const QString& sectionId)
 {
-    const QString cleaned = sectionName.trimmed();
+    const QString cleaned = sectionId.trimmed();
     const int idx = findSectionIndex(cleaned);
-    if (idx < 0) {
+    if (idx < 0 || MeetingSections::isMeetingSection(cleaned) ||
+        cleaned == MeetingSections::kImportedMedia) {
         return false;
     }
-    for (const PlaylistEntryView& item : m_items) {
-        if (item.sectionTitle.compare(cleaned, Qt::CaseInsensitive) == 0) {
-            return false;
+    // Media of a deleted section is kept under the added media section.
+    bool movedAny = false;
+    for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
+        PlaylistEntryView& item = m_items[static_cast<size_t>(i)];
+        if (item.sectionId != cleaned) {
+            continue;
         }
+        item.sectionId = MeetingSections::kImportedMedia;
+        movedAny = true;
+        if (m_database != nullptr && m_database->isOpen() && m_playlistId > 0 && item.entryId > 0) {
+            (void)m_database->updatePlaylistEntrySection(item.entryId, m_playlistId,
+                                                         item.sectionId);
+        }
+        emit dataChanged(createIndex(i, 0), createIndex(i, 0),
+                         {SectionTitleRole, SectionLabelRole});
     }
     m_sections.erase(m_sections.begin() + idx);
+    if (movedAny) {
+        (void)ensureSection(MeetingSections::kImportedMedia);
+    }
     saveSectionsForPlaylist();
     emit sectionsChanged();
     return true;
 }
 
-bool PlaylistModel::moveSection(const QString& sectionName, int delta)
+bool PlaylistModel::moveSection(const QString& sectionId, int delta)
 {
     if (delta == 0 || m_sections.size() < 2) {
         return false;
     }
-    const int idx = findSectionIndex(sectionName);
+    const int idx = findSectionIndex(sectionId);
     if (idx < 0) {
         return false;
     }
@@ -1544,8 +1565,7 @@ bool PlaylistModel::moveSection(const QString& sectionName, int delta)
 
         for (const PlaylistSectionEntry& sec : m_sections) {
             for (size_t i = 0; i < m_items.size(); ++i) {
-                if (!taken[i] &&
-                    m_items[i].sectionTitle.compare(sec.name, Qt::CaseInsensitive) == 0) {
+                if (!taken[i] && m_items[i].sectionId == sec.id) {
                     regrouped.push_back(m_items[i]);
                     taken[i] = true;
                 }
@@ -1580,10 +1600,10 @@ bool PlaylistModel::moveSection(const QString& sectionName, int delta)
     return true;
 }
 
-bool PlaylistModel::assignItemToSection(int index, const QString& targetSection)
+bool PlaylistModel::assignItemToSection(int index, const QString& sectionId)
 {
     const int size = static_cast<int>(m_items.size());
-    const QString cleanedSection = targetSection.trimmed();
+    const QString cleanedSection = sectionId.trimmed();
     if (index < 0 || index >= size || cleanedSection.isEmpty()) {
         return false;
     }
@@ -1595,8 +1615,7 @@ bool PlaylistModel::assignItemToSection(int index, const QString& targetSection)
         if (i == index) {
             continue;
         }
-        if (m_items.at(static_cast<size_t>(i))
-                .sectionTitle.compare(cleanedSection, Qt::CaseInsensitive) == 0) {
+        if (m_items.at(static_cast<size_t>(i)).sectionId == cleanedSection) {
             destIndex = i;
         }
     }
@@ -1608,8 +1627,7 @@ bool PlaylistModel::assignItemToSection(int index, const QString& targetSection)
             if (i == index) {
                 continue;
             }
-            const int rowSecOrder =
-                findSectionIndex(m_items.at(static_cast<size_t>(i)).sectionTitle);
+            const int rowSecOrder = findSectionIndex(m_items.at(static_cast<size_t>(i)).sectionId);
             if (rowSecOrder >= 0 && rowSecOrder > targetSecOrder) {
                 destIndex = (i > index) ? (i - 1) : i;
                 break;
@@ -1619,7 +1637,7 @@ bool PlaylistModel::assignItemToSection(int index, const QString& targetSection)
         ++destIndex;
     }
 
-    m_items[static_cast<size_t>(index)].sectionTitle = cleanedSection;
+    m_items[static_cast<size_t>(index)].sectionId = cleanedSection;
     if (m_database != nullptr && m_database->isOpen() && m_playlistId > 0 &&
         m_items[static_cast<size_t>(index)].entryId > 0) {
         (void)m_database->updatePlaylistEntrySection(m_items[static_cast<size_t>(index)].entryId,
@@ -1642,23 +1660,23 @@ bool PlaylistModel::assignItemToSection(int index, const QString& targetSection)
         }
         endMoveRows();
         const QModelIndex changedIdx = createIndex(destIndex, 0);
-        emit dataChanged(changedIdx, changedIdx, {SectionTitleRole});
+        emit dataChanged(changedIdx, changedIdx, {SectionTitleRole, SectionLabelRole});
         emit activeIndexChanged();
         persistReorder();
     } else {
         const QModelIndex changedIdx = createIndex(index, 0);
-        emit dataChanged(changedIdx, changedIdx, {SectionTitleRole});
+        emit dataChanged(changedIdx, changedIdx, {SectionTitleRole, SectionLabelRole});
     }
 
     syncSectionsFromItems();
     return true;
 }
 
-int PlaylistModel::findSectionIndex(const QString& name) const
+int PlaylistModel::findSectionIndex(const QString& sectionId) const
 {
-    const QString cleaned = name.trimmed();
+    const QString cleaned = sectionId.trimmed();
     for (int i = 0; i < static_cast<int>(m_sections.size()); ++i) {
-        if (m_sections.at(static_cast<size_t>(i)).name.compare(cleaned, Qt::CaseInsensitive) == 0) {
+        if (m_sections.at(static_cast<size_t>(i)).id == cleaned) {
             return i;
         }
     }
@@ -1669,11 +1687,14 @@ void PlaylistModel::syncSectionsFromItems()
 {
     bool changed = false;
     for (const PlaylistEntryView& item : m_items) {
-        const QString sec = item.sectionTitle.trimmed();
+        const QString sec = item.sectionId.trimmed();
         if (sec.isEmpty() || findSectionIndex(sec) >= 0) {
             continue;
         }
-        m_sections.push_back(PlaylistSectionEntry{sec, defaultColorForSection(sec)});
+        PlaylistSectionEntry section;
+        section.id = sec;
+        section.colorHex = defaultColorForSection(sec);
+        m_sections.push_back(section);
         changed = true;
     }
     if (changed) {
@@ -1688,35 +1709,33 @@ void PlaylistModel::loadSectionsForPlaylist()
     if (m_database == nullptr || !m_database->isOpen() || m_playlistId <= 0) {
         return;
     }
-    QString rawJson;
-    if (const auto rec = m_database->findPlaylistById(m_playlistId);
-        rec.has_value() && !rec->sectionsJson.isEmpty()) {
-        rawJson = rec->sectionsJson;
-    } else {
-        const QString key = QStringLiteral("playlist/sections_%1").arg(m_playlistId);
-        if (const std::optional<QString> settingVal = m_database->getSetting(key);
-            settingVal.has_value()) {
-            rawJson = *settingVal;
-        }
-    }
-    if (rawJson.isEmpty()) {
+    const auto rec = m_database->findPlaylistById(m_playlistId);
+    if (!rec.has_value() || rec->sectionsJson.isEmpty()) {
         return;
     }
-    const QJsonDocument doc = QJsonDocument::fromJson(rawJson.toUtf8());
-    if (!doc.isArray()) {
-        return;
-    }
+    const QJsonDocument doc = QJsonDocument::fromJson(rec->sectionsJson.toUtf8());
     for (const QJsonValue& val : doc.array()) {
         const QJsonObject obj = val.toObject();
-        const QString name = obj.value(QStringLiteral("name")).toString().trimmed();
-        if (name.isEmpty() || findSectionIndex(name) >= 0) {
+        PlaylistSectionEntry section;
+        section.id = obj.value(QStringLiteral("id")).toString().trimmed();
+        section.label = obj.value(QStringLiteral("label")).toString().trimmed();
+        if (section.id.isEmpty()) {
+            const QString legacyName = obj.value(QStringLiteral("name")).toString().trimmed();
+            section.id = MeetingSections::idForLegacyTitle(legacyName);
+            if (section.id.isEmpty()) {
+                section.id = MeetingSections::createCustomId();
+                section.label = legacyName;
+            }
+        }
+        if (findSectionIndex(section.id) >= 0) {
             continue;
         }
-        const QString color = normalizeHexColor(obj.value(QStringLiteral("color")).toString(),
-                                                defaultColorForSection(name));
-        const bool repeatable = obj.value(QStringLiteral("repeatable")).toBool(false);
-        const bool collapsed = obj.value(QStringLiteral("collapsed")).toBool(false);
-        m_sections.push_back(PlaylistSectionEntry{name, color, repeatable, collapsed});
+        section.colorHex = normalizeHexColor(obj.value(QStringLiteral("color")).toString(),
+                                             defaultColorForSection(section.id));
+        section.repeatable = obj.value(QStringLiteral("repeatable")).toBool(false);
+        section.collapsed = obj.value(QStringLiteral("collapsed")).toBool(false);
+        section.documentTitle = obj.value(QStringLiteral("documentTitle")).toString();
+        m_sections.push_back(section);
     }
 }
 
@@ -1728,7 +1747,10 @@ void PlaylistModel::saveSectionsForPlaylist() const
     QJsonArray arr;
     for (const PlaylistSectionEntry& sec : m_sections) {
         QJsonObject obj;
-        obj.insert(QStringLiteral("name"), sec.name);
+        obj.insert(QStringLiteral("id"), sec.id);
+        if (!sec.label.isEmpty()) {
+            obj.insert(QStringLiteral("label"), sec.label);
+        }
         obj.insert(QStringLiteral("color"), sec.colorHex);
         if (sec.repeatable) {
             obj.insert(QStringLiteral("repeatable"), true);
@@ -1736,13 +1758,13 @@ void PlaylistModel::saveSectionsForPlaylist() const
         if (sec.collapsed) {
             obj.insert(QStringLiteral("collapsed"), true);
         }
+        if (!sec.documentTitle.isEmpty()) {
+            obj.insert(QStringLiteral("documentTitle"), sec.documentTitle);
+        }
         arr.append(obj);
     }
-    const QString encoded = QString::fromUtf8(QJsonDocument(arr).toJson(QJsonDocument::Compact));
-    const QString key = QStringLiteral("playlist/sections_%1").arg(m_playlistId);
-    (void)m_database->setSetting(key, encoded);
     if (auto rec = m_database->findPlaylistById(m_playlistId); rec.has_value()) {
-        rec->sectionsJson = encoded;
+        rec->sectionsJson = QString::fromUtf8(QJsonDocument(arr).toJson(QJsonDocument::Compact));
         (void)m_database->updatePlaylistMetadata(*rec);
     }
 }
@@ -1797,12 +1819,17 @@ void PlaylistModel::enrichEntryMetadata(PlaylistEntryView& entry)
     }
 
     if (entry.mediaKind == static_cast<int>(PlaybackController::MediaKind::Image) &&
-        entry.fileExists) {
+        entry.fileExists && (entry.width <= 0 || entry.height <= 0)) {
+        // Read once at import; reloads reuse the size stored with the media item.
         const QImageReader reader(entry.filePath);
         const QSize sz = reader.size();
         if (sz.isValid()) {
-            entry.resolutionLabel = aspectRatioLabel(sz.width(), sz.height());
+            entry.width = sz.width();
+            entry.height = sz.height();
         }
+    }
+    if (entry.width > 0 && entry.height > 0) {
+        entry.resolutionLabel = aspectRatioLabel(entry.width, entry.height);
     }
     if (entry.resolutionLabel.isEmpty()) {
         entry.resolutionLabel =
@@ -1865,7 +1892,8 @@ void PlaylistModel::persistEntryAt(int index) const
     rec.id = view.entryId;
     rec.playlistId = m_playlistId;
     rec.mediaItemId = view.mediaItemId;
-    rec.sectionTitle = view.sectionTitle;
+    rec.sectionId = view.sectionId;
+    rec.sectionTitle = sectionLabel(view.sectionId);
     rec.customTitle = view.title;
     rec.sortOrder = index;
     rec.trimStartMs = view.trimStartMs;
@@ -1889,6 +1917,8 @@ void PlaylistModel::persistEntryAt(int index) const
     rec.dividerColor = view.dividerColor;
     rec.slideIntervalMs = view.slideIntervalMs;
     rec.pairedAudioPath = view.pairedAudioPath;
+    rec.source = view.source;
+    rec.uniqueKey = view.uniqueKey;
     (void)m_database->updatePlaylistEntryFull(rec);
 }
 
@@ -1952,20 +1982,8 @@ int PlaylistModel::hiddenCount() const
 
 void PlaylistModel::ensureFixedMeetingSections(const QString& meetingKind, bool isCoVisit)
 {
-    const QString k = meetingKind.trimmed().toLower();
-    if (k == QStringLiteral("midweek") || k == QStringLiteral("mw")) {
-        (void)ensureSection(QStringLiteral("Treasures From God's Word"));
-        (void)ensureSection(QStringLiteral("Apply Yourself to the Field Ministry"));
-        (void)ensureSection(QStringLiteral("Living as Christians"));
-    } else if (k == QStringLiteral("weekend") || k == QStringLiteral("we")) {
-        (void)ensureSection(QStringLiteral("Public Talk"));
-        (void)ensureSection(QStringLiteral("Watchtower Study"));
-    } else if (k == QStringLiteral("memorial")) {
-        (void)ensureSection(QStringLiteral("Welcome Video"));
-        (void)ensureSection(QStringLiteral("Memorial Talk"));
-    }
-    if (isCoVisit) {
-        (void)ensureSection(QStringLiteral("Circuit Overseer"), QStringLiteral("#3F7F5F"));
+    for (const QString& sectionId : MeetingSections::meetingSectionIds(meetingKind, isCoVisit)) {
+        (void)ensureSection(sectionId);
     }
 }
 
@@ -1989,7 +2007,8 @@ bool PlaylistModel::openWorkspaceForDate(const QString& dateIso, const QString& 
                                   : displayTitle.trimmed();
         const PlaylistRecord rec = m_database->findOrCreatePlaylistForDate(
             cleanDate, cleanKind, title, isCoVisit || cleanKind == QStringLiteral("memorial"),
-            isCoVisit ? QStringLiteral("#3F7F5F") : QString());
+            isCoVisit ? MeetingSections::defaultColor(MeetingSections::kCircuitOverseer)
+                      : QString());
         if (rec.id <= 0) {
             return false;
         }
@@ -2017,20 +2036,20 @@ bool PlaylistModel::openWorkspaceForDate(const QString& dateIso, const QString& 
     return true;
 }
 
-bool PlaylistModel::addDivider(const QString& title, const QString& sectionTitle,
+bool PlaylistModel::addDivider(const QString& title, const QString& sectionId,
                                const QString& colorHex, int afterIndex)
 {
     const QString cleanTitle =
         title.trimmed().isEmpty() ? QStringLiteral("Divider") : title.trimmed();
-    const QString sec =
-        sectionTitle.trimmed().isEmpty()
-            ? (m_sections.empty() ? QStringLiteral("Meeting") : m_sections.front().name)
-            : sectionTitle.trimmed();
+    const QString sec = sectionId.trimmed().isEmpty()
+                            ? (m_sections.empty() ? QString(MeetingSections::kImportedMedia)
+                                                  : m_sections.front().id)
+                            : sectionId.trimmed();
 
     PlaylistEntryView entry;
     entry.title = cleanTitle;
     entry.subtitle = QStringLiteral("Separator");
-    entry.sectionTitle = sec;
+    entry.sectionId = sec;
     entry.itemKind = QStringLiteral("divider");
     entry.dividerColor = normalizeHexColor(colorHex, QStringLiteral("#D47B2A"));
     entry.sourceKind = QStringLiteral("divider");
@@ -2160,17 +2179,16 @@ bool PlaylistModel::toggleGroupExpanded(const QString& groupKey)
     return true;
 }
 
-bool PlaylistModel::setSectionRepeatable(const QString& sectionName, bool repeatable)
+bool PlaylistModel::setSectionRepeatable(const QString& sectionId, bool repeatable)
 {
-    const int idx = findSectionIndex(sectionName);
+    const int idx = findSectionIndex(sectionId);
     if (idx < 0) {
         return false;
     }
     m_sections[static_cast<size_t>(idx)].repeatable = repeatable;
     for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
         PlaylistEntryView& item = m_items[static_cast<size_t>(i)];
-        if (item.sectionTitle.compare(m_sections[static_cast<size_t>(idx)].name,
-                                      Qt::CaseInsensitive) == 0 &&
+        if (item.sectionId == m_sections[static_cast<size_t>(idx)].id &&
             item.itemKind != QStringLiteral("divider")) {
             item.repeatable = repeatable;
             persistEntryAt(i);
@@ -2182,9 +2200,9 @@ bool PlaylistModel::setSectionRepeatable(const QString& sectionName, bool repeat
     return true;
 }
 
-bool PlaylistModel::toggleSectionCollapsed(const QString& sectionName)
+bool PlaylistModel::toggleSectionCollapsed(const QString& sectionId)
 {
-    const int idx = findSectionIndex(sectionName);
+    const int idx = findSectionIndex(sectionId);
     if (idx < 0) {
         return false;
     }
@@ -2207,7 +2225,7 @@ bool PlaylistModel::resetSortOrder()
     beginResetModel();
     for (PlaylistEntryView& item : m_items) {
         if (!item.originalSection.isEmpty()) {
-            item.sectionTitle = item.originalSection;
+            item.sectionId = item.originalSection;
         }
     }
     std::stable_sort(m_items.begin(), m_items.end(),
@@ -2235,7 +2253,7 @@ bool PlaylistModel::isRowVisible(int row) const
     if (item.hidden && !m_showHidden) {
         return false;
     }
-    const int secIdx = findSectionIndex(item.sectionTitle);
+    const int secIdx = findSectionIndex(item.sectionId);
     if (secIdx >= 0 && m_sections.at(static_cast<size_t>(secIdx)).collapsed) {
         return false;
     }
@@ -2247,7 +2265,7 @@ bool PlaylistModel::isRowVisible(int row) const
     if (!q.isEmpty()) {
         const bool matched = item.title.contains(q, Qt::CaseInsensitive) ||
                              item.subtitle.contains(q, Qt::CaseInsensitive) ||
-                             item.sectionTitle.contains(q, Qt::CaseInsensitive) ||
+                             sectionLabel(item.sectionId).contains(q, Qt::CaseInsensitive) ||
                              item.tagValue.contains(q, Qt::CaseInsensitive) ||
                              item.groupKey.contains(q, Qt::CaseInsensitive);
         if (!matched) {

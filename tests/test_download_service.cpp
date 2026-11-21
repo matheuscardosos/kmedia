@@ -112,7 +112,7 @@ private:
                                           {404, "Not Found", QByteArrayLiteral("missing"), {}, 0});
                 }
 
-                auto sendResponse = [this, socket, resp, ifNoneMatch, rangeHeader]() {
+                auto sendResponse = [socket, resp, ifNoneMatch, rangeHeader]() {
                     QByteArray raw;
                     if (!resp.etag.isEmpty() && ifNoneMatch == resp.etag) {
                         raw.append("HTTP/1.1 304 Not Modified\r\n");

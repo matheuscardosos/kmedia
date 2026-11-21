@@ -1,5 +1,6 @@
 #include "network/MeetingCatalogService.h"
 
+#include "core/MeetingSections.h"
 #include "core/SystemUtils.h"
 #include "models/PlaylistModel.h"
 #include "network/DownloadService.h"
@@ -348,7 +349,8 @@ QVariantList MeetingCatalogService::assetsVariant() const
         map.insert(QStringLiteral("downloaded"), existsOnDisk);
         map.insert(QStringLiteral("taskId"), taskId);
         map.insert(QStringLiteral("sectionTitle"),
-                   inferMeetingSection(asset.keySymbol, asset.title, asset.label));
+                   MeetingSections::translatedLabel(
+                       inferMeetingSection(asset.keySymbol, asset.title, asset.label)));
         list.append(map);
     }
     return list;
@@ -404,28 +406,28 @@ QString MeetingCatalogService::inferMeetingSection(const QString& pubSymbol, con
 
     if (text.contains(QStringLiteral("treasure")) || text.contains(QStringLiteral("tesouro")) ||
         text.contains(QStringLiteral("gems")) || text.contains(QStringLiteral("joias"))) {
-        return QStringLiteral("Treasures From God's Word");
+        return MeetingSections::kTreasures;
     }
     if (text.contains(QStringLiteral("apply yourself")) ||
         text.contains(QStringLiteral("ministério")) || text.contains(QStringLiteral("ministry"))) {
-        return QStringLiteral("Apply Yourself to the Field Ministry");
+        return MeetingSections::kApplyYourself;
     }
     if (text.contains(QStringLiteral("living as christians")) ||
         text.contains(QStringLiteral("vida cristã"))) {
-        return QStringLiteral("Living as Christians");
+        return MeetingSections::kLivingAsChristians;
     }
     if (text.contains(QStringLiteral("watchtower")) || text.contains(QStringLiteral("sentinela")) ||
         sym == QStringLiteral("w")) {
-        return QStringLiteral("Watchtower Study");
+        return MeetingSections::kWatchtowerStudy;
     }
     if (sym == QStringLiteral("s-34") || text.contains(QStringLiteral("public talk")) ||
         text.contains(QStringLiteral("discurso"))) {
-        return QStringLiteral("Public Talk");
+        return MeetingSections::kPublicTalk;
     }
     if (sym == QStringLiteral("mwb") || sym == QStringLiteral("mwbv")) {
-        return QStringLiteral("Midweek Meeting");
+        return MeetingSections::kImportedMedia;
     }
-    return QStringLiteral("Meeting Media");
+    return MeetingSections::kImportedMedia;
 }
 
 int MeetingCatalogService::videoResolutionScore(const CatalogMediaAsset& asset)
@@ -640,10 +642,7 @@ void MeetingCatalogService::applyWeekEventSection()
     }
     m_playlistModel->setPlaylistSubtitle(QStringLiteral("%1 | %2").arg(weekLabel(), evLabel));
     if (evType == QStringLiteral("co_visit")) {
-        (void)m_playlistModel->ensureSection(QStringLiteral("Circuit Overseer"),
-                                             QStringLiteral("#3F7F5F"));
-    } else if (!evLabel.isEmpty()) {
-        (void)m_playlistModel->ensureSection(evLabel);
+        (void)m_playlistModel->ensureSection(MeetingSections::kCircuitOverseer);
     }
 }
 
@@ -659,8 +658,7 @@ QString MeetingCatalogService::downloadAssetAt(int index)
             PlaylistEntryView streamEntry;
             streamEntry.title = asset.title.isEmpty() ? asset.keySymbol.toUpper() : asset.title;
             streamEntry.subtitle = QStringLiteral("Stream (>35m)");
-            streamEntry.sectionTitle =
-                inferMeetingSection(asset.keySymbol, asset.title, asset.label);
+            streamEntry.sectionId = inferMeetingSection(asset.keySymbol, asset.title, asset.label);
             streamEntry.streamUrl = asset.url;
             streamEntry.pubMediaId = asset.pubMediaId;
             streamEntry.durationMs = static_cast<qint64>(asset.durationSeconds * 1000.0);
@@ -855,10 +853,10 @@ void MeetingCatalogService::onMediatorAssetsLoaded(const QString& pubMediaKey,
                     PlaylistEntryView entry;
                     entry.title = best->title.isEmpty() ? pubMediaKey : best->title;
                     entry.subtitle = QStringLiteral("Stream (>35m)");
-                    entry.sectionTitle =
-                        meta.sectionTitle.isEmpty()
+                    entry.sectionId =
+                        meta.sectionId.isEmpty()
                             ? inferMeetingSection(best->keySymbol, best->title, best->label)
-                            : meta.sectionTitle;
+                            : meta.sectionId;
                     entry.streamUrl = best->url;
                     entry.pubMediaId = pubMediaKey;
                     entry.durationMs = static_cast<qint64>(best->durationSeconds * 1000.0);
@@ -877,7 +875,7 @@ void MeetingCatalogService::onMediatorAssetsLoaded(const QString& pubMediaKey,
                     if (m_playlistModel != nullptr) {
                         PlaylistEntryView entry;
                         entry.title = best->title;
-                        entry.sectionTitle = meta.sectionTitle;
+                        entry.sectionId = meta.sectionId;
                         entry.filePath = localPath;
                         entry.pubMediaId = pubMediaKey;
                         entry.groupKey = meta.groupKey;
@@ -958,7 +956,7 @@ void MeetingCatalogService::onDownloadFinished(const QString& taskId, bool succe
                                             .section(QLatin1Char('_'), 0, 0)
                                             .toLower();
                 m_autoImportedCount += m_playlistModel->importJwpubForWeek(
-                    target.localPath, buildFilterOptions(pubHint), target.sectionTitle,
+                    target.localPath, buildFilterOptions(pubHint), target.sectionId,
                     weekEventType() == QStringLiteral("co_visit"), &wtSub);
                 if (!wtSub.isEmpty() && m_targetMeetingKind == QStringLiteral("weekend")) {
                     m_playlistModel->setPlaylistSubtitle(wtSub);
@@ -968,7 +966,7 @@ void MeetingCatalogService::onDownloadFinished(const QString& taskId, bool succe
         } else if (m_playlistModel != nullptr) {
             PlaylistEntryView entry;
             entry.title = QFileInfo(target.localPath).completeBaseName();
-            entry.sectionTitle = target.sectionTitle;
+            entry.sectionId = target.sectionId;
             entry.filePath = target.localPath;
             entry.groupKey = target.groupKey;
             entry.tagType = target.tagType;
@@ -1143,12 +1141,10 @@ void MeetingCatalogService::enqueueMissingAutoSyncAssets()
     }
 }
 
-void MeetingCatalogService::resolveSingleLinkedMedia(const QString& pubSymbol, int issueTag,
-                                                     qint64 docId, int track, const QString& title,
-                                                     const QString& sectionTitle,
-                                                     const QString& groupKey,
-                                                     const QString& tagType,
-                                                     const QString& tagValue, bool isCbs)
+void MeetingCatalogService::resolveSingleLinkedMedia(
+    const QString& pubSymbol, int issueTag, qint64 docId, int track, const QString& /*title*/,
+    const QString& sectionId, const QString& groupKey, const QString& tagType,
+    const QString& tagValue, bool isCbs)
 {
     if (m_catalogClient == nullptr) {
         return;
@@ -1172,7 +1168,7 @@ void MeetingCatalogService::resolveSingleLinkedMedia(const QString& pubSymbol, i
         CatalogClient::buildPubMediaKey(effectiveSym, issueTag, docId, track, !isAudio);
 
     PendingDownloadTarget target;
-    target.sectionTitle = sectionTitle.isEmpty() ? title : sectionTitle;
+    target.sectionId = sectionId.isEmpty() ? QString(MeetingSections::kImportedMedia) : sectionId;
     target.groupKey = groupKey;
     target.tagType = tagType;
     target.tagValue = tagValue;
@@ -1224,7 +1220,7 @@ void MeetingCatalogService::resolveLinkedJwpubMedia(const QString& jwpubPath)
                 false);
         } else if (ref.isCbsSource && ref.refMepsDocumentId > 0) {
             resolveSingleLinkedMedia(ref.refPubSymbol, ref.refIssueTagNumber, ref.refMepsDocumentId,
-                                     0, ref.caption, QStringLiteral("Living as Christians"),
+                                     0, ref.caption, MeetingSections::kLivingAsChristians,
                                      ref.caption, QString(), QString(), true);
         }
     }

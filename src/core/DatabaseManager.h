@@ -35,6 +35,8 @@ struct PlaylistRecord
     QString accentColor;
     QString sectionsJson;
     bool sortLocked{false};
+    QString syncStatus;
+    QString syncedAt;
 };
 
 struct PlaylistEntryRecord
@@ -43,6 +45,7 @@ struct PlaylistEntryRecord
     qint64 playlistId{0};
     qint64 mediaItemId{0};
     QString sectionTitle;
+    QString sectionId;
     QString customTitle;
     int sortOrder{0};
     qint64 trimStartMs{0};
@@ -67,6 +70,14 @@ struct PlaylistEntryRecord
     QString dividerColor;
     int slideIntervalMs{0};
     QString pairedAudioPath;
+    QString source{QStringLiteral("additional")};
+    QString uniqueKey;
+};
+
+struct PlaylistItemRow
+{
+    PlaylistEntryRecord entry;
+    std::optional<MediaItemRecord> media;
 };
 
 struct DownloadCacheRecord
@@ -122,17 +133,16 @@ public:
                                                              const QString& accentColor = {});
     [[nodiscard]] bool updatePlaylistMetadata(const PlaylistRecord& playlist);
     [[nodiscard]] std::vector<PlaylistRecord> listPlaylists() const;
+    [[nodiscard]] bool setPlaylistSyncStatus(qint64 playlistId, const QString& syncStatus);
     [[nodiscard]] bool deletePlaylist(qint64 id);
 
     [[nodiscard]] qint64 addPlaylistEntry(const PlaylistEntryRecord& entry);
     [[nodiscard]] std::vector<PlaylistEntryRecord> listPlaylistEntries(qint64 playlistId) const;
+    [[nodiscard]] std::vector<PlaylistItemRow> listPlaylistItemRows(qint64 playlistId) const;
     [[nodiscard]] bool updatePlaylistEntryFull(const PlaylistEntryRecord& entry);
     [[nodiscard]] bool deletePlaylistEntry(qint64 entryId, qint64 playlistId);
     [[nodiscard]] bool updatePlaylistEntrySection(qint64 entryId, qint64 playlistId,
-                                                  const QString& sectionTitle);
-    [[nodiscard]] bool renamePlaylistEntrySections(qint64 playlistId,
-                                                   const QString& oldSectionTitle,
-                                                   const QString& newSectionTitle);
+                                                  const QString& sectionId);
     [[nodiscard]] bool reorderPlaylistEntries(qint64 playlistId,
                                               const std::vector<qint64>& orderedEntryIds);
 

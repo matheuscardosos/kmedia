@@ -11,49 +11,57 @@ Popup {
 
     // mode: "create" | "edit" | "assign"
     property string mode: "create"
-    property string targetSectionName: ""
-    property string selectedColor: "#5F6B73"
+    property string targetSectionId: ""
+    property string selectedColor: "#945EB5"
     property bool canRemove: false
+    property bool canRename: true
     property int assignItemIndex: -1
 
     readonly property var colorSwatches: [
-        "#5F6B73",
-        "#B7801F",
-        "#9A1F33",
+        "#3C7F8B",
+        "#D68F00",
+        "#BF2F13",
+        "#945EB5",
         "#3E6EA8",
-        "#2F7D8C",
         "#3F7F5F",
         "#8C3B66",
-        "#6B4E9B",
-        "#945EB5"
+        "#5F6B73",
+        "#6B4E9B"
     ]
+
+    function isCustomSection(sectionId) {
+        return sectionId === "imported-media" || sectionId.startsWith("custom-")
+    }
 
     function openCreate() {
         popupRoot.mode = "create"
-        popupRoot.targetSectionName = ""
-        popupRoot.selectedColor = "#5F6B73"
+        popupRoot.targetSectionId = ""
+        popupRoot.selectedColor = "#945EB5"
         popupRoot.canRemove = false
+        popupRoot.canRename = true
         popupRoot.assignItemIndex = -1
         sectionNameField.text = ""
         popupRoot.open()
     }
 
-    function openEdit(sectionName, colorHex, removable) {
+    function openEdit(sectionId, colorHex) {
         popupRoot.mode = "edit"
-        popupRoot.targetSectionName = sectionName
+        popupRoot.targetSectionId = sectionId
         popupRoot.selectedColor = colorHex
-        popupRoot.canRemove = removable
+        popupRoot.canRename = popupRoot.isCustomSection(sectionId)
+        popupRoot.canRemove = sectionId.startsWith("custom-")
         popupRoot.assignItemIndex = -1
-        sectionNameField.text = sectionName
+        sectionNameField.text = ApplicationController.playlist.sectionLabel(sectionId)
         popupRoot.open()
     }
 
-    function openAssign(rowIndex, currentSection) {
+    function openAssign(rowIndex, currentSectionId) {
         popupRoot.mode = "assign"
         popupRoot.assignItemIndex = rowIndex
-        popupRoot.targetSectionName = currentSection
-        popupRoot.selectedColor = "#5F6B73"
+        popupRoot.targetSectionId = currentSectionId
+        popupRoot.selectedColor = "#945EB5"
         popupRoot.canRemove = false
+        popupRoot.canRename = false
         sectionNameField.text = ""
         popupRoot.open()
     }
@@ -118,12 +126,12 @@ Popup {
 
                     Layout.fillWidth: true
                     Layout.preferredHeight: 34
-                    variant: assignSecBtn.modelData.name === popupRoot.targetSectionName
+                    variant: assignSecBtn.modelData.id === popupRoot.targetSectionId
                              ? "primary" : "secondary"
                     text: assignSecBtn.modelData.name
                     onClicked: {
                         ApplicationController.playlist.assignItemToSection(
-                            popupRoot.assignItemIndex, assignSecBtn.modelData.name)
+                            popupRoot.assignItemIndex, assignSecBtn.modelData.id)
                         popupRoot.close()
                     }
                 }
@@ -140,6 +148,7 @@ Popup {
                 id: sectionNameField
 
                 Layout.fillWidth: true
+                readOnly: !popupRoot.canRename
                 placeholderText: qsTr("Section title...")
                 color: Theme.textPrimary
                 placeholderTextColor: Theme.textMuted
@@ -199,7 +208,7 @@ Popup {
                     iconName: "chevron-up"
                     text: qsTr("Move Up")
                     Layout.fillWidth: true
-                    onClicked: ApplicationController.playlist.moveSection(popupRoot.targetSectionName, -1)
+                    onClicked: ApplicationController.playlist.moveSection(popupRoot.targetSectionId, -1)
                 }
 
                 StudioButton {
@@ -207,7 +216,7 @@ Popup {
                     iconName: "chevron-down"
                     text: qsTr("Move Down")
                     Layout.fillWidth: true
-                    onClicked: ApplicationController.playlist.moveSection(popupRoot.targetSectionName, 1)
+                    onClicked: ApplicationController.playlist.moveSection(popupRoot.targetSectionId, 1)
                 }
             }
 
@@ -220,7 +229,7 @@ Popup {
                 onClicked: {
                     ApplicationController.playlist.assignItemToSection(
                         ApplicationController.playlist.activeIndex,
-                        popupRoot.targetSectionName)
+                        popupRoot.targetSectionId)
                     popupRoot.close()
                 }
             }
@@ -237,7 +246,7 @@ Popup {
                 leftPadding: 8
                 rightPadding: 8
                 onClicked: {
-                    ApplicationController.playlist.removeSection(popupRoot.targetSectionName)
+                    ApplicationController.playlist.removeSection(popupRoot.targetSectionId)
                     popupRoot.close()
                 }
             }
@@ -263,12 +272,11 @@ Popup {
                     if (popupRoot.mode === "create") {
                         ApplicationController.playlist.createSection(cleanTitle, popupRoot.selectedColor)
                     } else {
-                        let effectiveName = popupRoot.targetSectionName
-                        if (cleanTitle !== popupRoot.targetSectionName &&
-                            ApplicationController.playlist.renameSection(popupRoot.targetSectionName, cleanTitle)) {
-                            effectiveName = cleanTitle
+                        if (popupRoot.canRename &&
+                            cleanTitle !== ApplicationController.playlist.sectionLabel(popupRoot.targetSectionId)) {
+                            ApplicationController.playlist.renameSection(popupRoot.targetSectionId, cleanTitle)
                         }
-                        ApplicationController.playlist.setSectionColor(effectiveName, popupRoot.selectedColor)
+                        ApplicationController.playlist.setSectionColor(popupRoot.targetSectionId, popupRoot.selectedColor)
                     }
                     popupRoot.close()
                 }
