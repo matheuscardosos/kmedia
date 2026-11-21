@@ -501,7 +501,7 @@ void DownloadService::startTask(const std::shared_ptr<InternalTask>& task)
     QNetworkReply* reply = m_network->accessManager()->get(request);
     task->reply = reply;
 
-    connect(reply, &QNetworkReply::metaDataChanged, this, [this, task]() {
+    connect(reply, &QNetworkReply::metaDataChanged, this, [task]() {
         if (task->reply.isNull() || task->responseInitialized) {
             return;
         }
@@ -565,7 +565,7 @@ void DownloadService::startTask(const std::shared_ptr<InternalTask>& task)
                 }
             });
 
-    connect(reply, &QNetworkReply::readyRead, this, [this, task]() {
+    connect(reply, &QNetworkReply::readyRead, this, [task]() {
         if (task->reply.isNull() || task->partFile == nullptr || !task->partFile->isOpen()) {
             return;
         }

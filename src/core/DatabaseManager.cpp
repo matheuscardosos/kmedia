@@ -114,8 +114,8 @@ bool applyMigrationV1(QSqlDatabase& db, QString& errorOut)
         "CREATE INDEX IF NOT EXISTS idx_media_items_sha256 ON media_items(sha256)",
         "CREATE INDEX IF NOT EXISTS idx_media_items_type ON media_items(media_type)",
         "CREATE INDEX IF NOT EXISTS idx_playlists_date ON playlists(meeting_date)",
-        "CREATE INDEX IF NOT EXISTS idx_playlist_items_order "
-        "ON playlist_items(playlist_id, sort_order)",
+        ("CREATE INDEX IF NOT EXISTS idx_playlist_items_order "
+         "ON playlist_items(playlist_id, sort_order)"),
     };
 
     QSqlQuery query(db);
@@ -405,12 +405,12 @@ bool applyMigrationV3(QSqlDatabase& db, QString& errorOut)
 
     // Media written by the previous weekly sync is marked as synced so the next sync replaces it.
     static constexpr const char* kStatements[] = {
-        "UPDATE playlist_items SET source = 'dynamic' WHERE stream_url <> '' OR media_item_id IN "
-        "(SELECT id FROM media_items WHERE source_kind IN ('jwpub', 'catalog', 'stream') "
-        "OR file_path LIKE '%/catalog/%')",
+        ("UPDATE playlist_items SET source = 'dynamic' WHERE stream_url <> '' OR media_item_id IN "
+         "(SELECT id FROM media_items WHERE source_kind IN ('jwpub', 'catalog', 'stream') "
+         "OR file_path LIKE '%/catalog/%')"),
         "DELETE FROM settings WHERE key LIKE 'playlist/sections_%'",
-        "CREATE INDEX IF NOT EXISTS idx_playlist_items_unique "
-        "ON playlist_items(playlist_id, unique_key)",
+        ("CREATE INDEX IF NOT EXISTS idx_playlist_items_unique "
+         "ON playlist_items(playlist_id, unique_key)"),
     };
     for (const char* sql : kStatements) {
         if (!query.exec(QString::fromLatin1(sql))) {
