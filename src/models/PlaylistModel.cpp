@@ -1987,6 +1987,27 @@ void PlaylistModel::ensureFixedMeetingSections(const QString& meetingKind, bool 
     }
 }
 
+void PlaylistModel::reloadFromDatabase()
+{
+    const qint64 activeEntryId =
+        (m_activeIndex >= 0 && m_activeIndex < static_cast<int>(m_items.size()))
+            ? m_items.at(static_cast<size_t>(m_activeIndex)).entryId
+            : 0;
+    loadFromDatabase();
+    ensureFixedMeetingSections(m_currentMeetingKind, false);
+    if (activeEntryId <= 0) {
+        return;
+    }
+    for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
+        if (m_items.at(static_cast<size_t>(i)).entryId == activeEntryId) {
+            // Only the highlight moves back; whatever is playing keeps playing.
+            m_activeIndex = i;
+            emit activeIndexChanged();
+            break;
+        }
+    }
+}
+
 bool PlaylistModel::openWorkspaceForDate(const QString& dateIso, const QString& meetingKind,
                                          const QString& displayTitle, bool isCoVisit)
 {

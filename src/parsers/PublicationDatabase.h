@@ -131,6 +131,7 @@ public:
     [[nodiscard]] std::vector<PublicationSongExtract> weekendSongExtracts(qint64 documentId) const;
     [[nodiscard]] std::vector<PublicationVideoMarker> videoMarkers(qint64 multimediaId) const;
     [[nodiscard]] std::vector<PublicationLanguageRow> mediaLanguages() const;
+    [[nodiscard]] std::vector<PublicationMediaRow> memorialMedia() const;
 
     [[nodiscard]] static std::vector<PublicationMediaRow>
     dedupeLinkedMultimedia(std::vector<PublicationMediaRow> rows);

@@ -622,12 +622,8 @@ Item {
                         rightPadding: root.compactMode ? 0 : 10
                         Layout.preferredWidth: root.compactMode ? 34 : syncWeekBtn.implicitWidth
                         Layout.preferredHeight: 34
-                        enabled: !ApplicationController.catalog.busy
-                        onClicked: ApplicationController.catalog.syncDateToPlaylist(
-                            ApplicationController.calendar.selectedDateIso.length > 0
-                                ? new Date(ApplicationController.calendar.selectedDateIso + "T12:00:00")
-                                : new Date(),
-                            ApplicationController.calendar.selectedMeetingKind)
+                        onClicked: ApplicationController.sync.resyncDay(
+                            ApplicationController.calendar.selectedDateIso)
                         ToolTip.visible: syncWeekBtn.hovered
                         ToolTip.text: qsTr("Fetch weekly workbook and Watchtower media automatically")
                     }

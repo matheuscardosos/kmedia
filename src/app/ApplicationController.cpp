@@ -23,12 +23,15 @@
 #include "network/CatalogClient.h"
 #include "network/DownloadService.h"
 #include "network/MeetingCatalogService.h"
+#include "network/MeetingSyncEngine.h"
+#include "network/PublicationStore.h"
 #include "parsers/CloudSyncWatcher.h"
 
 #include <QCoreApplication>
 #include <QDir>
 #include <QQmlEngine>
 #include <QTemporaryDir>
+#include <QTimer>
 #include <QTranslator>
 
 bool ApplicationController::s_startupDemoMode = false;
@@ -76,6 +79,9 @@ ApplicationController::ApplicationController(QObject* parent)
           m_catalogClient.get(), m_downloadService.get(), m_playlistModel.get())),
       m_calendarModel(std::make_unique<kmedia::MeetingCalendarModel>())
 {
+    m_publicationStore =
+        std::make_unique<kmedia::PublicationStore>(m_catalogClient.get(), m_downloadService.get());
+    m_syncEngine = std::make_unique<kmedia::MeetingSyncEngine>(m_publicationStore.get());
     m_playbackController->attachPdfController(m_pdfController.get());
     m_playlistModel->attachPlaybackController(m_playbackController.get());
     m_playlistModel->attachThumbnailCache(m_thumbnailCache.get());
@@ -280,6 +286,11 @@ kmedia::MeetingCatalogService* ApplicationController::catalog() const
 kmedia::MeetingCalendarModel* ApplicationController::calendar() const
 {
     return m_calendarModel.get();
+}
+
+kmedia::MeetingSyncEngine* ApplicationController::syncEngine() const
+{
+    return m_syncEngine.get();
 }
 
 void ApplicationController::bindPresentationMpv(MpvRendererItem* mpvItem)
@@ -529,6 +540,7 @@ void ApplicationController::applyProfileSettings()
         m_playlistModel->setPackageExtractDir(
             QDir(profile->storagePath).filePath(QStringLiteral("packages")));
         m_meetingCatalog->setStorageRoot(profile->storagePath);
+        m_publicationStore->setCacheRoot(profile->storagePath);
         m_calendarModel->setStorageRoot(profile->storagePath);
     }
 
@@ -581,6 +593,19 @@ void ApplicationController::applyProfileSettings()
             (m_calendarModel->eventTypeForDate(dateIso) == QStringLiteral("co_visit"));
         (void)m_playlistModel->openWorkspaceForDate(dateIso, kind, {}, isCo);
         m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
+    }
+    m_syncEngine->setDatabase(m_demoMode ? nullptr : m_profileManager->activeDatabase());
+    m_syncEngine->setScheduleProviders(
+        [this](const QDate& date) {
+            return m_calendarModel->meetingKindForDate(date.toString(Qt::ISODate));
+        },
+        [this](const QDate& date) {
+            return m_calendarModel->eventTypeForDate(date.toString(Qt::ISODate)) ==
+                   QStringLiteral("co_visit");
+        });
+    applySyncSettings(false);
+    if (!m_demoMode) {
+        QTimer::singleShot(0, m_syncEngine.get(), &kmedia::MeetingSyncEngine::refresh);
     }
 
     m_backgroundMusic->configureSchedules(
@@ -678,6 +703,28 @@ void ApplicationController::syncAudioRouting()
 
 void ApplicationController::wireIntegrations()
 {
+    connect(m_syncEngine.get(), &kmedia::MeetingSyncEngine::dayContentChanged, this,
+            [this](const QString& dateIso) {
+                if (m_playlistModel->currentDateIso() == dateIso) {
+                    m_playlistModel->reloadFromDatabase();
+                }
+                m_calendarModel->refreshReadiness();
+            });
+    for (auto signal : {&kmedia::MeetingCatalogService::selectedLanguageChanged,
+                        &kmedia::MeetingCatalogService::fallbackLanguageChanged,
+                        &kmedia::MeetingCatalogService::filtersChanged}) {
+        connect(m_meetingCatalog.get(), signal, this, [this]() { applySyncSettings(true); });
+    }
+    for (auto signal : {&kmedia::MeetingCalendarModel::scheduleChanged,
+                        &kmedia::MeetingCalendarModel::specialEventsChanged,
+                        &kmedia::MeetingCalendarModel::tempSchedulesChanged}) {
+        connect(m_calendarModel.get(), signal, this, [this]() {
+            if (!m_demoMode) {
+                m_syncEngine->refresh();
+            }
+        });
+    }
+
     connect(m_processMonitor.get(), &kmedia::ProcessMonitor::statusChanged, this, [this]() {
         m_obsClient->setProcessRunning(m_processMonitor->isObsRunning());
         m_zoomBridge->setZoomRunning(m_processMonitor->isZoomRunning());
@@ -863,7 +910,7 @@ void ApplicationController::wireIntegrations()
                 const QString kind = m_calendarModel->meetingKindForDate(dateIso);
                 m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
                 if (syncNow) {
-                    m_meetingCatalog->syncCurrentWeekToPlaylist();
+                    m_syncEngine->resyncDay(dateIso);
                 } else if (!m_calendarModel->selectedWeekEventType().isEmpty()) {
                     m_playlistModel->setPlaylistSubtitle(
                         QStringLiteral("%1 | %2").arg(m_calendarModel->selectedWeekLabel(),
@@ -878,6 +925,32 @@ void ApplicationController::wireIntegrations()
             });
 }
 
+void ApplicationController::applySyncSettings(bool resetWhenChanged)
+{
+    const kmedia::MeetingSyncEngine::Settings current = m_syncEngine->settings();
+    kmedia::MeetingSyncEngine::Settings next = current;
+    next.languageCode = m_meetingCatalog->selectedLanguageCode();
+    next.fallbackLanguageCode = m_meetingCatalog->fallbackLanguageCode();
+    next.includePrinted = m_meetingCatalog->includePrinted();
+    next.excludeFootnotes = m_meetingCatalog->excludeFootnotes();
+    next.excludeWtParagraphVideos = m_meetingCatalog->excludeWtParagraphVideos();
+    next.excludeTh = m_meetingCatalog->excludeTh();
+    next.excludeCbsVideos = m_meetingCatalog->excludeCbsPubs();
+    next.signLanguage = m_meetingCatalog->isSignLanguage(next.languageCode);
+    // Only a real change of what gets synced resets the synced media of the window.
+    const bool mediaChanged = next.languageCode != current.languageCode ||
+                              next.fallbackLanguageCode != current.fallbackLanguageCode ||
+                              next.includePrinted != current.includePrinted ||
+                              next.excludeFootnotes != current.excludeFootnotes ||
+                              next.excludeWtParagraphVideos != current.excludeWtParagraphVideos ||
+                              next.excludeTh != current.excludeTh ||
+                              next.excludeCbsVideos != current.excludeCbsVideos;
+    m_syncEngine->setSettings(next);
+    if (resetWhenChanged && mediaChanged && !m_demoMode) {
+        m_syncEngine->resetAll();
+    }
+}
+
 void ApplicationController::openDateWorkspace(const QString& isoDate, bool forceSync)
 {
     m_calendarModel->selectDate(isoDate);
@@ -888,9 +961,7 @@ void ApplicationController::openDateWorkspace(const QString& isoDate, bool force
     (void)m_playlistModel->openWorkspaceForDate(effectiveIso, kind, {}, isCoVisit);
     m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
 
-    if (!m_demoMode &&
-        (forceSync || (m_meetingCatalog->autoLoadWeekMedia() && m_playlistModel->count() == 0 &&
-                       kind != QStringLiteral("custom")))) {
-        m_meetingCatalog->syncCurrentWeekToPlaylist();
+    if (!m_demoMode && forceSync) {
+        m_syncEngine->resyncDay(effectiveIso);
     }
 }

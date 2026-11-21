@@ -240,6 +240,8 @@ public:
     void setSearchQuery(const QString& query);
     [[nodiscard]] int hiddenCount() const;
 
+    /** Reloads the open day from the database, keeping the active item when it still exists. */
+    Q_INVOKABLE void reloadFromDatabase();
     Q_INVOKABLE bool openWorkspaceForDate(const QString& dateIso, const QString& meetingKind,
                                           const QString& displayTitle = {}, bool isCoVisit = false);
     Q_INVOKABLE bool addDivider(const QString& title, const QString& sectionId,

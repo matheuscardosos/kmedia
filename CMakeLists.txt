@@ -93,6 +93,10 @@ qt_add_library(kmedia_core STATIC
     src/network/DownloadService.cpp
     src/network/MeetingCatalogService.h
     src/network/MeetingCatalogService.cpp
+    src/network/MeetingSyncEngine.h
+    src/network/MeetingSyncEngine.cpp
+    src/network/PublicationStore.h
+    src/network/PublicationStore.cpp
     src/parsers/CloudSyncWatcher.h
     src/parsers/CloudSyncWatcher.cpp
     src/parsers/JwlPlaylistParser.h

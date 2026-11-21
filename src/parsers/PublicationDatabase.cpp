@@ -618,6 +618,40 @@ std::vector<PublicationLanguageRow> PublicationDatabase::mediaLanguages() const
     return languages;
 }
 
+std::vector<PublicationMediaRow> PublicationDatabase::memorialMedia() const
+{
+    // The Memorial invitation publication carries one background picture (category 26) and
+    // the introduction videos that are not tied to a paragraph.
+    std::vector<PublicationMediaRow> rows;
+    if (!m_db.isOpen() || !m_db.tableExists(QStringLiteral("Multimedia"))) {
+        return rows;
+    }
+    const bool hasDocumentMedia = m_db.tableExists(QStringLiteral("DocumentMultimedia"));
+    const QString join = hasDocumentMedia ? QStringLiteral(" INNER JOIN DocumentMultimedia ON "
+                                                           "Multimedia.MultimediaId = "
+                                                           "DocumentMultimedia.MultimediaId")
+                                          : QString();
+    const QStringList filters = {
+        QStringLiteral("Multimedia.CategoryType = 26"),
+        QStringLiteral("Multimedia.CategoryType = -1") +
+            (hasDocumentMedia
+                 ? QStringLiteral(" AND DocumentMultimedia.BeginParagraphOrdinal IS NULL")
+                 : QString()),
+    };
+    for (const QString& filter : filters) {
+        QSqlQuery query(m_db.database());
+        if (!query.exec(QStringLiteral("SELECT DISTINCT ") + mediaColumnList(m_db) +
+                        QStringLiteral(" FROM Multimedia") + join + QStringLiteral(" WHERE ") +
+                        filter)) {
+            continue;
+        }
+        while (query.next()) {
+            rows.push_back(readMediaRow(query));
+        }
+    }
+    return rows;
+}
+
 std::vector<PublicationMediaRow>
 PublicationDatabase::dedupeLinkedMultimedia(std::vector<PublicationMediaRow> rows)
 {

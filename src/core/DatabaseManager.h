@@ -141,6 +141,7 @@ public:
     [[nodiscard]] std::vector<PlaylistItemRow> listPlaylistItemRows(qint64 playlistId) const;
     [[nodiscard]] bool updatePlaylistEntryFull(const PlaylistEntryRecord& entry);
     [[nodiscard]] bool deletePlaylistEntry(qint64 entryId, qint64 playlistId);
+    [[nodiscard]] bool deletePlaylistEntriesBySource(qint64 playlistId, const QString& source);
     [[nodiscard]] bool updatePlaylistEntrySection(qint64 entryId, qint64 playlistId,
                                                   const QString& sectionId);
     [[nodiscard]] bool reorderPlaylistEntries(qint64 playlistId,

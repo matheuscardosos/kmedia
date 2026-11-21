@@ -152,6 +152,14 @@ QString MeetingCatalogService::selectedLanguageLabel() const
     return m_selectedLanguageCode;
 }
 
+bool MeetingCatalogService::isSignLanguage(const QString& code) const
+{
+    return std::any_of(
+        m_languages.begin(), m_languages.end(), [&code](const CatalogLanguage& language) {
+            return language.isSignLanguage && language.code.compare(code, Qt::CaseInsensitive) == 0;
+        });
+}
+
 QVariantList MeetingCatalogService::languagesVariant() const
 {
     QVariantList list;

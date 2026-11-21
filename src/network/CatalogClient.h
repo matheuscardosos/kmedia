@@ -5,6 +5,7 @@
 #include <QString>
 #include <QUrl>
 
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -110,6 +111,15 @@ public:
     void fetchMediatorMedia(const QUrl& endpoint, const QString& pubMediaKey = {});
     void searchCongregations(const QString& queryText);
 
+    using AssetsCallback =
+        std::function<void(bool ok, const std::vector<kmedia::CatalogMediaAsset>& assets)>;
+    /**
+     * Same request as fetchPubMediaLinks, answered only through `callback` (never through the
+     * shared signals) and dropped when `context` is destroyed first.
+     */
+    void requestPubMediaLinks(const QUrl& endpoint, const QString& preferredLangCode,
+                              QObject* context, AssetsCallback callback);
+
 signals:
     void languagesLoaded(const std::vector<kmedia::CatalogLanguage>& languages, bool fromCache);
     void pubMediaAssetsLoaded(const std::vector<kmedia::CatalogMediaAsset>& assets, bool fromCache);
@@ -121,7 +131,8 @@ signals:
 
 private:
     template <typename Callback>
-    void fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult);
+    void fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult,
+                            std::function<void(const QString&)> onError = {});
 
     std::unique_ptr<NetworkManager> m_ownedNetwork;
     NetworkManager* m_network{nullptr};
