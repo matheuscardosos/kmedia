@@ -99,6 +99,10 @@ qt_add_library(kmedia_core STATIC
     src/parsers/JwlPlaylistParser.cpp
     src/parsers/JwpubParser.h
     src/parsers/JwpubParser.cpp
+    src/parsers/MeetingMediaBuilder.h
+    src/parsers/MeetingMediaBuilder.cpp
+    src/parsers/PublicationDatabase.h
+    src/parsers/PublicationDatabase.cpp
     src/parsers/S34Parser.h
     src/parsers/S34Parser.cpp
     src/parsers/SqlitePackageUtils.h

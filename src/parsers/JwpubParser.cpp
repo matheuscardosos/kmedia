@@ -3,7 +3,9 @@
 #include "parsers/SqlitePackageUtils.h"
 #include "parsers/ZipArchiveReader.h"
 
+#include <QDateTime>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QHash>
 #include <QJsonDocument>
@@ -1030,6 +1032,71 @@ JwpubPackage JwpubParser::filterPackageForWeek(const JwpubPackage& package,
     }
     out.extracts = std::move(filteredExtracts);
     return out;
+}
+
+QString JwpubParser::extractContents(const QString& jwpubPath, const QString& destDir,
+                                     QString* error)
+{
+    const QFileInfo archive(jwpubPath);
+    if (!archive.exists()) {
+        if (error != nullptr) {
+            *error = QStringLiteral("Publication archive does not exist");
+        }
+        return {};
+    }
+
+    const QDir target(destDir);
+    const QString markerPath = target.filePath(QStringLiteral(".kmedia-extracted"));
+    const QByteArray signature = QStringLiteral("%1|%2")
+                                     .arg(archive.size())
+                                     .arg(archive.lastModified().toMSecsSinceEpoch())
+                                     .toUtf8();
+    const auto findDatabase = [&target]() -> QString {
+        const QStringList databases =
+            target.entryList({QStringLiteral("*.db")}, QDir::Files, QDir::Name);
+        return databases.isEmpty() ? QString() : target.filePath(databases.first());
+    };
+
+    QFile marker(markerPath);
+    if (marker.open(QIODevice::ReadOnly) && marker.readAll() == signature) {
+        const QString existing = findDatabase();
+        if (!existing.isEmpty()) {
+            return existing;
+        }
+    }
+    marker.close();
+
+    ZipArchiveReader outerZip;
+    if (!outerZip.openFile(jwpubPath, error)) {
+        return {};
+    }
+    QTemporaryDir sandbox;
+    sandbox.setAutoRemove(true);
+    if (!sandbox.isValid()) {
+        if (error != nullptr) {
+            *error = QStringLiteral("Failed to create temporary extraction sandbox");
+        }
+        return {};
+    }
+    ZipArchiveReader innerZip;
+    if (!openInnerContentsReader(outerZip, sandbox, innerZip, error)) {
+        return {};
+    }
+    if (!QDir().mkpath(destDir) || !innerZip.extractEntries(destDir, {}, {}, nullptr, error)) {
+        return {};
+    }
+
+    const QString database = findDatabase();
+    if (database.isEmpty()) {
+        if (error != nullptr) {
+            *error = QStringLiteral("Publication contains no SQLite database");
+        }
+        return {};
+    }
+    if (marker.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        marker.write(signature);
+    }
+    return database;
 }
 
 bool JwpubParser::extractMediaAssets(const QString& jwpubPath, const QString& destDir,
