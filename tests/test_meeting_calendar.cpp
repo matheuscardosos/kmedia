@@ -98,9 +98,8 @@ TEST_CASE("MeetingCalendarModel detects cached issue readiness and emits weekOpe
     REQUIRE(openSpy.at(0).at(1).toBool() == true);
 }
 
-TEST_CASE(
-    "MeetingCalendarModel and MeetingCatalogService handle CO visit and special week overrides",
-    "[core][calendar][events]")
+TEST_CASE("MeetingCalendarModel handles CO visit and special week overrides",
+          "[core][calendar][events]")
 {
     kmedia::MeetingCalendarModel model;
     QSignalSpy eventsSpy(&model, &kmedia::MeetingCalendarModel::specialEventsChanged);
@@ -127,25 +126,19 @@ TEST_CASE(
     REQUIRE(restored.selectedWeekEventType() == QStringLiteral("memorial"));
     REQUIRE(restored.selectedWeekEventLabel() == QStringLiteral("Annual Memorial"));
 
-    // Verify Circuit Overseer section injection and Memorial auto-sync skip.
+    // A day in a Circuit Overseer week gets the Circuit Overseer section after the meeting's own.
     kmedia::PlaylistModel playlist;
-    kmedia::MeetingCatalogService catalog(nullptr, nullptr, &playlist);
-    catalog.setSpecialWeekEvents(restored.specialEventsMap());
-
-    catalog.setTargetWeekDate(QDate(2026, 6, 10));
-    REQUIRE(catalog.weekEventType() == QStringLiteral("co_visit"));
-    catalog.syncCurrentWeekToPlaylist();
-    REQUIRE(playlist.sections().size() == 1);
-    REQUIRE(playlist.sections().at(0).toMap().value(QStringLiteral("id")).toString() ==
+    REQUIRE(playlist.openWorkspaceForDate(
+        QStringLiteral("2026-06-10"), QStringLiteral("midweek"), {},
+        restored.eventTypeForDate(QStringLiteral("2026-06-10")) == QStringLiteral("co_visit")));
+    const QVariantList sections = playlist.sections();
+    REQUIRE(sections.size() == 4);
+    REQUIRE(sections.at(3).toMap().value(QStringLiteral("id")).toString() ==
             QStringLiteral("circuit-overseer"));
-    REQUIRE(playlist.sections().at(0).toMap().value(QStringLiteral("name")).toString() ==
+    REQUIRE(sections.at(3).toMap().value(QStringLiteral("name")).toString() ==
             QStringLiteral("Circuit Overseer"));
     REQUIRE(playlist.colorForSection(QStringLiteral("circuit-overseer")) ==
             QStringLiteral("#945EB5"));
-
-    catalog.setTargetWeekDate(QDate(2026, 6, 24));
-    catalog.syncCurrentWeekToPlaylist();
-    REQUIRE(catalog.statusMessage().contains(QStringLiteral("skipped regular weekly auto-sync")));
 
     restored.clearWeekSpecialEvent(QStringLiteral("2026-06-24"));
     REQUIRE(restored.selectedWeekEventType().isEmpty());

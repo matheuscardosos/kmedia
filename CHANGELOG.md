@@ -20,6 +20,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- Removed the old weekly sync that `MeetingSyncEngine` replaced: `MeetingCatalogService` now only keeps the congregation lookup, the language catalog, and the media filters, and a `.jwpub` added by hand no longer guesses meeting sections from English or Portuguese words in its titles.
 - Sign language congregations now get their songs from the sign language songbook (`sjj`) instead of `sjjm`, in the meeting sync and when adding a song.
 - Text fields and other customized controls now draw with the KMedia theme on Windows and macOS: the native styles ignored their custom backgrounds, so the app now builds on the Qt Quick Controls *Basic* style everywhere.
 - Fixed second screen changes (resolution or position) going unnoticed because the screen geometry connection was rejected, and the focus ring of the pill bar buttons that never showed.

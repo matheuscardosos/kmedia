@@ -636,9 +636,7 @@ bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sect
 
     const QString ext = info.suffix().toLower();
     if (ext == QStringLiteral("jwpub")) {
-        JwpubWeekFilterOptions opts;
-        opts.pubSymbolHint = info.completeBaseName().section(QLatin1Char('_'), 0, 0).toLower();
-        return importJwpubForWeek(filePath, opts, targetSection, false) > 0;
+        return importJwpubMedia(filePath, targetSection) > 0;
     }
 
     if (ext == QStringLiteral("jwlplaylist")) {
@@ -697,41 +695,18 @@ bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sect
     return appendEntry(entry);
 }
 
-int PlaylistModel::importJwpubForWeek(const QString& filePath,
-                                      const JwpubWeekFilterOptions& options,
-                                      const QString& fallbackSectionId, bool isCoVisit,
-                                      QString* outWatchtowerSubtitle,
-                                      std::vector<JwpubMediaItem>* outUnresolvedLinked,
-                                      std::vector<JwpubExtractRef>* outExtracts)
+int PlaylistModel::importJwpubMedia(const QString& filePath, const QString& sectionId)
 {
-    const JwpubPackage pkg = options.targetDate.isValid()
-                                 ? JwpubParser::parseForWeek(filePath, options)
-                                 : JwpubParser::parse(filePath);
+    const JwpubPackage pkg = JwpubParser::parse(filePath);
     if (!pkg.valid) {
         emit importNotice(pkg.errorMessage);
         return 0;
-    }
-
-    if (outExtracts != nullptr) {
-        *outExtracts = pkg.extracts;
-    }
-
-    const QString sym = options.pubSymbolHint.trimmed().isEmpty()
-                            ? pkg.publication.undatedSymbol.trimmed().toLower()
-                            : options.pubSymbolHint.trimmed().toLower();
-    if (outWatchtowerSubtitle != nullptr && sym == QStringLiteral("w") && !pkg.documents.empty()) {
-        const JwpubDocument& doc = pkg.documents.front();
-        *outWatchtowerSubtitle = doc.subtitle.isEmpty()
-                                     ? doc.title
-                                     : QStringLiteral("%1 | %2").arg(doc.title, doc.subtitle);
     }
 
     std::vector<QString> assetPaths;
     for (const JwpubMediaItem& mm : pkg.mediaItems) {
         if (!mm.filePath.isEmpty()) {
             assetPaths.push_back(mm.filePath);
-        } else if (outUnresolvedLinked != nullptr) {
-            outUnresolvedLinked->push_back(mm);
         }
     }
 
@@ -743,40 +718,11 @@ int PlaylistModel::importJwpubForWeek(const QString& filePath,
         return 0;
     }
 
-    const auto sectionForJwpubItem = [&](const JwpubMediaItem& mm) -> QString {
-        if (sym.startsWith(QStringLiteral("mi"))) {
-            return MeetingSections::kImportedMedia;
-        }
-        if (sym == QStringLiteral("w")) {
-            return MeetingSections::kWatchtowerStudy;
-        }
-        if (sym == QStringLiteral("mwb")) {
-            const QString combined = (mm.documentTitle + QLatin1Char(' ') + mm.groupCaption +
-                                      QLatin1Char(' ') + mm.label + QLatin1Char(' ') + mm.caption)
-                                         .toLower();
-            if (combined.contains(QStringLiteral("treasure")) ||
-                combined.contains(QStringLiteral("tesouro")) ||
-                combined.contains(QStringLiteral("gems"))) {
-                return MeetingSections::kTreasures;
-            }
-            if (combined.contains(QStringLiteral("apply yourself")) ||
-                combined.contains(QStringLiteral("ministry")) ||
-                combined.contains(QStringLiteral("ministério")) ||
-                combined.contains(QStringLiteral("disciples"))) {
-                return MeetingSections::kApplyYourself;
-            }
-            if (mm.isCbsCandidate || combined.contains(QStringLiteral("living")) ||
-                combined.contains(QStringLiteral("vida cristã")) ||
-                combined.contains(QStringLiteral("bible study"))) {
-                return MeetingSections::kLivingAsChristians;
-            }
-        }
-        return fallbackSectionId.isEmpty() ? QString(MeetingSections::kImportedMedia)
-                                           : fallbackSectionId;
-    };
-
+    // Media from a publication added by hand goes where the operator put it; the meeting sync
+    // places the meeting's own media by paragraph instead.
+    const QString targetSection =
+        sectionId.isEmpty() ? QString(MeetingSections::kImportedMedia) : sectionId;
     int added = 0;
-    const int startRow = static_cast<int>(m_items.size());
     for (const JwpubMediaItem& mm : pkg.mediaItems) {
         if (mm.filePath.isEmpty()) {
             continue;
@@ -791,33 +737,16 @@ int PlaylistModel::importJwpubForWeek(const QString& filePath,
         if (entry.title.isEmpty()) {
             entry.title = QFileInfo(target).completeBaseName();
         }
-        entry.sectionId = sectionForJwpubItem(mm);
+        entry.sectionId = targetSection;
         entry.filePath = target;
         entry.sourceKind = QStringLiteral("jwpub");
         entry.groupKey = mm.groupCaption;
         entry.tagType = mm.tagType;
         entry.tagValue = mm.tagValue;
-        entry.isCbs = mm.isCbsCandidate;
-        if (isCoVisit && sym == QStringLiteral("mwb") && entry.isCbs) {
-            entry.hidden = true;
-        }
         if (appendEntry(entry)) {
             ++added;
         }
     }
-
-    if (isCoVisit && sym == QStringLiteral("mwb") && added > 0) {
-        for (int i = static_cast<int>(m_items.size()) - 1; i >= startRow; --i) {
-            const PlaylistEntryView& item = m_items.at(static_cast<size_t>(i));
-            if (item.tagType == QStringLiteral("song") ||
-                item.title.contains(QStringLiteral("closing song"), Qt::CaseInsensitive) ||
-                item.title.startsWith(QStringLiteral("Song "), Qt::CaseInsensitive)) {
-                (void)setItemHidden(i, true);
-                break;
-            }
-        }
-    }
-
     return added;
 }
 

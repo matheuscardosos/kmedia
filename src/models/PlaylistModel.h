@@ -28,7 +28,6 @@ class PlaybackController;
 class ThumbnailCache;
 struct JwpubExtractRef;
 struct JwpubMediaItem;
-struct JwpubWeekFilterOptions;
 
 struct PlaylistEntryView
 {
@@ -207,11 +206,7 @@ public:
 
     Q_INVOKABLE int importUrls(const QList<QUrl>& urls, const QString& sectionId = {});
     Q_INVOKABLE bool importLocalFile(const QString& filePath, const QString& sectionId = {});
-    int importJwpubForWeek(const QString& filePath, const JwpubWeekFilterOptions& options,
-                           const QString& fallbackSectionId, bool isCoVisit,
-                           QString* outWatchtowerSubtitle = nullptr,
-                           std::vector<JwpubMediaItem>* outUnresolvedLinked = nullptr,
-                           std::vector<JwpubExtractRef>* outExtracts = nullptr);
+    int importJwpubMedia(const QString& filePath, const QString& sectionId);
     Q_INVOKABLE bool appendEntry(const PlaylistEntryView& entry);
     Q_INVOKABLE bool moveItem(int fromIndex, int toIndex);
     Q_INVOKABLE bool removeAt(int index);
