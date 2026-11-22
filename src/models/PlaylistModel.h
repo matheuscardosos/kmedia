@@ -102,6 +102,7 @@ class PlaylistModel : public QAbstractListModel
     Q_PROPERTY(QString activeFileSizeFormatted READ activeFileSizeFormatted NOTIFY
                    activeIndexChanged FINAL)
     Q_PROPERTY(QString activeSourceKind READ activeSourceKind NOTIFY activeIndexChanged FINAL)
+    Q_PROPERTY(bool activeIsSynced READ activeIsSynced NOTIFY activeIndexChanged FINAL)
     Q_PROPERTY(int activeMediaKind READ activeMediaKind NOTIFY activeIndexChanged FINAL)
     Q_PROPERTY(qint64 activeDurationMs READ activeDurationMs NOTIFY activeIndexChanged FINAL)
     Q_PROPERTY(qint64 activeTrimStartMs READ activeTrimStartMs NOTIFY activeItemEdited FINAL)
@@ -194,6 +195,7 @@ public:
     [[nodiscard]] QString activeResolutionLabel() const;
     [[nodiscard]] QString activeFileSizeFormatted() const;
     [[nodiscard]] QString activeSourceKind() const;
+    [[nodiscard]] bool activeIsSynced() const;
     [[nodiscard]] int activeMediaKind() const;
     [[nodiscard]] qint64 activeDurationMs() const;
     [[nodiscard]] qint64 activeTrimStartMs() const;

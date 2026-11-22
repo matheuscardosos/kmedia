@@ -49,6 +49,7 @@ public:
         RowSectionVisibleCountRole,
         RowSectionHiddenCountRole,
         RowSectionTotalCountRole,
+        RowSectionHasSongRole,
         RowSectionIndexRole,
         RowSectionCountRole,
         IsLastInSectionRole,
@@ -84,6 +85,7 @@ private:
         int visibleCount{0};
         int hiddenCount{0};
         int totalCount{0};
+        bool hasSong{false};
         bool lastInSection{false};
     };
 

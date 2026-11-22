@@ -197,6 +197,9 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/controls/StudioScrollBar.qml
     resources/qml/controls/StudioCard.qml
     resources/qml/controls/StudioBadge.qml
+    resources/qml/controls/StudioMenu.qml
+    resources/qml/controls/StudioMenuItem.qml
+    resources/qml/controls/StudioMenuSeparator.qml
     resources/qml/components/NavRailButton.qml
     resources/qml/components/StatusRow.qml
     resources/qml/components/LeftNavRail.qml
@@ -212,7 +215,11 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/PillDownloadsPopover.qml
     resources/qml/components/TransportBar.qml
     resources/qml/components/BoothChecklistPopup.qml
-    resources/qml/components/MeetingPlaylistView.qml
+    resources/qml/components/MeetingMediaPage.qml
+    resources/qml/components/DayDatePicker.qml
+    resources/qml/components/SongPickerPopup.qml
+    resources/qml/components/TagEditPopup.qml
+    resources/qml/components/RenamePopup.qml
     resources/qml/components/CalendarEventPopup.qml
     resources/qml/components/CalendarSchedulePopup.qml
     resources/qml/components/CalendarView.qml

@@ -20,7 +20,7 @@ bool affectsLayout(const QList<int>& roles)
     return std::any_of(roles.cbegin(), roles.cend(), [](int role) {
         return role == PlaylistModel::RowVisibleRole || role == PlaylistModel::SectionTitleRole ||
                role == PlaylistModel::HiddenRole || role == PlaylistModel::ItemKindRole ||
-               role == PlaylistModel::EntryIdRole;
+               role == PlaylistModel::EntryIdRole || role == PlaylistModel::TagTypeRole;
     });
 }
 
@@ -128,6 +128,8 @@ QVariant MeetingDayModel::data(const QModelIndex& index, int role) const
         return row.hiddenCount;
     case RowSectionTotalCountRole:
         return row.totalCount;
+    case RowSectionHasSongRole:
+        return row.hasSong;
     case RowSectionIndexRole:
         return row.sectionIndex;
     case RowSectionCountRole:
@@ -159,6 +161,7 @@ QHash<int, QByteArray> MeetingDayModel::roleNames() const
     names.insert(RowSectionVisibleCountRole, "rowSectionVisibleCount");
     names.insert(RowSectionHiddenCountRole, "rowSectionHiddenCount");
     names.insert(RowSectionTotalCountRole, "rowSectionTotalCount");
+    names.insert(RowSectionHasSongRole, "rowSectionHasSong");
     names.insert(RowSectionIndexRole, "rowSectionIndex");
     names.insert(RowSectionCountRole, "rowSectionCount");
     names.insert(IsLastInSectionRole, "isLastInSection");
@@ -177,6 +180,7 @@ std::vector<MeetingDayModel::Row> MeetingDayModel::computeRows(const QVariantLis
         std::vector<int> visible;
         int hidden{0};
         int total{0};
+        bool hasSong{false};
     };
     QHash<QString, SectionItems> bySection;
     const bool showHidden = m_source->showHidden();
@@ -185,6 +189,9 @@ std::vector<MeetingDayModel::Row> MeetingDayModel::computeRows(const QVariantLis
         SectionItems& items =
             bySection[m_source->data(index, PlaylistModel::SectionTitleRole).toString()];
         ++items.total;
+        items.hasSong =
+            items.hasSong ||
+            m_source->data(index, PlaylistModel::TagTypeRole).toString() == QStringLiteral("song");
         if (!showHidden && m_source->data(index, PlaylistModel::HiddenRole).toBool()) {
             ++items.hidden;
         }
@@ -222,7 +229,8 @@ std::vector<MeetingDayModel::Row> MeetingDayModel::computeRows(const QVariantLis
         const auto makeRow = [&](RowType type, const QString& key, int sourceRow) {
             return Row{type,         key,          sourceRow,
                        id,           sectionIndex, static_cast<int>(items.visible.size()),
-                       items.hidden, items.total,  false};
+                       items.hidden, items.total,  items.hasSong,
+                       false};
         };
         rows.push_back(makeRow(SectionHeaderRow, QStringLiteral("h:") + id, -1));
         if (!info.collapsed && !searching && (items.total == 0 || items.hidden > 0)) {

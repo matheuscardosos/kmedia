@@ -70,11 +70,10 @@ Rectangle {
             Layout.fillHeight: true
             currentIndex: root.activeTabIndex
 
-            MeetingPlaylistView {
+            MeetingMediaPage {
                 compactMode: root.compactMode
                 showPreviewToggle: root.showPreviewToggle
                 previewOpen: root.previewOpen
-                onAddMediaRequested: root.addMediaRequested()
                 onPreviewToggled: root.previewToggled()
             }
 

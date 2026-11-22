@@ -233,6 +233,32 @@ QString MeetingSyncEngine::statusForDate(const QString& dateIso) const
     return m_statuses.value(dateIso);
 }
 
+// The nearest day of the sync window that has a meeting or added media: from `fromIso` itself
+// onwards for a direction of 0, otherwise starting the day after (1) or before (-1).
+QString MeetingSyncEngine::dayWithContent(const QString& fromIso, int direction) const
+{
+    const QDate from = QDate::fromString(fromIso, Qt::ISODate);
+    const std::vector<QDate> window = lookupWindow(today(), m_settings.meteredConnection);
+    if (!from.isValid() || window.empty()) {
+        return {};
+    }
+    const int step = direction < 0 ? -1 : 1;
+    QDate date = direction == 0 ? from : from.addDays(step);
+    if (step > 0 && date < window.front()) {
+        date = window.front();
+    } else if (step < 0 && date > window.back()) {
+        date = window.back();
+    }
+    for (; date >= window.front() && date <= window.back(); date = date.addDays(step)) {
+        const QString dateIso = date.toString(Qt::ISODate);
+        if (m_addedMediaDays.contains(dateIso) ||
+            (m_meetingKind && isMeetingKind(m_meetingKind(date)))) {
+            return dateIso;
+        }
+    }
+    return {};
+}
+
 std::vector<QDate> MeetingSyncEngine::lookupWindow(const QDate& today, bool metered)
 {
     // From this week's Monday: 35 days (1 on a metered connection) plus the weekday offset,
@@ -392,6 +418,85 @@ void MeetingSyncEngine::resyncDay(const QString& dateIso)
     (void)m_database->setPlaylistSyncStatus(playlist.id, QString());
     enqueue(date, kind, playlist.id);
     pump();
+}
+
+// Adds a song of the songbook to a day as added media, at the end of the given section; the
+// video and its preview picture download in the background.
+void MeetingSyncEngine::addSong(const QString& dateIso, int number, const QString& sectionId)
+{
+    const QDate date = QDate::fromString(dateIso, Qt::ISODate);
+    if (m_database == nullptr || !m_database->isOpen() || !date.isValid() || number <= 0) {
+        emit songFailed(dateIso, number);
+        return;
+    }
+    MediaFileRequest request;
+    request.keySymbol = m_settings.songbookSymbol;
+    request.track = number;
+    request.languages = languages();
+    const quint64 generation = m_generation;
+    m_store->resolveMediaFile(
+        request, priorityFor(date), this,
+        [this, date, dateIso, number, sectionId, generation](const ResolvedMediaFile& resolved) {
+            if (generation != m_generation || m_database == nullptr || !m_database->isOpen()) {
+                return;
+            }
+            if (!resolved.ok) {
+                emit songFailed(dateIso, number);
+                return;
+            }
+            const QString kind = m_meetingKind ? m_meetingKind(date) : QString();
+            const PlaylistRecord playlist = m_database->findOrCreatePlaylistForDate(
+                dateIso, kind,
+                playlistNameFor(dateIso, kind.isEmpty() ? QStringLiteral("custom") : kind));
+            if (playlist.id <= 0) {
+                emit songFailed(dateIso, number);
+                return;
+            }
+
+            // Song titles come as "84. Title"; the number lives in the song tag instead.
+            static const QRegularExpression kNumberPrefix(QStringLiteral("^\\s*\\d+\\.\\s*"));
+            QString title = resolved.title;
+            title.remove(kNumberPrefix);
+            qint64 mediaItemId = 0;
+            if (!resolved.filePath.isEmpty()) {
+                MediaItemRecord media;
+                media.filePath = resolved.filePath;
+                media.title = title;
+                media.mediaType = QStringLiteral("video");
+                media.durationMs = static_cast<qint64>(resolved.durationSeconds * 1000.0);
+                media.sourceKind = QStringLiteral("jwpub");
+                mediaItemId = m_database->upsertMediaItem(media);
+            }
+            const std::vector<PlaylistItemRow> existing =
+                m_database->listPlaylistItemRows(playlist.id);
+            PlaylistEntryRecord entry;
+            entry.playlistId = playlist.id;
+            entry.mediaItemId = mediaItemId;
+            entry.sectionId =
+                sectionId.isEmpty() ? QString(MeetingSections::kImportedMedia) : sectionId;
+            entry.sectionTitle = MeetingSections::translatedLabel(entry.sectionId);
+            entry.originalSection = entry.sectionId;
+            entry.customTitle = title;
+            entry.tagType = QStringLiteral("song");
+            entry.tagValue = QString::number(number);
+            entry.pubMediaId = QStringLiteral("%1_%2").arg(m_settings.songbookSymbol).arg(number);
+            entry.streamUrl = resolved.streamUrl;
+            entry.thumbnailPath = resolved.thumbnailPath;
+            entry.sortOrder = existing.empty() ? 0 : existing.back().entry.sortOrder + 1;
+            entry.sortOrderOriginal = entry.sortOrder;
+            if (m_database->addPlaylistEntry(entry) <= 0) {
+                emit songFailed(dateIso, number);
+                return;
+            }
+            for (const QString& path : {resolved.filePath, resolved.thumbnailPath}) {
+                if (!path.isEmpty()) {
+                    m_daysByFile[QDir::cleanPath(path)].insert(dateIso);
+                }
+            }
+            refreshAddedMediaDays();
+            emit dayContentChanged(dateIso);
+            emit songAdded(dateIso, number, title);
+        });
 }
 
 void MeetingSyncEngine::resetAll()

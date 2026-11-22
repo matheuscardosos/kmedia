@@ -73,6 +73,7 @@ public:
     [[nodiscard]] QString windowStart() const;
     [[nodiscard]] QString windowEnd() const;
     Q_INVOKABLE [[nodiscard]] QString statusForDate(const QString& dateIso) const;
+    Q_INVOKABLE [[nodiscard]] QString dayWithContent(const QString& fromIso, int direction) const;
 
     [[nodiscard]] static std::vector<QDate> lookupWindow(const QDate& today, bool metered);
     [[nodiscard]] static int midweekIssueTag(const QDate& weekMonday);
@@ -84,6 +85,7 @@ public:
 public slots:
     void refresh();
     void resyncDay(const QString& dateIso);
+    void addSong(const QString& dateIso, int number, const QString& sectionId);
     void resetAll();
     void refreshAddedMediaDays();
 
@@ -92,6 +94,8 @@ signals:
     void dayStatusesChanged();
     void dayStatusChanged(const QString& dateIso, const QString& status);
     void dayContentChanged(const QString& dateIso);
+    void songAdded(const QString& dateIso, int number, const QString& title);
+    void songFailed(const QString& dateIso, int number);
     void syncIdle();
 
 private:

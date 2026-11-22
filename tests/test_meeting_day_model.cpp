@@ -99,6 +99,14 @@ TEST_CASE("MeetingDayModel lays out a meeting day like the meeting media page",
     REQUIRE(day.rowForSourceRow(sourceRowOf(model, QStringLiteral("song"))) == songRow);
     REQUIRE(day.data(day.index(songRow), MeetingDayModel::IsLastInSectionRole).toBool());
 
+    // A song tag tells the section header that the section already has its song.
+    const int lacHeaderRow = day.headerRowOfSection(QStringLiteral("lac"));
+    REQUIRE_FALSE(
+        day.data(day.index(lacHeaderRow), MeetingDayModel::RowSectionHasSongRole).toBool());
+    REQUIRE(model.updateItemTag(sourceRowOf(model, QStringLiteral("song")), QStringLiteral("song"),
+                                QStringLiteral("12")));
+    REQUIRE(day.data(day.index(lacHeaderRow), MeetingDayModel::RowSectionHasSongRole).toBool());
+
     // On a meeting day an empty extra section stays out of the way.
     const QString custom =
         model.createSection(QStringLiteral("Local Needs"), QStringLiteral("#1E88E5"));

@@ -14,6 +14,7 @@
 #include <QSignalSpy>
 #include <QTemporaryDir>
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -273,6 +274,11 @@ TEST_CASE("MeetingSyncEngine syncs this week's meetings from JW.org", "[.network
     QSignalSpy idle(&engine, &MeetingSyncEngine::syncIdle);
     engine.refresh();
     REQUIRE(idle.wait(10 * 60 * 1000));
+
+    // The public talk song is added by number, like the operator does before the meeting.
+    QSignalSpy songs(&engine, &MeetingSyncEngine::songAdded);
+    engine.addSong(QStringLiteral("2026-11-22"), 151, QStringLiteral("pt"));
+    REQUIRE(songs.wait(60 * 1000));
     QSignalSpy counts(&downloads, &kmedia::DownloadService::countsChanged);
     while (downloads.activeCount() + downloads.queuedCount() > 0) {
         REQUIRE(counts.wait(10 * 60 * 1000));
@@ -308,6 +314,14 @@ TEST_CASE("MeetingSyncEngine syncs this week's meetings from JW.org", "[.network
                  .arg(lines.join(QLatin1Char('\n')))
                  .toStdString());
         CHECK(playlist.syncStatus == QStringLiteral("complete"));
+        if (playlist.meetingDate == QStringLiteral("2026-11-22")) {
+            const bool hasSong = std::any_of(rows.cbegin(), rows.cend(), [](const auto& row) {
+                return row.entry.sectionId == QStringLiteral("pt") &&
+                       row.entry.tagValue == QStringLiteral("151") &&
+                       row.entry.source == QStringLiteral("additional");
+            });
+            CHECK(hasSong);
+        }
         CHECK(missing == 0);
         CHECK_FALSE(rows.empty());
     }
@@ -358,4 +372,14 @@ TEST_CASE("MeetingSyncEngine marks days that hold added media", "[sync][engine][
     REQUIRE(statuses.value(QStringLiteral("2026-11-22")).toString() != QStringLiteral("media"));
     REQUIRE(engine.windowStart() == QStringLiteral("2026-11-16"));
     REQUIRE(engine.windowEnd() >= QStringLiteral("2026-12-21"));
+
+    // Previous and next skip the days without a meeting or media, inside the window.
+    REQUIRE(engine.dayWithContent(QStringLiteral("2026-11-18"), 0) == QStringLiteral("2026-11-18"));
+    REQUIRE(engine.dayWithContent(QStringLiteral("2026-11-19"), 0) == QStringLiteral("2026-11-20"));
+    REQUIRE(engine.dayWithContent(QStringLiteral("2026-11-18"), 1) == QStringLiteral("2026-11-20"));
+    REQUIRE(engine.dayWithContent(QStringLiteral("2026-11-20"), 1) == QStringLiteral("2026-11-22"));
+    REQUIRE(engine.dayWithContent(QStringLiteral("2026-11-20"), -1) ==
+            QStringLiteral("2026-11-18"));
+    REQUIRE(engine.dayWithContent(QStringLiteral("2026-11-18"), -1).isEmpty());
+    REQUIRE(engine.dayWithContent(QStringLiteral("2026-11-01"), 0) == QStringLiteral("2026-11-18"));
 }
