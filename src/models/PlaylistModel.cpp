@@ -1415,6 +1415,22 @@ bool PlaylistModel::renameSection(const QString& sectionId, const QString& newLa
     return true;
 }
 
+bool PlaylistModel::setSectionSubtitle(const QString& sectionId, const QString& subtitle)
+{
+    const int idx = findSectionIndex(sectionId);
+    if (idx < 0 && !ensureSection(sectionId)) {
+        return false;
+    }
+    const size_t target = static_cast<size_t>(idx >= 0 ? idx : findSectionIndex(sectionId));
+    if (m_sections[target].documentTitle == subtitle.trimmed()) {
+        return true;
+    }
+    m_sections[target].documentTitle = subtitle.trimmed();
+    saveSectionsForPlaylist();
+    emit sectionsChanged();
+    return true;
+}
+
 bool PlaylistModel::setSectionColor(const QString& sectionId, const QString& colorHex)
 {
     const QString cleaned = sectionId.trimmed();

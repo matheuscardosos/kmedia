@@ -26,6 +26,7 @@
 #include "network/DownloadService.h"
 #include "network/MeetingCatalogService.h"
 #include "network/MeetingSyncEngine.h"
+#include "network/PublicTalkMedia.h"
 #include "network/PublicationStore.h"
 #include "parsers/CloudSyncWatcher.h"
 
@@ -84,6 +85,8 @@ ApplicationController::ApplicationController(QObject* parent)
     m_publicationStore =
         std::make_unique<kmedia::PublicationStore>(m_catalogClient.get(), m_downloadService.get());
     m_syncEngine = std::make_unique<kmedia::MeetingSyncEngine>(m_publicationStore.get());
+    m_publicTalks =
+        std::make_unique<kmedia::PublicTalkMedia>(m_publicationStore.get(), m_playlistModel.get());
     m_playbackController->attachPdfController(m_pdfController.get());
     m_playlistModel->attachPlaybackController(m_playbackController.get());
     m_thumbnailCache->setCustomExtractor([](const QString& sourcePath, int) {
@@ -301,6 +304,11 @@ kmedia::MeetingCalendarModel* ApplicationController::calendar() const
 kmedia::MeetingSyncEngine* ApplicationController::syncEngine() const
 {
     return m_syncEngine.get();
+}
+
+kmedia::PublicTalkMedia* ApplicationController::publicTalks() const
+{
+    return m_publicTalks.get();
 }
 
 void ApplicationController::bindPresentationMpv(MpvRendererItem* mpvItem)
@@ -550,6 +558,9 @@ void ApplicationController::applyProfileSettings()
         m_playlistModel->setPackageExtractDir(
             QDir(profile->storagePath).filePath(QStringLiteral("packages")));
         m_publicationStore->setCacheRoot(profile->storagePath);
+        // Each congregation keeps its own S-34mp, unpacked once.
+        m_publicTalks->setFolder(
+            QDir(profile->storagePath).filePath(QStringLiteral("Publications/S-34")));
         m_calendarModel->setStorageRoot(profile->storagePath);
     }
 
@@ -947,6 +958,11 @@ void ApplicationController::applySyncSettings(bool resetWhenChanged)
                               next.excludeTh != current.excludeTh ||
                               next.excludeCbsVideos != current.excludeCbsVideos;
     m_syncEngine->setSettings(next);
+    QStringList languages{next.languageCode};
+    if (!next.fallbackLanguageCode.isEmpty() && next.fallbackLanguageCode != next.languageCode) {
+        languages << next.fallbackLanguageCode;
+    }
+    m_publicTalks->setLanguages(languages);
     if (resetWhenChanged && mediaChanged && !m_demoMode) {
         m_syncEngine->resetAll();
     }

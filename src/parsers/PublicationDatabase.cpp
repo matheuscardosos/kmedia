@@ -169,6 +169,49 @@ bool PublicationDatabase::isOpen() const
     return m_db.isOpen();
 }
 
+// The documents that carry media, in publication order (for example the talks of S-34mp).
+std::vector<PublicationDocumentEntry> PublicationDatabase::documentsWithMedia() const
+{
+    std::vector<PublicationDocumentEntry> documents;
+    if (!m_db.isOpen() || !m_db.tableExists(QStringLiteral("Document")) ||
+        !m_db.tableExists(QStringLiteral("DocumentMultimedia"))) {
+        return documents;
+    }
+    QSqlQuery query(m_db.database());
+    if (!query.exec(QStringLiteral(
+            "SELECT DISTINCT Document.DocumentId, Document.Title FROM Document "
+            "INNER JOIN DocumentMultimedia ON Document.DocumentId = DocumentMultimedia.DocumentId "
+            "ORDER BY Document.DocumentId"))) {
+        return documents;
+    }
+    while (query.next()) {
+        documents.push_back(
+            PublicationDocumentEntry{query.value(0).toLongLong(), query.value(1).toString()});
+    }
+    return documents;
+}
+
+PublicationSummary PublicationDatabase::summary() const
+{
+    PublicationSummary result;
+    if (!m_db.isOpen() || !m_db.tableExists(QStringLiteral("Publication"))) {
+        return result;
+    }
+    QSqlQuery query(m_db.database());
+    if (!query.exec(QStringLiteral("SELECT * FROM Publication LIMIT 1")) || !query.next()) {
+        return result;
+    }
+    const QSqlRecord record = query.record();
+    const auto text = [&](const char* column) {
+        const int index = record.indexOf(QLatin1StringView(column));
+        return index >= 0 ? query.value(index).toString() : QString();
+    };
+    result.symbol = text("UndatedSymbol");
+    result.year = text("Year").toInt();
+    result.versionNumber = text("VersionNumber").toInt();
+    return result;
+}
+
 qint64 PublicationDatabase::midweekDocumentId(const QDate& weekMonday) const
 {
     if (!m_db.isOpen() || !m_db.tableExists(QStringLiteral("DatedText"))) {

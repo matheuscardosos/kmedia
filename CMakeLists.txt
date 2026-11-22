@@ -99,6 +99,8 @@ qt_add_library(kmedia_core STATIC
     src/network/MeetingCatalogService.cpp
     src/network/MeetingSyncEngine.h
     src/network/MeetingSyncEngine.cpp
+    src/network/PublicTalkMedia.h
+    src/network/PublicTalkMedia.cpp
     src/network/PublicationStore.h
     src/network/PublicationStore.cpp
     src/parsers/CloudSyncWatcher.h
@@ -218,6 +220,7 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/MeetingMediaPage.qml
     resources/qml/components/DayDatePicker.qml
     resources/qml/components/SongPickerPopup.qml
+    resources/qml/components/PublicTalkPickerPopup.qml
     resources/qml/components/TagEditPopup.qml
     resources/qml/components/RenamePopup.qml
     resources/qml/components/CalendarEventPopup.qml
