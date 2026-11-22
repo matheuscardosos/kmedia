@@ -1,51 +1,126 @@
-# Manual do Usuário
+# Guia do Usuário
 
-Este manual apresenta o fluxo principal do KMedia para preparar e exibir mídias das reuniões.
+Este guia acompanha uma semana de reuniões: configurar sua congregação, encontrar as mídias de cada reunião, adicionar o que falta e apresentar.
 
-## Console Responsivo de Três Colunas
+![Página Reunião do KMedia (tema escuro)](../assets/kmedia-preview.png)
 
-O KMedia se adapta automaticamente a telas largas de cabine, divisão 50/50 ou janela compacta lateral (`360x520` mínimo para trabalhar lado a lado com o Zoom) e permite alternar entre os temas **Studio Carbon (Escuro)** e **Studio Daylight (Claro)** via `Ctrl+D` ou pelo botão no topo da barra lateral:
+## Primeiros passos
 
-1. **Barra Lateral / Abas Compactas:** Troque de congregação, alterne entre tema escuro e claro, navegue entre as duas páginas, *Meeting* e *Settings*, cada uma com o mesmo cabeçalho (ícone, título e congregação), e acompanhe OBS Studio, segunda tela, Zoom e espaço livre em disco. A página *Settings* só é criada na primeira vez que você a abre.
-2. **Modo Médio (`680 px` a `1079 px`):** Recolhe a barra lateral para o modo compacto (`64 px`) e transforma a pré-visualização ao vivo em gaveta retrátil sob demanda.
-3. **Modo Compacto (`< 680 px`, até `360x520`):** Move a navegação para abas inferiores compactas (`54 px`), resume a **Barra em Pílula (`ActionPillBar`)** a ícones com indicadores de status e mantém a barra de reprodução e acesso ao *Standby*.
+### Instalação
 
-![Console Desktop do KMedia (Tema Escuro)](../assets/kmedia-preview.png)
+Baixe o KMedia para Windows, macOS ou Linux na [página de download](./download.md) e instale como qualquer outro aplicativo.
 
-![Console Desktop do KMedia (Tema Claro)](../assets/kmedia-light-preview.png)
+### Primeira abertura
 
-![Layout Compacto Lado a Lado do KMedia](../assets/kmedia-compact-preview.png)
+1. Abra **Configurações > Reuniões** e procure sua congregação (cidade ou nome da congregação). Escolhê-la na lista define o idioma das mídias e os dias e horários das reuniões.
+2. Confira o **Idioma das mídias** e o **Idioma de reserva**. O idioma de reserva é usado quando uma publicação ou um vídeo não existe no idioma das mídias.
+3. Volte para **Reunião**. O KMedia começa na hora a sincronizar as mídias das próximas cinco semanas, a reunião mais próxima primeiro.
 
-![Configurações em Duas Colunas com Busca do KMedia](../assets/kmedia-settings-preview.png)
+### A janela em resumo
 
-1. **Barra Lateral / Abas Compactas:** Alterne perfis de congregação e o tema Claro/Escuro, navegue entre *Reunião*, *Calendário*, *Mídias*, *Playlists*, *Downloads* e *Configurações*, e acompanhe em tempo real o status de OBS, 2ª Tela, Zoom e armazenamento livre em disco.
-2. **Página de Mídias da Reunião (`MeetingMediaPage`):** A página *Meeting* abre no primeiro dia, de hoje em diante, que tem reunião ou mídia. O cabeçalho mostra a reunião (ou a data nos outros dias) e a congregação, botões de anterior e próximo que pulam para o dia mais próximo com reunião ou mídia, e um botão de data cujo calendário marca cada dia da janela de sincronização: verde quando está pronto, laranja enquanto sincroniza, vermelho quando algo falhou e roxo quando o dia tem mídia que você adicionou. Cada seção é um cartão com ícone colorido, nome no idioma da interface e, no *Estudo de A Sentinela*, o título do artigo. As seções da reunião sempre aparecem nos dias de reunião e as outras só quando têm mídia; nos outros dias você pode criar, renomear, colorir, reordenar e excluir seções pelos menus delas. Cada item mostra uma miniatura 16:9 com a duração (a própria imagem, a capa que o JW.org publica para os vídeos dele ou um quadro dos seus próprios vídeos), a etiqueta de cântico ou parágrafo e um botão de reprodução; ocultar, etiquetas, renomear, intervalo de slide, mover, divisores e excluir ficam no menu do item. Mídias sincronizadas podem ser ocultadas, mas não excluídas, porque a próxima sincronização as traria de volta. **Adicionar mídia** adiciona um cântico pelo número do jw.org, um vídeo do jw.org (os mais recentes primeiro e depois toda a videoteca, com pesquisa pelo título), as mídias de um documento de uma publicação do jw.org (digite a sigla e, para revistas e apostilas, a edição), as mídias de um discurso público do seu S-34mp (escolha o `.jwpub` uma vez e depois procure os discursos por número ou tema; o tema vira o subtítulo da seção) ou arquivos do seu computador na seção que você escolher (o *Discurso Público* num fim de semana comum); um arquivo `.jwpub`, escolhido ou arrastado, abre a lista dos documentos dele para você adicionar só o que precisa, e o botão **Cântico** das seções *Discurso Público* e *Superintendente de Circuito* adiciona o cântico delas enquanto ainda não têm um. Arraste um item pela alça até outro item para movê-lo, inclusive entre seções. O menu da página também tem **Semana especial**, **Sincronizar este dia de novo**, mídias ocultas, **Redefinir ordem**, divisores e o **Checklist** (`BoothChecklistPopup`).
-3. **Reuniões, Semanas Especiais e Sincronização:** Em *Settings > Meetings* você encontra sua congregação no hub.jw.org, define os dias e horários das reuniões (usados também para encerrar a música ambiente), o idioma das mídias e o de reserva, e os filtros de mídia (notas de rodapé, imagens só da edição impressa, vídeos nos parágrafos de *A Sentinela*, vídeos da brochura *Melhore*, vídeos do Estudo Bíblico de Congregação). **Semana especial**, no menu da página *Meeting*, marca a semana do dia aberto como visita do superintendente de circuito (adiciona a seção *Superintendente de Circuito* e passa a reunião de meio de semana para terça), Celebração, assembleia de circuito ou congresso regional (sem reuniões normais nessa semana), ou dá a essa semana um horário temporário. As reuniões sincronizam sozinhas: o KMedia deixa prontas em segundo plano as reuniões das próximas cinco semanas (a mais próxima primeiro), cada uma no seu dia, e **Sincronizar este dia de novo** sincroniza o dia aberto sem perder o que você ocultou, renomeou, moveu ou adicionou.
-4. **Barra Flutuante em Pílula (`ActionPillBar`):** Conta com botões ampliados guiados por ícones (incluindo os emblemas de OBS Studio e Zoom nas cores do sistema), indicadores de status em LED, alternância imediata de *Espera / Blackout* e *Legendas* (`libmpv`), além de popovers ancorados para escolher o monitor de exibição, controlar música ambiente, acompanhar o cronômetro da reunião (`Decorrido` / `Restante` / `Excedido`), trocar cenas do OBS ao vivo, abrir o Zoom e acompanhar a fila de downloads (cada transferência com progresso, pausar, retomar, repetir e cancelar, além da quantidade simultânea).
-5. **Paleta de Comandos (`Ctrl+K`), Atalhos Diretos e Notificações:** Pressione `Ctrl+K` em qualquer tela ou use os atalhos diretos da cabine (`Espaço` reproduzir/pausar, `B` modo espera/standby, `Esc` parar exibição, `Del` remover o item ativo (mídia sincronizada é ocultada), `Ctrl+M` iniciar/reduzir música ambiente, `Alt+Esquerda`/`Alt+Direita` item anterior/próximo, `Ctrl+P` tela de apresentação, `Ctrl+D` alternar tema, `Ctrl+O` adicionar mídia e `1` *Meeting* ou `2` *Settings* fora de campos de texto).
-6. **Painel Direito de Prévia e Inspetor:** Acompanhe o quadro ao vivo com selo *ON AIR / READY / STANDBY* e botões de vidro *Standby* / *Blackout*, metadados do arquivo, status das saídas e precisão de corte não destrutivo (`00:00.000`).
-7. **Configurações em Duas Colunas com Busca e Bloqueio por PIN:** Navegue pelas seis categorias pesquisáveis (*Geral*, *Reuniões*, *Tela*, *Áudio*, *Integrações*, *Segurança*) e habilite um PIN de cabine (hash SHA-256 com salt em `BoothSecurity` / `SettingsPinGate`) para proteger os ajustes em notebooks compartilhados, além da opção de linha de comando `--tab <meeting|settings>`.
+- **Navegação:** *Reunião* e *Configurações*, a troca de congregação e o estado do OBS Studio, da segunda tela, do Zoom e do espaço livre em disco.
+- **Página Reunião:** as mídias do dia escolhido, seção por seção.
+- **Painel de prévia:** o que o público vê, detalhes do arquivo, cortes e zoom. O botão de monitor no cabeçalho da página mostra ou esconde o painel.
+- **Barra em pílula:** atalhos para a tela de apresentação, espera, legendas, música ambiente, cronômetro da reunião, OBS Studio, Zoom, downloads e paleta de comandos.
+- **Barra de reprodução:** reproduzir, pausar, anterior, próximo e silenciar o item ativo.
 
-## Reprodução, Cortes, Zoom e Apresentação de PDFs
+A janela se adapta à largura: janelas largas mostram as três colunas, larguras médias reduzem a navegação a ícones e a prévia a uma gaveta, e janelas estreitas (até 360 px, para usar lado a lado com o Zoom) levam a navegação para uma barra embaixo.
 
-- **Cortes Não Destrutivos:** Os marcadores de início (`trimStartMs`) e fim (`trimEndMs`) são aplicados diretamente no `libmpv` sem alterar nem recodificar o arquivo original. Se o tempo final for menor ou igual ao inicial, o limite final é desconsiderado.
-- **Controle de Zoom e Pan:** Ajuste o zoom (`1.0x` até `8.0x`) e o deslocamento horizontal/vertical (`-0.5` a `+0.5`) em vídeos, imagens e documentos PDF sincronizados com a saída externa, com opção de reset instantâneo.
-- **Documentos PDF Multipágina:** Avance, retorne ou salte diretamente para qualquer página renderizada nativamente via `Qt6::Pdf` na resolução do monitor de exibição.
+![Página Reunião do KMedia (tema claro)](../assets/kmedia-light-preview.png)
 
-## Música Ambiente e Horários das Reuniões
+## Mídias da reunião
 
-- A música ambiente opera em um pipeline exclusivo de áudio do `libmpv`, totalmente isolado do player principal de apresentações.
-- Configure os dias e horários das reuniões de meio e fim de semana para que a música ambiente realize automaticamente um fade-out suave (padrão `5000 ms`) encerrando exatamente no horário de início da reunião. Pausar ou retomar manualmente assume prioridade na sessão atual.
+### Escolher o dia
 
-## Importação de Mídias
+A página *Reunião* abre no próximo dia, de hoje em diante, que tem reunião ou mídia. Use as setas ao lado da data para ir ao dia anterior ou ao próximo com reunião ou mídia, ou clique na data para abrir o calendário. O calendário mostra os dias que o KMedia deixa prontos, cada um com um ponto colorido:
 
-- **Arrastar e Soltar:** Arraste vídeos (`MP4`, `MKV`, `WebM`), áudios (`MP3`, `AAC`, `OGG`, `FLAC`), imagens (`JPEG`, `PNG`, `WebP`) ou documentos `PDF` diretamente para a playlist.
-- **Pacotes de Publicações e Discursos (`.jwpub` e `S-34 / S-34mp`):** Abra arquivos `.jwpub` nativamente com `minizip-ng` (com leitura SQLite interna de `contents` e validação contra Zip-Slip) e extraia seletivamente apenas as imagens, vídeos ou mídias do discurso público escolhido, sem arquivos temporários sobrando em disco.
-- **Playlists do JW Library (`.jwlplaylist`):** Importe pacotes `.jwlplaylist` preservando a ordem do `TagMap`, marcadores, flag de repetição (`EndAction`), mídias/miniaturas embutidas e pontos de corte convertidos a partir dos ticks de 100 nanossegundos.
-- **Sincronização Semanal por Data, Filtros e Catálogo:** Alterne diretamente pelo cabeçalho do espaço de reunião ou Calendário entre workspaces persistidos por data (**Meio de Semana**, **Fim de Semana**, **Visita do Superintendente**, **Celebração** e dias extras personalizados). O KMedia localiza exatamente a semana via `DatedText` nos arquivos `.jwpub`, sonda edições candidatas da *Sentinela* (`6`, `8`, `10`, `12` semanas atrás), lê rótulos de parágrafo (`Question`) e extrações (`DocumentExtract`), resolve vídeos e cânticos via Mediator (`v1/media-items`) com fallback para `GETPUBMEDIALINKS` e idioma secundário, mantém mídias acima de `35` minutos (`2100 s`) em modo streaming sem baixar o arquivo completo e traz busca de congregação (`hub.jw.org`) além de filtros de extração configuráveis (notas de rodapé, imagens impressas, vídeos inline da Sentinela, brochura `th` e publicações do EBC).
-- **Organização da Playlist da Reunião:** Recolha ou expanda grupos de extração, insira divisores coloridos entre partes, edite etiquetas clicáveis (`Song X`, `Para. Y`, `*`), oculte ou revele itens (`Hidden`), configure repetição e intervalo de slides por seção, restaure a ordem original sincronizada e filtre a lista instantaneamente com `Ctrl+F`.
-- **Pasta compartilhada e exportação de mídias:** Em *Settings > Integrations*, ligue a **Pasta compartilhada** e escolha uma pasta sincronizada pelo Dropbox, OneDrive, Google Drive ou Nextcloud: as mídias colocadas nas pastas com data `AAAA-MM-DD` aparecem naquele dia (na seção em que foram colocadas em outro computador, na seção indicada por um nome de arquivo exportado ou na seção principal do dia: *Discurso Público* no fim de semana, *Nossa Vida Cristã* no meio de semana, *Superintendente de Circuito* na semana da visita). Mover esses itens no KMedia guarda a posição para os outros computadores, as pastas dos próximos dias de reunião são criadas para você e as pastas de semanas passadas podem ser excluídas. Mídias da pasta compartilhada podem ser ocultadas, mas não excluídas, porque a pasta as traria de volta. Em *Settings > Meetings*, a **Exportação de mídias** copia cada dia com mídias para uma pasta com a data dentro da pasta escolhida, na ordem da reunião (`01 Discurso Público - 01 Imagem.jpg`), depois de cada sincronização e de cada mudança, podendo converter imagens e áudios em vídeos MP4 quando o FFmpeg está instalado. A pasta compartilhada e a pasta de exportação precisam ser diferentes.
+| Ponto | Significado |
+| --- | --- |
+| Verde | As mídias da reunião estão prontas. |
+| Laranja | O dia está esperando ou sincronizando. |
+| Vermelho | Algumas mídias não puderam ser baixadas. Abra o dia e clique em **Tentar de novo**. |
+| Roxo | O dia tem mídias que você adicionou. |
 
-## Apresentação em Segunda Tela
+### Como as reuniões sincronizam
 
-Quando um segundo monitor ou projetor está conectado, o KMedia o atribui automaticamente para exibição em tela cheia sem bordas (janela `"KMedia - Presentation"`), mantendo o console do operador na tela principal. O botão *Standby / Blackout* alterna instantaneamente entre a mídia ativa e uma tela preta ou imagem de espera da congregação sem perder o estado da fila.
+O KMedia deixa prontas em segundo plano as reuniões das próximas cinco semanas, dois dias por vez e a reunião mais próxima primeiro. Para a reunião de meio de semana ele lê a apostila; para a de fim de semana ele encontra o artigo de estudo de *A Sentinela* daquela semana. Imagens, vídeos e cânticos ficam nas suas seções na ordem dos parágrafos, e os vídeos mostram uma miniatura de verdade.
+
+- **Sincronizar este dia de novo** (menu da página) sincroniza de novo o dia aberto. O que você ocultou, renomeou, moveu ou adicionou continua como está.
+- **Semana especial** (menu da página) marca a semana do dia aberto como visita do superintendente de circuito (a reunião de meio de semana passa para terça e a seção *Superintendente de Circuito* é adicionada), Celebração, assembleia de circuito ou congresso regional (sem reuniões normais nessa semana). Também pode dar a essa semana um horário temporário.
+- Mudar o idioma das mídias ou um filtro de mídias em *Configurações > Reuniões* sincroniza as semanas de novo.
+
+### Seções e itens
+
+Cada seção é um cartão com ícone colorido e nome no idioma da interface. O cartão do *Estudo de A Sentinela* mostra o título do artigo. Em dia de reunião, as seções da própria reunião sempre aparecem, mesmo vazias; as outras seções aparecem quando têm mídia.
+
+Cada item mostra uma miniatura 16:9 com a duração, o número do cântico ou do parágrafo, o título e um botão de reprodução. O menu do item tem todo o resto:
+
+- **Ocultar da lista de mídias** e **Mostrar na lista de mídias**. Itens ocultos ficam fora da apresentação; a seção avisa quando há itens ocultos, e **Mostrar mídias ocultas**, no menu da página, volta a mostrá-los.
+- **Editar etiqueta** para o número do cântico ou do parágrafo, e **Renomear**.
+- **Intervalo do slide** para imagens que avançam sozinhas.
+- **Mover para seção** e **Inserir divisor abaixo**.
+- **Excluir**, para mídias que você adicionou. Mídias sincronizadas e da pasta compartilhada só podem ser ocultadas, porque a próxima sincronização ou a pasta as trariam de volta.
+
+Arraste um item pela alça até outro item para movê-lo, inclusive entre seções. **Redefinir ordem**, no menu da página, volta à ordem da sincronização. Em dias sem reunião você pode criar seções (**Nova seção**) e renomear, colorir, reordenar ou excluir seções pelos menus delas.
+
+## Adicionar mídias
+
+**Adicionar mídia**, no cabeçalho da página, adiciona na seção que você escolher (num fim de semana comum, no *Discurso Público*). O **+** de uma seção adiciona direto nela.
+
+- **Cântico:** digite o número do cântico; o vídeo vem do jw.org no idioma das mídias. As seções *Discurso Público* e *Superintendente de Circuito* mostram um botão **Cântico** enquanto ainda não têm cântico.
+- **Vídeo:** a videoteca do jw.org, os vídeos mais recentes primeiro, com pesquisa pelo título.
+- **Mídias de publicação:** digite a sigla da publicação (por exemplo `lff`) e, para revistas e apostilas, a edição (`2026-11`); depois escolha o documento cujas mídias você precisa.
+- **Mídias do discurso público:** escolha uma vez o arquivo S-34mp da sua congregação e depois procure os discursos por número ou tema. As mídias do discurso vão para o *Discurso Público*, e o tema vira o subtítulo da seção.
+- **Arquivos:** vídeos, áudios, imagens, documentos PDF, publicações `.jwpub` (depois você escolhe um documento) e listas `.jwlplaylist` do JW Library. Também dá para arrastar arquivos para a janela.
+
+## Apresentar
+
+- Clique no botão de reprodução de um item ou dê um duplo clique nele. O item ativo fica destacado e aparece no painel de prévia.
+- **Espera** (`B`) cobre a tela de apresentação com uma tela preta, e **Blackout**, no painel de prévia, também pausa a mídia. Clique em **Espera** de novo para voltar à mídia de onde parou.
+- **Cortes** definem início e fim de um vídeo ou áudio sem mudar o arquivo. **Zoom e posição** funcionam em imagens, vídeos e páginas de PDF, e documentos PDF podem ser folheados.
+- Com uma segunda tela ou projetor conectado, o KMedia apresenta nela em tela cheia e deixa os controles na tela principal. *Configurações > Tela* escolhe outra tela.
+
+### Atalhos de teclado
+
+| Tecla | Ação |
+| --- | --- |
+| `Espaço` | Reproduzir ou pausar |
+| `B` | Espera |
+| `Esc` | Parar |
+| `Alt+Esquerda` / `Alt+Direita` | Item anterior ou próximo |
+| `Delete` | Excluir o item ativo (mídia sincronizada ou da pasta compartilhada é ocultada) |
+| `Ctrl+P` | Mostrar ou esconder a tela de apresentação |
+| `Ctrl+D` | Alternar tema escuro e claro |
+| `Ctrl+O` | Adicionar arquivos |
+| `Ctrl+K` | Paleta de comandos |
+| `1` / `2` | *Reunião* ou *Configurações* |
+
+Atalhos sem `Ctrl` ou `Alt` ficam pausados enquanto você digita num campo de texto.
+
+## Pasta compartilhada e exportação de mídias
+
+**Pasta compartilhada** (*Configurações > Integrações*): escolha uma pasta sincronizada pelo Dropbox, OneDrive, Google Drive ou Nextcloud. As mídias colocadas nas pastas com data (`AAAA-MM-DD`) aparecem naquele dia: na seção em que foram colocadas em outro computador, na seção indicada por um nome de arquivo exportado ou na seção principal do dia (*Discurso Público* no fim de semana, *Nossa Vida Cristã* no meio de semana, *Superintendente de Circuito* na semana da visita). Mover esses itens no KMedia guarda a posição para os outros computadores. As pastas dos próximos dias de reunião são criadas para você, e as pastas de semanas passadas podem ser excluídas.
+
+**Exportação de mídias** (*Configurações > Reuniões*): cada dia com mídias é copiado para uma pasta com a data dentro da pasta escolhida, na ordem da reunião (`01 Discurso Público - 01 Imagem.jpg`), depois de cada sincronização e de cada mudança. Imagens e áudios podem virar vídeos MP4 quando o FFmpeg está instalado. A pasta compartilhada e a pasta de exportação precisam ser diferentes.
+
+## Zoom e OBS Studio
+
+- **Zoom:** salve o ID da reunião em *Configurações > Integrações* e entre com **Abrir Reunião Zoom** ali mesmo ou com **Entrar na Reunião** no botão do Zoom da barra em pílula.
+- **OBS Studio:** informe o host e a porta do WebSocket (padrão `4455`) em *Configurações > Integrações* e clique em **Salvar e Conectar**. O botão do OBS na barra em pílula passa a listar suas cenas para você alternar entre elas.
+
+## Várias congregações
+
+Cada perfil de congregação tem suas próprias configurações, mídias, agenda e integrações. Troque de perfil no seletor de congregação no topo da navegação; as reuniões do novo perfil carregam na hora.
+
+![KMedia lado a lado com o Zoom](../assets/kmedia-compact-preview.png)
+
+## Solução de problemas
+
+- **Um dia mostra ponto vermelho:** algumas mídias não puderam ser baixadas. Confira a internet, abra o dia e clique em **Tentar de novo**.
+- **Falta mídia no idioma das mídias:** defina um **Idioma de reserva** em *Configurações > Reuniões*.
+- **Congregações de língua de sinais:** os cânticos vêm do cancioneiro em língua de sinais automaticamente.
+- **A conversão para MP4 está desligada:** instale o FFmpeg e reabra o KMedia.
+- **As mídias da pasta compartilhada não aparecem:** confira se os arquivos estão dentro de uma pasta com data (`AAAA-MM-DD`) direto na pasta compartilhada, e se a pasta compartilhada não é também a pasta de exportação.
+- **Outra coisa:** abra uma issue no [GitHub](https://github.com/matheuscardosos/kmedia/issues) com seu sistema, a versão do KMedia e os passos que levam ao problema.
+
+![Configurações do KMedia](../assets/kmedia-settings-preview.png)

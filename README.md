@@ -16,7 +16,7 @@ I built KMedia from scratch in native **C++20**, **Qt 6**, and **libmpv** to del
 
 ## Interface Preview
 
-KMedia features dual **Studio Carbon (Dark)** and **Studio Daylight (Light)** booth themes, **Meeting Section Dividers** (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*), a **Floating Pill Action Bar**, and responsive scaling down to a compact `360x520` pane beside Zoom.
+KMedia features dual **Studio Carbon (Dark)** and **Studio Daylight (Light)** booth themes, a **Meeting page** that shows each day section by section (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*, *Public Talk*, *Watchtower Study*), a **Floating Pill Action Bar**, and responsive scaling down to a compact `360x520` pane beside Zoom.
 
 ![KMedia Desktop Workstation (Dark Theme)](./docs/src/assets/kmedia-preview.png)
 
@@ -46,22 +46,25 @@ KMedia features dual **Studio Carbon (Dark)** and **Studio Daylight (Light)** bo
 
 - Download weekly meeting media, videos, images, and songs automatically in any available language
 - Present videos, audio tracks, high-resolution images, and multi-page PDF documents on an external display
-- Set non-destructive start and end trim markers, zoom/pan regions, and drag-and-drop playlist ordering
-- Schedule ambient background music before and after meetings with automatic 5-second fade-out
-- Import `.jwpub` publications, `.jwlplaylist` files, `S-34` / `S-34mp` public talk packages, and local media folders
-- Synchronize media automatically from local Dropbox, OneDrive, Google Drive, or Nextcloud folders
-- Integrate with OBS Studio (WebSocket v5) for automatic scene switching and launch Zoom meetings with isolated booth routing
+- Set non-destructive start and end trim markers, zoom/pan regions, and drag-and-drop ordering
+- Add songs, JW.org videos, publication media, and public talk media from the `S-34mp` file, and import `.jwpub` publications, `.jwlplaylist` files, and local files
+- Bring media from dated Dropbox, OneDrive, Google Drive, or Nextcloud folders into each day, and export each day in meeting order
+- Switch OBS Studio scenes (WebSocket v5) and join the congregation's Zoom meeting in one click
 - Configure custom titles, schedules, and special events independently per congregation profile
 
 ## Languages and Terms of Use
 
 Weekly meeting media can be fetched in any language available on the official website of Jehovah's Witnesses, while the KMedia interface itself supports independent UI translations.
 
-For details regarding official website content policies, see the [Terms of Use section in the FAQ](https://matheuscardosos.github.io/kmedia/faq).
+For details regarding official website content policies, see the [Terms of Use section in the FAQ](https://matheuscardosos.github.io/kmedia/faq#does-kmedia-respect-the-terms-of-use-of-jw-org).
 
 ## Contributing and Building from Source
 
 Interested in contributing, reporting an issue, or compiling KMedia yourself? Please check [CONTRIBUTING.md](CONTRIBUTING.md) for prerequisites, build instructions, architecture notes, and coding guidelines, or review the [CHANGELOG.md](CHANGELOG.md).
+
+## Acknowledgements
+
+The day by day meeting workflow of KMedia is inspired by [Meeting Media Manager](https://github.com/sircharlo/meeting-media-manager), the open source app that many congregations already use. KMedia is an independent native app written from scratch, and it is not meant to compete with it.
 
 ## License
 

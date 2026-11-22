@@ -1,51 +1,126 @@
 # User Guide
 
-This guide covers the core KMedia workflow for preparing and presenting meeting media.
+This guide follows a week of meetings: setting up your congregation, finding each meeting's media, adding what is missing, and presenting it.
 
-## Three-Column Responsive Operator Console
+![KMedia meeting page (dark theme)](../assets/kmedia-preview.png)
 
-KMedia adapts automatically across desktop, split-screen booth laptops, and compact narrow panes (`360x520` minimum width for side-by-side Zoom use), and supports switching cleanly between **Studio Carbon (Dark)** and **Studio Daylight (Light)** themes (`Ctrl+D` or the sidebar toggle button):
+## Getting started
 
-1. **Wide (`>= 1080 px`):** Displays the full `234 px` left navigation rail with KMedia branding and congregation profile switcher, flexible center playlist workspace, and docked `344 px` Live Preview & Inspector card stack.
-2. **Medium (`680 px` to `1079 px`):** Collapses the left rail to a narrow icon/badge bar (`64 px`) and places the Live Preview & Inspector into an on-demand slide-over drawer.
-3. **Compact (`< 680 px`, down to `360x520`):** Moves navigation into a compact bottom tab bar (`54 px`), compacts the **Floating Pill Action Bar** (`ActionPillBar`) into an icon capsule, and keeps the full-width transport bar above navigation tabs.
+### Install
 
-![KMedia Desktop Workstation (Dark Theme)](../assets/kmedia-preview.png)
+Download KMedia for Windows, macOS, or Linux from the [download page](./download.md) and install it like any other app.
 
-![KMedia Desktop Workstation (Light Theme)](../assets/kmedia-light-preview.png)
+### First launch
 
-![KMedia Compact Side-by-Side Layout](../assets/kmedia-compact-preview.png)
+1. Open **Settings > Meetings** and search for your congregation (city or congregation name). Picking it from the list sets the media language and the meeting days and times.
+2. Check the **Media language** and the **Fallback language**. The fallback is used when a publication or video is not available in the media language.
+3. Go back to **Meeting**. KMedia starts syncing the media of the next five weeks right away, closest meeting first.
 
-![KMedia Searchable Two-Pane Settings](../assets/kmedia-settings-preview.png)
+### The window at a glance
 
-1. **Left Navigation Rail / Compact Tabs:** Switch congregations cleanly, toggle Dark/Light theme, move between the two pages, *Meeting* and *Settings*, each with the same header (icon, title, and congregation), and inspect live OBS Studio, 2nd Display, Zoom, and free disk space. The *Settings* page is only created the first time you open it.
-2. **Meeting Media page (`MeetingMediaPage`):** The *Meeting* page opens on the first day from today on that has a meeting or media. Its header shows the meeting (or the date on other days) and the congregation, previous and next buttons that skip to the nearest day with a meeting or media, and a date button whose calendar marks each day of the sync window: green when ready, orange while syncing, red when something failed, and purple when the day holds media you added. Each section is a card with its colored icon, its name in the interface language and, for the *Watchtower Study*, the article title. Meeting sections always show on meeting days and other sections only when they hold media; on other days you can create, rename, recolor, reorder, and delete sections from their menus. Every item shows a 16:9 thumbnail with its duration (the picture itself, the preview picture JW.org publishes for its videos, or a frame of your own videos), its song or paragraph tag, and a play button; hiding, tags, renaming, slide intervals, moving, dividers, and deleting are in the item menu. Synced media can be hidden but not deleted, because the next sync would bring it back. **Add media** adds a song by number from JW.org, a JW.org video (the latest first, then the whole video library, searchable by title), the media of one document of a JW.org publication (type its symbol and, for magazines and workbooks, the issue), the media of a public talk from your S-34mp (pick the `.jwpub` once, then search the talks by number or title; the talk theme becomes the section subtitle), or files from your computer to the section you pick (the *Public Talk* on a regular weekend); a `.jwpub` file, picked or dropped, opens the list of its documents so you add only the one you need, and the **Song** button of the *Public Talk* and *Circuit Overseer* sections adds their song while they have none. Drag an item by its handle onto another item to move it, across sections too. The page menu also holds **Special week**, **Sync this day again**, hidden media, **Reset order**, dividers, and the **Checklist** (`BoothChecklistPopup`).
-3. **Meetings, Special Weeks & Sync:** *Settings > Meetings* finds your congregation on hub.jw.org, sets the meeting days and start times (also used for background music fade-outs), the media language and its fallback, and the media filters (footnotes, printed-only pictures, *Watchtower* paragraph videos, *Teaching* videos, Congregation Bible Study videos). **Special week** in the *Meeting* page menu marks the week of the open day as a Circuit Overseer visit (adds the *Circuit Overseer* section and moves the midweek meeting to Tuesday), the Memorial, a circuit assembly, or a regional convention (no regular meetings that week), or gives that week a temporary schedule. Meetings sync on their own: KMedia keeps the meetings of the next five weeks ready in the background (closest meeting first), each in its own day, and **Sync this day again** syncs the open day without losing the items you hid, renamed, moved, or added.
-4. **Interactive Floating Pill Bar (`ActionPillBar`):** Features enlarged icon-first booth toggles with authentic OBS Studio and Zoom emblems, instant *Standby* and *Subtitles* (`libmpv`) toggles, status LEDs, and anchored quick popovers for Monitor Selection, Background Music controls, Meeting Timer (`Elapsed` / `Remaining` / `Overtime`), Live OBS Scene Switching & Recording, Zoom Launch, the download queue (every transfer with its progress, pause, resume, retry, and cancel, plus the concurrency), and Command Palette (`Ctrl+K`).
-5. **Command Palette (`Ctrl+K`), Direct Shortcuts & Toast Feedback:** Press `Ctrl+K` anywhere or use direct operator shortcuts (`Space` play/pause, `B` standby, `Esc` stop playback, `Delete` remove the active item (synced media is hidden instead), `Ctrl+M` toggle/fade ambient music, `Alt+Left`/`Alt+Right` previous/next item, `Ctrl+P` toggle stage display, `Ctrl+D` switch theme, `Ctrl+O` add media, and `1` *Meeting* or `2` *Settings* when not editing text).
-6. **Right Live Preview & Inspector Cards:** Monitor the 16:9 stage output with *ON AIR / READY / STANDBY* overlays, instant *Standby* / *Blackout* glass buttons, real file metadata, live routing status, non-destructive trim markers (`00:00.000`), and viewport zoom or PDF page controls.
-7. **Searchable Two-Pane Settings & Booth PIN Lock:** Organize configuration cleanly across six searchable categories (*General*, *Meetings*, *Display*, *Audio*, *Integrations*, *Security*) with optional salted SHA-256 Booth PIN protection (`BoothSecurity` / `SettingsPinGate`) to prevent accidental changes on shared auditorium laptops, plus `--tab <meeting|settings>` launch targeting.
+- **Navigation:** *Meeting* and *Settings*, the congregation switcher, and the status of OBS Studio, the second display, Zoom, and free disk space.
+- **Meeting page:** the media of the selected day, section by section.
+- **Preview panel:** what the audience sees, file details, trims, and zoom. The monitor button in the page header shows or hides it.
+- **Pill bar:** quick toggles for the display, standby, subtitles, background music, the meeting timer, OBS Studio, Zoom, downloads, and the command palette.
+- **Transport bar:** play, pause, previous, next, and mute for the active item.
 
-## Playback, Trim, Zoom, and PDF Presentation
+The window adapts to its width: wide windows show all three columns, medium widths fold the navigation into icons and the preview into a drawer, and narrow windows (down to 360 px, for side by side use with Zoom) move navigation to a bottom bar.
 
-- **Non-Destructive Video and Audio Trims:** Start (`trimStartMs`) and end (`trimEndMs`) markers are enforced directly by `libmpv` without modifying or re-encoding original files. Setting an end time earlier than or equal to the start time disables the upper bound cleanly.
-- **Image and Video Viewport Controls:** Adjust zoom (`1.0x` to `8.0x`) and pan coordinates (`-0.5` to `+0.5`) smoothly across video, image, and PDF presentation output, or reset the viewport with one click.
-- **Multi-Page PDF Documents:** Navigate pages (`Previous`, `Next`, or direct page selection) rendered natively through `Qt6::Pdf` at display resolution.
+![KMedia meeting page (light theme)](../assets/kmedia-light-preview.png)
 
-## Background Music and Meeting Schedules
+## Meeting media
 
-- Background ambient music runs on a dedicated audio-only `libmpv` pipeline independent from presentation video playback.
-- Configure midweek and weekend meeting start times so background music initiates an automatic smooth fade-out (default `5000 ms`) scheduled to finish right when the meeting starts. Manual pause or play overrides remain active for that session.
+### Choosing a day
 
-## Importing Media
+The *Meeting* page opens on the next day from today that has a meeting or media. Use the arrows beside the date to jump to the previous or next day that has a meeting or media, or click the date to open the calendar. The calendar shows the days KMedia keeps ready, each with a colored dot:
 
-- **Drag and Drop:** Drop video (`MP4`, `MKV`, `WebM`), audio (`MP3`, `AAC`, `OGG`, `FLAC`), image (`JPEG`, `PNG`, `WebP`), or `PDF` files directly onto the playlist.
-- **Publication and Public Talk Packages (`.jwpub` and `S-34 / S-34mp`):** Open `.jwpub` archives natively with `minizip-ng` (including nested `contents` SQLite inspection and Zip-Slip path checks) and selectively extract only the requested meeting images, videos, or public talk media assets without cluttering disk storage.
-- **JW Library Playlists (`.jwlplaylist`):** Import `.jwlplaylist` archives preserving `TagMap` item order, marker labels, loop flags (`EndAction`), embedded media/thumbnails, and non-destructive trim bounds converted cleanly from 100-nanosecond ticks.
-- **Weekly Meeting Auto-Sync, Week Filters & Publication Catalog:** Switch seamlessly between date-keyed meeting days (**Midweek**, **Weekend**, **Circuit Overseer Visit**, **Memorial**, and custom non-meeting days) directly from the Meeting Workspace header strip or Calendar. KMedia resolves exact workbook dates via `.jwpub` `DatedText` and probes candidate Watchtower study articles (`6`, `8`, `10`, `12` weeks back), parses `Question` paragraph labels and `DocumentExtract` song/reference groups, resolves external videos and songs via JW Mediator (`v1/media-items`) with `GETPUBMEDIALINKS` and secondary language fallback, treats long files over `35` minutes (`2100 s`) as stream-only items, and provides Congregation Lookup (`hub.jw.org`) plus configurable extraction filters (footnotes, printed artwork, WT paragraph videos, `th`, CBS sources).
-- **Meeting Organization Controls:** Group multi-item extracts inside collapsible groups, insert colored dividers, assign or click inline tags (`Song X`, `Para. Y`, `*`), toggle hidden items (`Hidden` filter toggle), adjust section repeat and slide intervals, reset original synced ordering, and filter playlist rows live (`Ctrl+F`).
-- **Shared folder and media export:** In *Settings > Integrations*, turn on the **Shared folder** and pick a folder synced by Dropbox, OneDrive, Google Drive, or Nextcloud: media dropped into its `YYYY-MM-DD` date folders shows up in that day (in the section it was placed in on another computer, in the section named by an exported file name, or in the day's main section: *Public Talk* on weekends, *Living as Christians* midweek, *Circuit Overseer* in a visit week). Moving those items in KMedia saves their place for the other computers, folders for the coming meeting days are created for you, and the folders of past weeks can be deleted. Shared folder media can be hidden but not deleted, since the folder would bring it back. In *Settings > Meetings*, **Media export** copies every day with media into a date folder of the folder you pick, in meeting order (`01 Public Talk - 01 Picture.jpg`), after each sync and each change, optionally turning images and audio into MP4 videos when FFmpeg is installed. The shared folder and the export folder must be different.
+| Dot | Meaning |
+| --- | --- |
+| Green | The meeting media is ready. |
+| Orange | The day is waiting or syncing. |
+| Red | Some media could not be downloaded. Open the day and click **Try again**. |
+| Purple | The day has media you added. |
 
-## Presenting on a Secondary Display
+### How meetings sync
 
-When a secondary monitor or projector is connected, KMedia automatically targets it for full-screen borderless presentation (`"KMedia - Presentation"`) while keeping the operator console on the primary screen. Use the *Standby / Blackout* control to switch smoothly between active media and a black screen or custom congregation standby image without losing playlist state.
+KMedia keeps the meetings of the next five weeks ready in the background, two days at a time and closest meeting first. For the midweek meeting it reads the meeting workbook; for the weekend meeting it finds the *Watchtower* study article of that week. Pictures, videos, and songs are placed in their sections in paragraph order, and videos show a real thumbnail.
+
+- **Sync this day again** (page menu) syncs the open day again. Items you hid, renamed, moved, or added are kept.
+- **Special week** (page menu) marks the week of the open day as a Circuit Overseer visit (the midweek meeting moves to Tuesday and the *Circuit Overseer* section is added), the Memorial, a circuit assembly, or a regional convention (no regular meetings that week). It can also give that week a temporary schedule.
+- Changing the media language or a media filter in *Settings > Meetings* syncs the weeks again.
+
+### Sections and items
+
+Each section is a card with its colored icon and its name in the interface language. The *Watchtower Study* card shows the article title. On a meeting day the meeting's own sections always show, even while still empty; other sections show when they hold media.
+
+Every item shows a 16:9 thumbnail with its duration, its song or paragraph number, its title, and a play button. The menu of an item holds everything else:
+
+- **Hide from media list** and **Show in media list**. Hidden items stay out of the presentation; the section says when items are hidden, and **Show hidden media** in the page menu brings them back into view.
+- **Edit tag** for the song or paragraph number, and **Rename**.
+- **Slide interval** for pictures that advance on their own.
+- **Move to section** and **Insert divider below**.
+- **Delete**, for media you added. Synced media and shared folder media can only be hidden, because the next sync or the folder would bring them back.
+
+Drag an item by its handle onto another item to move it, also across sections. **Reset order** in the page menu restores the order of the sync. On days without a meeting you can create sections (**New section**) and rename, recolor, reorder, or delete them from their menus.
+
+## Adding media
+
+**Add media** in the page header adds to the section you pick (on a regular weekend, to *Public Talk*). The **+** of a section adds straight into that section.
+
+- **Song:** type the song number; the video comes from JW.org in the media language. The *Public Talk* and *Circuit Overseer* sections show a **Song** button while they have no song yet.
+- **Video:** the JW.org video library, latest videos first, searchable by title.
+- **Publication media:** type a publication symbol (for example `lff`) and, for magazines and workbooks, the issue (`2026-11`), then pick the document whose media you need.
+- **Public talk media:** pick your congregation's S-34mp file once, then search the talks by number or title. The talk's media goes to *Public Talk*, and the talk title becomes the section subtitle.
+- **Files:** videos, audio, pictures, PDF documents, `.jwpub` publications (you then pick a document), and `.jwlplaylist` playlists from JW Library. You can also drop files on the window.
+
+## Presenting
+
+- Click the play button of an item, or double click the item. The active item is highlighted and shown in the preview panel.
+- **Standby** (`B`) covers the presentation display with a black screen, and **Blackout** in the preview panel also pauses the media. Press **Standby** again to bring the media back where you left it.
+- **Trims** set a start and an end for a video or audio without changing the file. **Zoom and pan** work on pictures, videos, and PDF pages, and PDF documents can be paged.
+- With a second display or projector connected, KMedia presents on it full screen and keeps the controls on the main screen. *Settings > Display* picks another screen.
+
+### Keyboard shortcuts
+
+| Key | Action |
+| --- | --- |
+| `Space` | Play or pause |
+| `B` | Standby |
+| `Esc` | Stop |
+| `Alt+Left` / `Alt+Right` | Previous or next item |
+| `Delete` | Delete the active item (synced and shared folder media is hidden instead) |
+| `Ctrl+P` | Show or hide the presentation display |
+| `Ctrl+D` | Switch between dark and light theme |
+| `Ctrl+O` | Add files |
+| `Ctrl+K` | Command palette |
+| `1` / `2` | *Meeting* or *Settings* |
+
+Shortcuts without `Ctrl` or `Alt` pause while you type in a text field.
+
+## Shared folder and media export
+
+**Shared folder** (*Settings > Integrations*): pick a folder synced by Dropbox, OneDrive, Google Drive, or Nextcloud. Media dropped into its date folders (`YYYY-MM-DD`) shows up in that day: in the section it was placed in on another computer, in the section named by an exported file name, or in the day's main section (*Public Talk* on weekends, *Living as Christians* midweek, *Circuit Overseer* in a visit week). Moving those items in KMedia saves their place for the other computers. Folders for the coming meeting days are created for you, and the folders of past weeks can be deleted.
+
+**Media export** (*Settings > Meetings*): every day with media is copied into a date folder of the folder you pick, in meeting order (`01 Public Talk - 01 Picture.jpg`), after each sync and each change. Images and audio can be turned into MP4 videos when FFmpeg is installed. The shared folder and the export folder must be different.
+
+## Zoom and OBS Studio
+
+- **Zoom:** save the meeting ID in *Settings > Integrations*, then join with **Launch Zoom Meeting** there or **Join Meeting** from the Zoom button of the pill bar.
+- **OBS Studio:** enter the WebSocket host and port (default `4455`) in *Settings > Integrations* and click **Save & Connect**. The OBS button of the pill bar then lists your scenes so you can switch between them.
+
+## Several congregations
+
+Each congregation profile has its own settings, media, schedule, and integrations. Switch profiles from the congregation selector at the top of the navigation; the meetings of the new profile load right away.
+
+![KMedia side by side with Zoom](../assets/kmedia-compact-preview.png)
+
+## Troubleshooting
+
+- **A day shows a red dot:** some media could not be downloaded. Check the internet connection, open the day, and click **Try again**.
+- **Media is missing in the media language:** set a **Fallback language** in *Settings > Meetings*.
+- **Sign language congregations:** songs come from the sign language songbook automatically.
+- **The MP4 conversion switch is off:** install FFmpeg and restart KMedia.
+- **Shared folder media does not appear:** check that the files are inside a date folder (`YYYY-MM-DD`) directly in the shared folder, and that the shared folder is not also the export folder.
+- **Something else:** open an issue on [GitHub](https://github.com/matheuscardosos/kmedia/issues) with your system, KMedia version, and the steps that lead to the problem.
+
+![KMedia settings](../assets/kmedia-settings-preview.png)
