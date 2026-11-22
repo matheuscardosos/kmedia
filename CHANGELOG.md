@@ -26,6 +26,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Icons are drawn by an image provider that recolors each SVG once and lets Qt cache it, instead of a shader effect with its own layer per icon, so a busy meeting page uses far fewer GPU layers; icons now also show in software rendering and in `--screenshot` captures.
 
+### Documentation
+
+- Rewrote the user guide, settings guide, and FAQ in English and Portuguese around the day by day *Meeting* page: first launch, choosing a day and its status dots, how meetings sync, sections and item menus, every way to add media, presenting and keyboard shortcuts, the shared folder and media export, one section per *Settings* category, and new troubleshooting and privacy answers, with fresh screenshots. The README, home, and About pages no longer describe features that are not in the app, and they credit Meeting Media Manager as the inspiration for the meeting workflow.
+
 ### Fixed
 
 - Media from the watched cloud folder no longer lands in whatever day is open: it now goes to the day of its date folder.
@@ -49,11 +53,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 * **settings:** add two-pane PIN lock, section glyphs, and checklists ([#52](https://github.com/matheuscardosos/kmedia/issues/52)) ([8ad5488](https://github.com/matheuscardosos/kmedia/commit/8ad548815bd9dae281a6e1845801c4f1d32cb724)), closes [#34](https://github.com/matheuscardosos/kmedia/issues/34) [#36](https://github.com/matheuscardosos/kmedia/issues/36)
 * **ui:** add meeting calendar and visual media grid (Closes [#31](https://github.com/matheuscardosos/kmedia/issues/31), [#47](https://github.com/matheuscardosos/kmedia/issues/47)) ([#50](https://github.com/matheuscardosos/kmedia/issues/50)) ([2dc04f4](https://github.com/matheuscardosos/kmedia/commit/2dc04f4afd7cf7eec29d513a5d0e3596a6f08344))
 * **ui:** upgrade ActionPillBar with brand icons, popovers, timer, and subtitles ([#48](https://github.com/matheuscardosos/kmedia/issues/48)) ([213709d](https://github.com/matheuscardosos/kmedia/commit/213709d67a29e81d0b2477899e926358e459c4c0)), closes [#35](https://github.com/matheuscardosos/kmedia/issues/35)
+* Searchable two-pane settings console (`SettingsView`) across six categories (*General*, *Schedule*, *Display*, *Audio*, *Integrations*, *Security*) with per-profile salted SHA-256 Booth PIN protection (`BoothSecurity`, `SettingsPinGate`, `SettingsSecurityCard`) and CLI `--tab` screenshot/launch targeting.
+* Clean-room JW meeting section vector glyphs (`section-treasures`, `section-ministry`, `section-living`, `section-public-talk`, `section-watchtower`, `section-overseer` in operator mode with generic fallback in `--demo`) and pre/post-meeting booth readiness checklists (`BoothChecklistPopup`).
+* Circuit Overseer visit, Memorial, Circuit Assembly, and Regional Convention schedule overrides (`MeetingCalendarModel`, `MeetingCatalogService`, `CalendarEventPopup`) with per-profile JSON persistence, automatic *Circuit Overseer* section injection, and smart sync handling on special-event weeks.
+* Custom meeting section builder and color customization (`PlaylistModel`, `DatabaseManager`, `CustomSectionPopup`, `MeetingPlaylistView`) supporting custom section creation, renaming, palette swatch coloring, section reordering, item-to-section assignment, and dragging across section boundaries with SQLite persistence.
+* Monthly and 4-week meeting calendar navigation (`MeetingCalendarModel`, `CalendarView`, `CalendarSchedulePopup`) with configurable per-profile congregation midweek/weekend days and times, local catalog readiness indicators (`MWB` / `W`), direct week opening/syncing, visual 16:9 thumbnail grid & compact list modes with live search/type filters in `MediaLibraryView`, and streamlined icon-driven workspace cards.
+* Automatic weekly meeting fetching and download orchestration (`MeetingCatalogService`, disk-cached `CatalogClient` JSON responses, QML-bound `DownloadService` transfer queue with progress/pause/resume/retry/cancel, searchable congregation media language selector, `CatalogBrowserCard`, `DownloadQueueCard`, and one-click `Sync Week` header action).
+* Enlarged floating `ActionPillBar` with authentic OBS Studio and Zoom custom brand SVGs, status LED indicators, anchored quick popovers (Display selector, Background Music playback/volume/fade, live `MeetingTimer`, OBS scene switcher and recording toggle, Zoom launch/audio readout, and Downloads queue), and `libmpv` subtitle toggle.
+* Native Windows Inno Setup installer (`kmedia-windows-x64-setup.exe`) with per-user non-admin default installation, bilingual EN/PT wizard, bundled MSVC CRT runtime DLLs, and aligned download documentation links.
 
 
 ### Fixed
 
 * **ui:** center StudioButton icons and fit compact header actions ([#54](https://github.com/matheuscardosos/kmedia/issues/54)) ([341c1a3](https://github.com/matheuscardosos/kmedia/commit/341c1a358cb7a1b3c09eb8d0068ec4540f015286))
+* Centered icon-only `StudioButton` glyphs reliably across toolbars/calendar cells and tightened compact header action bar spacing in `MeetingPlaylistView` so all actions fit comfortably down to `360 px` window widths.
 
 ## [0.1.1](https://github.com/matheuscardosos/kmedia/compare/v0.1.0...v0.1.1) (2026-11-19)
 
@@ -62,38 +75,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 * **integrations:** add ProcessMonitor, OBS WebSocket v5 client, and ZoomBridge ([3c5792b](https://github.com/matheuscardosos/kmedia/commit/3c5792be393d89841b3ee15a1188bd7e790038ef)), closes [#18](https://github.com/matheuscardosos/kmedia/issues/18) [#19](https://github.com/matheuscardosos/kmedia/issues/19)
 * **ui:** rebuild QML Studio workstation with section dividers, themes, and ActionPillBar ([10c219c](https://github.com/matheuscardosos/kmedia/commit/10c219c9bb5cc783c54472bd952c87788d112705)), closes [#20](https://github.com/matheuscardosos/kmedia/issues/20) [#21](https://github.com/matheuscardosos/kmedia/issues/21) [#22](https://github.com/matheuscardosos/kmedia/issues/22)
+* Multi-resolution Windows (`icon.ico`, `kmedia.rc`), macOS (`kmedia.icns`), Linux/Qt (`icon.png`), vector (`logo.svg`), website favicon icon assets, and README product banner.
+* Repository documentation (`CONTRIBUTING.md`, `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`) and user-focused `README.md`.
+* Core persistence and profile engine (`DatabaseManager` with SQLite3 WAL migrations, `ProfileManager`, `SettingsStore`, `NetworkManager`, `SystemUtils`, and disk-backed LRU `ThumbnailCache`) with Catch2 unit tests.
+* Repository automation (`.github/dependabot.yml`, `.github/labeler.yml`, PR Conventional Commit title and issue traceability check, `Docs Sync` documentation enforcement, and CodeQL scanning) plus domain business rules in `docs/architecture/business-rules.md`.
+* Media engine and dual-screen presentation modules (`MpvRendererItem` transport/trims/tracks/zoom-pan, `PlaybackController`, `BackgroundMusicEngine` with scheduled 5-second fade-out, `DisplayManager` with `PresentationWindow`, and `PdfViewerController` with `PdfPageImageProvider`) plus Catch2 unit tests.
+* Native content parsers and cloud sync pipeline (`ZipArchiveReader` with minizip-ng Zip-Slip guards, `JwpubParser`, `S34Parser`, `JwlPlaylistParser`, `CatalogClient`, `DownloadService` with ETag caching and SHA-256 verification, and event-driven `CloudSyncWatcher`) plus Catch2 integration tests.
+* Native booth integrations (`ProcessMonitor`, `ObsWebSocketClient` for OBS WebSocket v5 SHA-256 auth and scene automation, and `ZoomBridge` `zoommtg://` launcher).
+* Redesigned QML Studio design system (`resources/qml/controls/Studio*.qml`) with dual **Dark (`Studio Carbon`)** and **Light (`Studio Daylight`)** themes (`ui/dark_theme` + `--theme`), bundled `Inter` font family, `MultiEffect`-tinted Lucide vector icons, custom `.jwpub` / `.jwlplaylist` SVG badges, **Meeting Section Dividers** (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*), **Floating Pill Action Bar (`ActionPillBar`)**, **Command Palette (`Ctrl+K`)**, toast notifications, playlist drag-and-drop, non-destructive trim/zoom inspector, media/playlists/downloads/settings views, and responsive scaling down to `360x520`.
+* Complete EN/PT Qt Linguist catalogs (`resources/translations/kmedia_en.ts`, `kmedia_pt.ts`), `--demo` / `--screenshot` automated screenshot workflow (`.github/workflows/screenshot-refresh.yml`), release automation (`release-please-config.json`, `.github/workflows/release-please.yml`, `.github/workflows/release.yml` with SHA-256 sums), workflow security auditing (`.github/workflows/zizmor.yml`), multi-IDE & multi-AI contributor configurations (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `.github/copilot-instructions.md`, `.windsurfrules`, `.ai/system-prompt.md`, `.vscode/`, `.zed/`, `.editorconfig`), and `THIRD-PARTY-NOTICES.md`.
 
 
 ### Fixed
 
 * **ci:** fix install-qt-action module list and pin zizmor-action v0.8.1 ([8625525](https://github.com/matheuscardosos/kmedia/commit/862552502c9f6a65a38adf41c50cfd1a2f7aa2cc)), closes [#20](https://github.com/matheuscardosos/kmedia/issues/20) [#21](https://github.com/matheuscardosos/kmedia/issues/21)
-
-## [Unreleased]
-
-### Added
-
-- Searchable two-pane settings console (`SettingsView`) across six categories (*General*, *Schedule*, *Display*, *Audio*, *Integrations*, *Security*) with per-profile salted SHA-256 Booth PIN protection (`BoothSecurity`, `SettingsPinGate`, `SettingsSecurityCard`) and CLI `--tab` screenshot/launch targeting.
-- Clean-room JW meeting section vector glyphs (`section-treasures`, `section-ministry`, `section-living`, `section-public-talk`, `section-watchtower`, `section-overseer` in operator mode with generic fallback in `--demo`) and pre/post-meeting booth readiness checklists (`BoothChecklistPopup`).
-- Circuit Overseer visit, Memorial, Circuit Assembly, and Regional Convention schedule overrides (`MeetingCalendarModel`, `MeetingCatalogService`, `CalendarEventPopup`) with per-profile JSON persistence, automatic *Circuit Overseer* section injection, and smart sync handling on special-event weeks.
-- Custom meeting section builder and color customization (`PlaylistModel`, `DatabaseManager`, `CustomSectionPopup`, `MeetingPlaylistView`) supporting custom section creation, renaming, palette swatch coloring, section reordering, item-to-section assignment, and dragging across section boundaries with SQLite persistence.
-- Monthly and 4-week meeting calendar navigation (`MeetingCalendarModel`, `CalendarView`, `CalendarSchedulePopup`) with configurable per-profile congregation midweek/weekend days and times, local catalog readiness indicators (`MWB` / `W`), direct week opening/syncing, visual 16:9 thumbnail grid & compact list modes with live search/type filters in `MediaLibraryView`, and streamlined icon-driven workspace cards.
-- Automatic weekly meeting fetching and download orchestration (`MeetingCatalogService`, disk-cached `CatalogClient` JSON responses, QML-bound `DownloadService` transfer queue with progress/pause/resume/retry/cancel, searchable congregation media language selector, `CatalogBrowserCard`, `DownloadQueueCard`, and one-click `Sync Week` header action).
-- Enlarged floating `ActionPillBar` with authentic OBS Studio and Zoom custom brand SVGs, status LED indicators, anchored quick popovers (Display selector, Background Music playback/volume/fade, live `MeetingTimer`, OBS scene switcher and recording toggle, Zoom launch/audio readout, and Downloads queue), and `libmpv` subtitle toggle.
-- Native Windows Inno Setup installer (`kmedia-windows-x64-setup.exe`) with per-user non-admin default installation, bilingual EN/PT wizard, bundled MSVC CRT runtime DLLs, and aligned download documentation links.
-
-- Multi-resolution Windows (`icon.ico`, `kmedia.rc`), macOS (`kmedia.icns`), Linux/Qt (`icon.png`), vector (`logo.svg`), website favicon icon assets, and README product banner.
-- Repository documentation (`CONTRIBUTING.md`, `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`) and user-focused `README.md`.
-- Core persistence and profile engine (`DatabaseManager` with SQLite3 WAL migrations, `ProfileManager`, `SettingsStore`, `NetworkManager`, `SystemUtils`, and disk-backed LRU `ThumbnailCache`) with Catch2 unit tests.
-- Repository automation (`.github/dependabot.yml`, `.github/labeler.yml`, PR Conventional Commit title and issue traceability check, `Docs Sync` documentation enforcement, and CodeQL scanning) plus domain business rules in `docs/architecture/business-rules.md`.
-- Media engine and dual-screen presentation modules (`MpvRendererItem` transport/trims/tracks/zoom-pan, `PlaybackController`, `BackgroundMusicEngine` with scheduled 5-second fade-out, `DisplayManager` with `PresentationWindow`, and `PdfViewerController` with `PdfPageImageProvider`) plus Catch2 unit tests.
-- Native content parsers and cloud sync pipeline (`ZipArchiveReader` with minizip-ng Zip-Slip guards, `JwpubParser`, `S34Parser`, `JwlPlaylistParser`, `CatalogClient`, `DownloadService` with ETag caching and SHA-256 verification, and event-driven `CloudSyncWatcher`) plus Catch2 integration tests.
-- Native booth integrations (`ProcessMonitor`, `ObsWebSocketClient` for OBS WebSocket v5 SHA-256 auth and scene automation, and `ZoomBridge` `zoommtg://` launcher).
-- Redesigned QML Studio design system (`resources/qml/controls/Studio*.qml`) with dual **Dark (`Studio Carbon`)** and **Light (`Studio Daylight`)** themes (`ui/dark_theme` + `--theme`), bundled `Inter` font family, `MultiEffect`-tinted Lucide vector icons, custom `.jwpub` / `.jwlplaylist` SVG badges, **Meeting Section Dividers** (*Treasures From God's Word*, *Apply Yourself to the Field Ministry*, *Living as Christians*), **Floating Pill Action Bar (`ActionPillBar`)**, **Command Palette (`Ctrl+K`)**, toast notifications, playlist drag-and-drop, non-destructive trim/zoom inspector, media/playlists/downloads/settings views, and responsive scaling down to `360x520`.
-- Complete EN/PT Qt Linguist catalogs (`resources/translations/kmedia_en.ts`, `kmedia_pt.ts`), `--demo` / `--screenshot` automated screenshot workflow (`.github/workflows/screenshot-refresh.yml`), release automation (`release-please-config.json`, `.github/workflows/release-please.yml`, `.github/workflows/release.yml` with SHA-256 sums), workflow security auditing (`.github/workflows/zizmor.yml`), multi-IDE & multi-AI contributor configurations (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `.github/copilot-instructions.md`, `.windsurfrules`, `.ai/system-prompt.md`, `.vscode/`, `.zed/`, `.editorconfig`), and `THIRD-PARTY-NOTICES.md`.
-
-### Fixed
-
-- Centered icon-only `StudioButton` glyphs reliably across toolbars/calendar cells and tightened compact header action bar spacing in `MeetingPlaylistView` so all actions fit comfortably down to `360 px` window widths.
 
 ## [0.1.0] - 2026-11-18
 

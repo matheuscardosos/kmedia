@@ -16,5 +16,9 @@ Apresentadores baseados em navegadores embarcados consomem centenas de megabytes
 - **Mídias das Reuniões:** Organiza imagens, vídeos, cânticos e publicações semanais automaticamente por data e idioma.
 - **Pacotes e Documentos:** Importa arquivos `.jwpub`, `.jwlplaylist`, pacotes de discurso público `S-34` e `S-34mp`, mídia local e PDFs multipágina.
 - **Controles Precisos:** Marcadores não destrutivos de início e fim, zoom e deslocamento sincronizados em imagens/PDFs, ordenação por arrastar e soltar e Standby instantâneo.
-- **Integrações Híbridas:** Controle nativo via OBS WebSocket v5, abertura de reuniões Zoom (`zoommtg://`), seleção isolada de dispositivo de áudio e detecção leve de processos.
+- **Integrações Híbridas:** Controle nativo via OBS WebSocket v5, abertura de reuniões Zoom (`zoommtg://`) e detecção leve de processos.
 - **Interface Multilíngue:** Traduções da interface via Qt Linguist independentes do idioma das mídias baixadas.
+
+## Inspiração
+
+O fluxo dia a dia das reuniões no KMedia é inspirado no [Meeting Media Manager](https://github.com/sircharlo/meeting-media-manager), o aplicativo de código aberto que muitas congregações já usam. O KMedia é um aplicativo nativo independente, escrito do zero, e não tem o objetivo de concorrer com ele.

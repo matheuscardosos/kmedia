@@ -36,12 +36,12 @@ features:
     details: Extrai pacotes .jwpub e .jwlplaylist diretamente em C++ e renderiza documentos PDF multipágina via Qt6::Pdf.
   - title: Apresentação em Duas Telas
     details: Detecta monitores externos automaticamente, projeta sem bordas na segunda tela e oferece modo Standby ou Blackout instantâneo.
-  - title: Música Ambiente Programada
-    details: Reproduz música ambiente antes e depois das reuniões com redução gradual de volume em 5 segundos no horário agendado.
+  - title: Página da Reunião Dia a Dia
+    details: Abre cada dia de reunião seção por seção, com miniaturas reais e um calendário cujos pontos coloridos mostram quais dias estão prontos.
   - title: Perfis para Múltiplas Congregações
     details: Mantém bancos SQLite WAL, pastas de mídia, horários e ajustes de OBS/Zoom isolados por congregação com troca em menos de 100 ms.
   - title: Integração com OBS Studio e Zoom
-    details: Cliente nativo OBS WebSocket v5 para troca de cenas, detecção leve de processos, áudio dedicado e abertura direta de reuniões Zoom.
-  - title: Sincronização com Pastas na Nuvem
-    details: Monitora pastas locais do Dropbox, OneDrive, Google Drive e Nextcloud via notificações do sistema operacional sem varredura contínua.
+    details: Cliente nativo OBS WebSocket v5 para troca de cenas, detecção leve de processos e abertura direta de reuniões Zoom.
+  - title: Pasta Compartilhada e Exportação de Mídias
+    details: Traz para cada dia as mídias das pastas com data do Dropbox, OneDrive, Google Drive ou Nextcloud e exporta cada dia na ordem da reunião.
 ---

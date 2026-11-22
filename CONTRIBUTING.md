@@ -57,6 +57,8 @@ The repository ships synchronized setups across common IDEs and coding agents so
 
 Versioning and changelogs are automated via [`release-please-config.json`](release-please-config.json) (updating `CMakeLists.txt`, `vcpkg.json`, `docs/package.json`, and `CHANGELOG.md`). Publishing a release or pushing a `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/release.yml) to build and attach signed SHA-256 packages for Windows (`kmedia-windows-x64-setup.exe` Inno Setup installer and `kmedia-windows-x64.zip` portable bundle), macOS (`kmedia-macos-arm64.dmg`), and Linux (`kmedia-linux-x64.tar.gz`).
 
+Release Please writes each new version above `## [Unreleased]`. Before merging a release pull request, move the entries under `## [Unreleased]` into the new version section of `CHANGELOG.md` in that same pull request, so they stay with the release that shipped them and the next changes start from an empty `## [Unreleased]`.
+
 ## Building from Source
 
 ### Prerequisites

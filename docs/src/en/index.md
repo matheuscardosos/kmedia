@@ -36,12 +36,12 @@ features:
     details: Inspects .jwpub and .jwlplaylist archives natively in C++ and renders multi-page PDF documents through Qt6::Pdf.
   - title: Dual-Monitor Presentation
     details: Automatically tracks connected screens, assigns borderless output to secondary displays, and supports instant standby or blackout.
-  - title: Scheduled Background Music
-    details: Plays ambient pre-meeting and post-meeting music on an isolated audio pipeline with automatic 5-second fade-out before meeting start.
+  - title: Day by Day Meeting Page
+    details: Opens each meeting day section by section, with real thumbnails and a calendar whose colored dots show which days are ready.
   - title: Multi-Congregation Profiles
     details: Isolates SQLite WAL databases, storage paths, meeting schedules, and integration settings per congregation in under 100 ms.
   - title: OBS Studio & Zoom Integration
-    details: Native OBS WebSocket v5 scene switching, lightweight process detection, dedicated audio device routing, and one-click Zoom launch.
-  - title: Cloud Folder Synchronization
-    details: Watches Dropbox, OneDrive, Google Drive, and Nextcloud directories via OS filesystem notifications without disk polling.
+    details: Native OBS WebSocket v5 scene switching, lightweight process detection, and one-click Zoom launch.
+  - title: Shared Folder and Media Export
+    details: Brings media from dated Dropbox, OneDrive, Google Drive, or Nextcloud folders into each day, and exports each day in meeting order.
 ---

@@ -16,5 +16,9 @@ Browser-wrapped desktop presenters consume hundreds of megabytes of RAM, spawn m
 - **Weekly Meeting Media:** Automatically organizes meeting images, videos, songs, and publications by date and language.
 - **Archive & Document Support:** Imports `.jwpub`, `.jwlplaylist`, `S-34` / `S-34mp` public talk packages, local video/audio/images, and multi-page PDFs.
 - **Precision Operator Controls:** Non-destructive start/end trim markers, synchronized zoom/pan viewports, drag-and-drop playlist ordering, and instant standby blackout.
-- **Hybrid Booth Integrations:** Native OBS Studio WebSocket v5 control, Zoom launch (`zoommtg://`), dedicated audio output selection, and lightweight OS process detection.
+- **Hybrid Booth Integrations:** Native OBS Studio WebSocket v5 control, Zoom launch (`zoommtg://`), and lightweight OS process detection.
 - **Multilingual Interface:** Interface translations managed via Qt Linguist independently from the downloaded meeting media language.
+
+## Inspiration
+
+The day by day meeting workflow of KMedia is inspired by [Meeting Media Manager](https://github.com/sircharlo/meeting-media-manager), the open source app that many congregations already use. KMedia is an independent native app written from scratch, and it is not meant to compete with it.

@@ -54,17 +54,13 @@ jobs:
         run: |
           mkdir -p docs/src/assets
           xvfb-run -a --server-args="-screen 0 1920x1080x24" \
-            ./build/linux-release/kmedia --demo --tab meeting --theme dark --window-size 1280x800 --screenshot docs/src/assets/kmedia-preview.png
+            ./build/linux-release/kmedia --demo --tab meeting --theme dark --window-size 1280x800 --screenshot-delay 1800 --screenshot docs/src/assets/kmedia-preview.png
           xvfb-run -a --server-args="-screen 0 1920x1080x24" \
-            ./build/linux-release/kmedia --demo --tab meeting --theme light --window-size 1280x800 --screenshot docs/src/assets/kmedia-light-preview.png
+            ./build/linux-release/kmedia --demo --tab meeting --theme light --window-size 1280x800 --screenshot-delay 1800 --screenshot docs/src/assets/kmedia-light-preview.png
           xvfb-run -a --server-args="-screen 0 1920x1080x24" \
-            ./build/linux-release/kmedia --demo --tab meeting --theme dark --window-size 420x740 --screenshot docs/src/assets/kmedia-compact-preview.png
+            ./build/linux-release/kmedia --demo --tab meeting --theme dark --window-size 420x740 --screenshot-delay 1800 --screenshot docs/src/assets/kmedia-compact-preview.png
           xvfb-run -a --server-args="-screen 0 1920x1080x24" \
-            ./build/linux-release/kmedia --demo --tab calendar --theme dark --window-size 1280x800 --screenshot docs/src/assets/kmedia-calendar-preview.png
-          xvfb-run -a --server-args="-screen 0 1920x1080x24" \
-            ./build/linux-release/kmedia --demo --tab media --theme dark --window-size 1280x800 --screenshot docs/src/assets/kmedia-media-preview.png
-          xvfb-run -a --server-args="-screen 0 1920x1080x24" \
-            ./build/linux-release/kmedia --demo --tab settings --theme dark --window-size 1280x800 --screenshot docs/src/assets/kmedia-settings-preview.png
+            ./build/linux-release/kmedia --demo --tab settings --theme dark --window-size 1280x800 --screenshot-delay 1800 --screenshot docs/src/assets/kmedia-settings-preview.png
 
       - name: Open pull request with refreshed screenshots
         uses: peter-evans/create-pull-request@v7
@@ -73,8 +69,6 @@ jobs:
             docs/src/assets/kmedia-preview.png
             docs/src/assets/kmedia-light-preview.png
             docs/src/assets/kmedia-compact-preview.png
-            docs/src/assets/kmedia-calendar-preview.png
-            docs/src/assets/kmedia-media-preview.png
             docs/src/assets/kmedia-settings-preview.png
           branch: chore/refresh-readme-screenshots
           commit-message: "chore: refresh README screenshots"
