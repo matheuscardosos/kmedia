@@ -9,6 +9,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QRegularExpression>
 #include <QSet>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -1000,6 +1001,34 @@ QStringList DatabaseManager::listDatesWithAddedMedia() const
         dates << query.value(0).toString();
     }
     return dates;
+}
+
+QList<int> DatabaseManager::listSongNumbersForDate(const QString& meetingDate) const
+{
+    QList<int> songs;
+    if (!m_isOpen) {
+        return songs;
+    }
+    QSqlQuery query(databaseHandle());
+    query.prepare(QStringLiteral(
+        "SELECT pi.tag_value FROM playlists p JOIN playlist_items pi ON pi.playlist_id = p.id "
+        "WHERE p.meeting_date = ? AND pi.tag_type = 'song' ORDER BY pi.sort_order, pi.id"));
+    query.addBindValue(meetingDate);
+    if (!query.exec()) {
+        m_lastError = query.lastError().text();
+        return songs;
+    }
+    // Tags read "151" or "Song 151": the number is what counts.
+    static const QRegularExpression trailingNumber(QStringLiteral("(\\d+)\\s*$"));
+    while (query.next()) {
+        const QRegularExpressionMatch match =
+            trailingNumber.match(query.value(0).toString().trimmed());
+        const int number = match.hasMatch() ? match.captured(1).toInt() : 0;
+        if (number > 0 && !songs.contains(number)) {
+            songs.append(number);
+        }
+    }
+    return songs;
 }
 
 QStringList DatabaseManager::listDatesWithSource(const QString& source) const

@@ -7,6 +7,7 @@
 #include "integrations/ProcessMonitor.h"
 #include "integrations/ZoomBridge.h"
 #include "media/BackgroundMusicEngine.h"
+#include "media/BackgroundMusicService.h"
 #include "media/MediaAutoExport.h"
 #include "media/MpvRendererItem.h"
 #include "media/PdfViewerController.h"
@@ -36,6 +37,14 @@ struct PlaybackControllerForeign
     Q_GADGET
     QML_FOREIGN(kmedia::PlaybackController)
     QML_NAMED_ELEMENT(PlaybackController)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct BackgroundMusicServiceForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::BackgroundMusicService)
+    QML_NAMED_ELEMENT(BackgroundMusicService)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

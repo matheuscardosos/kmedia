@@ -13,6 +13,7 @@ qt_add_executable(kmedia_tests
     test_thumbnail_cache.cpp
     test_playback_and_pdf.cpp
     test_background_music.cpp
+    test_songbook_music.cpp
     test_display_manager.cpp
     test_jwpub_and_s34.cpp
     test_jwlplaylist_parser.cpp

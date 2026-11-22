@@ -137,6 +137,8 @@ public:
     [[nodiscard]] std::vector<PlaylistRecord> listPlaylists() const;
     [[nodiscard]] QStringList listDatesWithAddedMedia() const;
     [[nodiscard]] QStringList listDatesWithSource(const QString& source) const;
+    // The song numbers of a day in the order its items are stored, each once.
+    [[nodiscard]] QList<int> listSongNumbersForDate(const QString& meetingDate) const;
     [[nodiscard]] bool setPlaylistSyncStatus(qint64 playlistId, const QString& syncStatus);
     [[nodiscard]] bool deletePlaylist(qint64 id);
 

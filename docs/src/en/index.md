@@ -38,6 +38,8 @@ features:
     details: Automatically tracks connected screens, assigns borderless output to secondary displays, and supports instant standby or blackout.
   - title: Day by Day Meeting Page
     details: Opens each meeting day section by section, with real thumbnails and a calendar whose colored dots show which days are ready.
+  - title: Songbook Background Music
+    details: Plays the songbook in the media language before meetings, timed to end when the meeting starts, with the day's songs last.
   - title: Multi-Congregation Profiles
     details: Isolates SQLite WAL databases, storage paths, meeting schedules, and integration settings per congregation in under 100 ms.
   - title: OBS Studio & Zoom Integration

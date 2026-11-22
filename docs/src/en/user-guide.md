@@ -22,7 +22,7 @@ Download KMedia for Windows, macOS, or Linux from the [download page](./download
 - **Meeting page:** the media of the selected day, section by section.
 - **Preview panel:** what the audience sees, file details, trims, and zoom. The monitor button in the page header shows or hides it.
 - **Pill bar:** quick toggles for the display, standby, subtitles, background music, the meeting timer, OBS Studio, Zoom, downloads, and the command palette.
-- **Transport bar:** play, pause, previous, next, and mute for the active item.
+- **Transport bar:** play, pause, previous, next, and mute for the active item, and the background music switch.
 
 The window adapts to its width: wide windows show all three columns, medium widths fold the navigation into icons and the preview into a drawer, and narrow windows (down to 360 px, for side by side use with Zoom) move navigation to a bottom bar.
 
@@ -89,6 +89,7 @@ Drag an item by its handle onto another item to move it, also across sections. *
 | `Esc` | Stop |
 | `Alt+Left` / `Alt+Right` | Previous or next item |
 | `Delete` | Delete the active item (synced and shared folder media is hidden instead) |
+| `Ctrl+M` | Start or stop background music |
 | `Ctrl+P` | Show or hide the presentation display |
 | `Ctrl+D` | Switch between dark and light theme |
 | `Ctrl+O` | Add files |
@@ -102,6 +103,15 @@ Shortcuts without `Ctrl` or `Alt` pause while you type in a text field.
 **Shared folder** (*Settings > Integrations*): pick a folder synced by Dropbox, OneDrive, Google Drive, or Nextcloud. Media dropped into its date folders (`YYYY-MM-DD`) shows up in that day: in the section it was placed in on another computer, in the section named by an exported file name, or in the day's main section (*Public Talk* on weekends, *Living as Christians* midweek, *Circuit Overseer* in a visit week). Moving those items in KMedia saves their place for the other computers. Folders for the coming meeting days are created for you, and the folders of past weeks can be deleted.
 
 **Media export** (*Settings > Meetings*): every day with media is copied into a date folder of the folder you pick, in meeting order (`01 Public Talk - 01 Picture.jpg`), after each sync and each change. Images and audio can be turned into MP4 videos when FFmpeg is installed. The shared folder and the export folder must be different.
+
+## Background music
+
+Background music plays the songbook in the media language on its own audio player, separate from the meeting media. Start and stop it from the music button of the pill bar, the switch of the transport bar, or `Ctrl+M`.
+
+- Before a meeting of the same day, KMedia picks songs that fill the time left and starts the first one partway, so the music ends right when the meeting starts. The songs of that meeting play last.
+- At other times the whole songbook plays in a shuffled loop that favors newer songs.
+- With **Start before meetings** on (*Settings > Audio*, on by default), the music starts by itself in the hour and a quarter before a meeting when KMedia is open, unless you stopped it by hand for that meeting or meeting media is playing.
+- A song streams from JW.org the first time it plays and is saved for the next time, so the songbook works offline after a while.
 
 ## Zoom and OBS Studio
 

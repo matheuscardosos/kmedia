@@ -27,6 +27,7 @@ inline constexpr auto kFilterExcludeWtParagraphVideos = "catalog/exclude_wt_para
 inline constexpr auto kFilterExcludeTh = "catalog/exclude_th";
 inline constexpr auto kFilterExcludeCbsPubs = "catalog/exclude_cbs_pubs";
 inline constexpr auto kBackgroundMusicFadeMs = "audio/background_fade_ms";
+inline constexpr auto kMusicAutoStart = "audio/music_auto_start";
 inline constexpr auto kAudioOutputDevice = "audio/output_device";
 inline constexpr auto kHardwareDecoder = "video/hwdec";
 inline constexpr auto kMaxConcurrentDownloads = "network/max_concurrent_downloads";

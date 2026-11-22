@@ -95,13 +95,7 @@ ApplicationWindow {
     Shortcut {
         sequence: "Ctrl+M"
         enabled: !commandPalette.opened
-        onActivated: {
-            if (ApplicationController.backgroundMusic.playing) {
-                ApplicationController.backgroundMusic.fadeOutAndStop(4000)
-            } else {
-                ApplicationController.backgroundMusic.play()
-            }
-        }
+        onActivated: ApplicationController.music.toggle()
     }
     Shortcut {
         sequence: "Escape"

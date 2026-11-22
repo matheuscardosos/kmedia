@@ -15,6 +15,7 @@
 #include "integrations/ProcessMonitor.h"
 #include "integrations/ZoomBridge.h"
 #include "media/BackgroundMusicEngine.h"
+#include "media/BackgroundMusicService.h"
 #include "media/MediaAutoExport.h"
 #include "media/MpvRendererItem.h"
 #include "media/PdfViewerController.h"
@@ -23,6 +24,7 @@
 #include "media/VideoFrameExtractor.h"
 #include "models/MeetingDayModel.h"
 #include "models/PlaylistModel.h"
+#include "network/BackgroundMusicLibrary.h"
 #include "network/CatalogClient.h"
 #include "network/DocumentMediaImporter.h"
 #include "network/DownloadService.h"
@@ -98,6 +100,27 @@ ApplicationController::ApplicationController(QObject* parent)
         m_publicationStore.get(), m_documentImporter.get());
     m_videoCatalog = std::make_unique<kmedia::JwVideoCatalog>(
         m_catalogClient.get(), m_publicationStore.get(), m_documentImporter.get());
+    m_musicLibrary = std::make_unique<kmedia::BackgroundMusicLibrary>(m_catalogClient.get(),
+                                                                      m_downloadService.get());
+    m_musicService = std::make_unique<kmedia::BackgroundMusicService>(m_backgroundMusic.get(),
+                                                                      m_musicLibrary.get());
+    m_musicService->setMeetingProvider(
+        [this](const QDate& date) -> std::optional<kmedia::BackgroundMusicService::Meeting> {
+            const QDateTime start = m_calendarModel->meetingStartForDate(date);
+            if (!start.isValid()) {
+                return std::nullopt;
+            }
+            kmedia::BackgroundMusicService::Meeting meeting;
+            meeting.start = start;
+            if (const auto* db = m_profileManager->activeDatabase(); db != nullptr) {
+                meeting.songTracks = db->listSongNumbersForDate(date.toString(Qt::ISODate));
+            }
+            return meeting;
+        });
+    connect(m_musicService.get(), &kmedia::BackgroundMusicService::startFailed, this, [this]() {
+        showToast(tr("The songbook could not be loaded. Check the internet connection."),
+                  QStringLiteral("warning"));
+    });
     m_watchedFolder =
         std::make_unique<kmedia::WatchedFolderMedia>(m_cloudWatcher.get(), m_playlistModel.get());
     m_autoExport = std::make_unique<kmedia::MediaAutoExport>();
@@ -258,6 +281,11 @@ kmedia::PlaybackController* ApplicationController::playback() const
 kmedia::BackgroundMusicEngine* ApplicationController::backgroundMusic() const
 {
     return m_backgroundMusic.get();
+}
+
+kmedia::BackgroundMusicService* ApplicationController::music() const
+{
+    return m_musicService.get();
 }
 
 kmedia::DisplayManager* ApplicationController::displayManager() const
@@ -467,6 +495,17 @@ void ApplicationController::saveAudioOutputDevice(const QString& deviceName)
     syncAudioRouting();
 }
 
+void ApplicationController::saveMusicAutoStart(bool enabled)
+{
+    m_musicService->setAutoStart(enabled);
+    if (!m_demoMode) {
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kMusicAutoStart),
+                                     enabled);
+        }
+    }
+}
+
 void ApplicationController::saveStandbyImage(const QUrl& imageUrl)
 {
     const QString path = imageUrl.isLocalFile() ? imageUrl.toLocalFile() : QString{};
@@ -602,6 +641,7 @@ void ApplicationController::applyProfileSettings()
         m_playlistModel->setPackageExtractDir(
             QDir(profile->storagePath).filePath(QStringLiteral("packages")));
         m_publicationStore->setCacheRoot(profile->storagePath);
+        m_musicLibrary->setCacheRoot(profile->storagePath);
         // Each congregation keeps its own S-34mp, unpacked once.
         m_publicTalks->setFolder(
             QDir(profile->storagePath).filePath(QStringLiteral("Publications/S-34")));
@@ -683,6 +723,10 @@ void ApplicationController::applyProfileSettings()
         settings->backgroundMusicFadeMs());
 
     m_backgroundMusic->setFadeDurationMs(settings->backgroundMusicFadeMs());
+    // Like Meeting Media Manager, music starts by itself before meetings unless turned off.
+    m_musicService->setAutoStart(
+        !m_demoMode &&
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kMusicAutoStart), true));
     m_downloadService->setMaxConcurrent(settings->maxConcurrentDownloads());
 
     m_obsClient->setHost(settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsHost),
@@ -943,6 +987,7 @@ void ApplicationController::wireIntegrations()
         const bool activePresentation = m_playbackController->isActivePresentation();
         const bool standby = m_playbackController->isStandbyActive();
         m_obsClient->applyPlaybackState(hasMedia, stillImage, standby);
+        m_musicService->setMediaPlaying(hasMedia && !stillImage && activePresentation);
         if (activePresentation && !standby) {
             m_zoomBridge->notifyPresentationPlaybackStarted();
         }
@@ -1131,6 +1176,7 @@ void ApplicationController::applySyncSettings(bool resetWhenChanged)
     m_documentImporter->setLanguages(languages);
     m_publicationPicker->setLanguages(languages);
     m_videoCatalog->setLanguage(next.languageCode);
+    m_musicLibrary->setLanguage(next.languageCode, next.signLanguage);
     if (resetWhenChanged && mediaChanged && !m_demoMode) {
         m_syncEngine->resetAll();
     }

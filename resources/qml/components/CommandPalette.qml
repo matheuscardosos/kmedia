@@ -56,11 +56,7 @@ Popup {
         } else if (actionId === "presentation") {
             ApplicationController.displayManager.presentationWindowVisible = !ApplicationController.displayManager.presentationWindowVisible
         } else if (actionId === "fade_bgm") {
-            if (ApplicationController.backgroundMusic.playing) {
-                ApplicationController.backgroundMusic.fadeOutAndStop(4000)
-            } else {
-                ApplicationController.backgroundMusic.play()
-            }
+            ApplicationController.music.toggle()
         } else if (actionId === "theme") {
             ApplicationController.toggleDarkTheme()
         } else if (actionId.startsWith("tab_")) {

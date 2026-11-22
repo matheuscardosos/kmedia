@@ -46,6 +46,10 @@ Connect it before or after opening KMedia. KMedia presents on it full screen and
 
 The [User Guide](./user-guide.md#keyboard-shortcuts) lists them all. The main ones are `Space` to play or pause, `B` for standby, and `Alt+Left` or `Alt+Right` for the previous or next item.
 
+### How does background music work?
+
+It plays the songbook in the media language: before a meeting of the same day it is timed to end when the meeting starts, with that meeting's songs last, and at other times it loops the whole songbook. It can start by itself before meetings; see the [User Guide](./user-guide.md#background-music).
+
 ## Integrations
 
 ### How do I use KMedia with Zoom?

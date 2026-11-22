@@ -49,6 +49,7 @@ KMedia features dual **Studio Carbon (Dark)** and **Studio Daylight (Light)** bo
 - Set non-destructive start and end trim markers, zoom/pan regions, and drag-and-drop ordering
 - Add songs, JW.org videos, publication media, and public talk media from the `S-34mp` file, and import `.jwpub` publications, `.jwlplaylist` files, and local files
 - Bring media from dated Dropbox, OneDrive, Google Drive, or Nextcloud folders into each day, and export each day in meeting order
+- Play the songbook as background music before meetings, timed to end when the meeting starts
 - Switch OBS Studio scenes (WebSocket v5) and join the congregation's Zoom meeting in one click
 - Configure custom titles, schedules, and special events independently per congregation profile
 

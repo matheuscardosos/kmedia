@@ -194,9 +194,9 @@ StudioCard {
                     checked: ApplicationController.backgroundMusic.playing
                     onToggled: {
                         if (checked) {
-                            ApplicationController.backgroundMusic.play()
+                            ApplicationController.music.start()
                         } else {
-                            ApplicationController.backgroundMusic.fadeOutAndStop(4000)
+                            ApplicationController.music.stop()
                         }
                     }
                     ToolTip.visible: hovered
@@ -212,7 +212,7 @@ StudioCard {
                     implicitHeight: 26
                     leftPadding: 0
                     rightPadding: 0
-                    onClicked: ApplicationController.backgroundMusic.fadeOutAndStop(4000)
+                    onClicked: ApplicationController.music.stop()
                     ToolTip.visible: hovered
                     ToolTip.text: qsTr("Fade out background music")
                 }

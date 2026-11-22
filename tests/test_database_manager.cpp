@@ -97,6 +97,22 @@ TEST_CASE("DatabaseManager supports date-keyed playlists and v2 entry metadata",
     REQUIRE(reloaded[0].tagValue == QStringLiteral("Para. 5"));
     REQUIRE(db.deletePlaylistEntry(divId, wednesday.id));
     REQUIRE(db.listPlaylistEntries(wednesday.id).empty());
+
+    // The day's songs come back in item order, each once, whatever the tag wording.
+    const auto addSong = [&db, &wednesday](const QString& tag, int sortOrder) {
+        kmedia::PlaylistEntryRecord entry;
+        entry.playlistId = wednesday.id;
+        entry.sectionId = QStringLiteral("lac");
+        entry.tagType = QStringLiteral("song");
+        entry.tagValue = tag;
+        entry.sortOrder = sortOrder;
+        REQUIRE(db.addPlaylistEntry(entry) > 0);
+    };
+    addSong(QStringLiteral("151"), 30);
+    addSong(QStringLiteral("Song 76"), 10);
+    addSong(QStringLiteral("151"), 40);
+    REQUIRE(db.listSongNumbersForDate(QStringLiteral("2026-11-25")) == QList<int>{76, 151});
+    REQUIRE(db.listSongNumbersForDate(QStringLiteral("2026-11-26")).isEmpty());
 }
 
 TEST_CASE("DatabaseManager supports media, playlist, cascade, and transaction rollback",

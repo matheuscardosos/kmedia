@@ -46,6 +46,10 @@ Conecte antes ou depois de abrir o KMedia. Ele apresenta nela em tela cheia e de
 
 O [Guia do Usuário](./user-guide.md#atalhos-de-teclado) lista todos. Os principais são `Espaço` para reproduzir ou pausar, `B` para a espera e `Alt+Esquerda` ou `Alt+Direita` para o item anterior ou o próximo.
 
+### Como funciona a música ambiente?
+
+Ela toca o cancioneiro no idioma das mídias: antes de uma reunião do mesmo dia, o fim é marcado para o começo da reunião, com os cânticos dessa reunião por último, e nos outros momentos o cancioneiro inteiro toca em repetição. Ela pode começar sozinha antes das reuniões; veja o [Guia do Usuário](./user-guide.md#musica-ambiente).
+
 ## Integrações
 
 ### Como uso o KMedia com o Zoom?
