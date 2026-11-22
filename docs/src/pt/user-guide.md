@@ -22,7 +22,7 @@ Baixe o KMedia para Windows, macOS ou Linux na [página de download](./download.
 - **Página Reunião:** as mídias do dia escolhido, seção por seção.
 - **Painel de prévia:** o que o público vê, detalhes do arquivo, cortes e zoom. O botão de monitor no cabeçalho da página mostra ou esconde o painel.
 - **Barra em pílula:** atalhos para a tela de apresentação, espera, legendas, música ambiente, cronômetro da reunião, OBS Studio, Zoom, downloads e paleta de comandos.
-- **Barra de reprodução:** reproduzir, pausar, anterior, próximo e silenciar o item ativo.
+- **Barra de reprodução:** reproduzir, pausar, anterior, próximo e silenciar o item ativo, e a chave da música ambiente.
 
 A janela se adapta à largura: janelas largas mostram as três colunas, larguras médias reduzem a navegação a ícones e a prévia a uma gaveta, e janelas estreitas (até 360 px, para usar lado a lado com o Zoom) levam a navegação para uma barra embaixo.
 
@@ -89,6 +89,7 @@ Arraste um item pela alça até outro item para movê-lo, inclusive entre seçõ
 | `Esc` | Parar |
 | `Alt+Esquerda` / `Alt+Direita` | Item anterior ou próximo |
 | `Delete` | Excluir o item ativo (mídia sincronizada ou da pasta compartilhada é ocultada) |
+| `Ctrl+M` | Tocar ou parar a música ambiente |
 | `Ctrl+P` | Mostrar ou esconder a tela de apresentação |
 | `Ctrl+D` | Alternar tema escuro e claro |
 | `Ctrl+O` | Adicionar arquivos |
@@ -102,6 +103,15 @@ Atalhos sem `Ctrl` ou `Alt` ficam pausados enquanto você digita num campo de te
 **Pasta compartilhada** (*Configurações > Integrações*): escolha uma pasta sincronizada pelo Dropbox, OneDrive, Google Drive ou Nextcloud. As mídias colocadas nas pastas com data (`AAAA-MM-DD`) aparecem naquele dia: na seção em que foram colocadas em outro computador, na seção indicada por um nome de arquivo exportado ou na seção principal do dia (*Discurso Público* no fim de semana, *Nossa Vida Cristã* no meio de semana, *Superintendente de Circuito* na semana da visita). Mover esses itens no KMedia guarda a posição para os outros computadores. As pastas dos próximos dias de reunião são criadas para você, e as pastas de semanas passadas podem ser excluídas.
 
 **Exportação de mídias** (*Configurações > Reuniões*): cada dia com mídias é copiado para uma pasta com a data dentro da pasta escolhida, na ordem da reunião (`01 Discurso Público - 01 Imagem.jpg`), depois de cada sincronização e de cada mudança. Imagens e áudios podem virar vídeos MP4 quando o FFmpeg está instalado. A pasta compartilhada e a pasta de exportação precisam ser diferentes.
+
+## Música ambiente
+
+A música ambiente toca o cancioneiro no idioma das mídias num reprodutor de áudio próprio, separado das mídias da reunião. Toque e pare pelo botão de música da barra em pílula, pela chave da barra de reprodução ou com `Ctrl+M`.
+
+- Antes de uma reunião do mesmo dia, o KMedia escolhe cânticos que preenchem o tempo que falta e começa o primeiro do meio, para a música terminar bem na hora em que a reunião começa. Os cânticos dessa reunião tocam por último.
+- Nos outros momentos, o cancioneiro inteiro toca em ordem aleatória e repetida, com preferência pelos cânticos mais novos.
+- Com **Começar antes das reuniões** ativado (*Configurações > Áudio*, ativado por padrão), a música começa sozinha na hora e quinze minutos antes de uma reunião quando o KMedia está aberto, a não ser que você a tenha parado na mão para essa reunião ou que uma mídia da reunião esteja tocando.
+- Um cântico toca direto do JW.org na primeira vez e fica salvo para as próximas, então o cancioneiro passa a funcionar sem internet com o tempo.
 
 ## Zoom e OBS Studio
 

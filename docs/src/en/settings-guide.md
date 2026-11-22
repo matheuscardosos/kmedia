@@ -51,8 +51,9 @@ Turn it on and pick a folder. Every day with media is copied into a date folder 
 
 ## Audio
 
-- **Background Music & Fade Timing:** the volume of the background music, from 0 to 100%.
+- **Background Music & Fade Timing:** the volume of the background music, from 0 to 100%. The music plays the songbook in the media language; the [User Guide](./user-guide.md#background-music) explains how.
 - **Fade-Out Duration:** 3, 5, or 8 seconds (5 by default). Background music fades out over this time when you stop it, and on its own before each meeting starts.
+- **Start before meetings:** starts the music by itself in the hour and a quarter before a meeting when KMedia is open, timed to end when the meeting starts. It is on by default.
 - **Audio output:** where media and background music play, for example the output that feeds the sound system of the hall. **System default** follows the computer's setting.
 
 ## Integrations

@@ -4,6 +4,7 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QTime>
 #include <QTimer>
 #include <QUrl>
@@ -79,6 +80,12 @@ public:
                                                           const MeetingScheduleSpec& weekend,
                                                           int fadeDurationMs);
 
+    // A queue with titles: the first song starts `firstTrackStartSeconds` in, and without
+    // `loop` the music stops after the last song instead of starting over.
+    void setQueue(const QList<QUrl>& tracks, const QStringList& titles,
+                  double firstTrackStartSeconds, bool loop);
+    [[nodiscard]] bool isLooping() const;
+
 public slots:
     void setPlaylist(const QList<QUrl>& tracks);
     void addTrack(const QUrl& track);
@@ -98,6 +105,8 @@ signals:
     void scheduleChanged();
     void scheduledFadeTriggered();
     void fadeOutCompleted();
+    void trackStarted(int index);
+    void queueFinished();
     void engineError(const QString& message);
 
 private slots:
@@ -114,6 +123,9 @@ private:
     std::shared_ptr<mpv_handle> m_mpv;
     std::shared_ptr<WakeupBridge> m_wakeupBridge;
     QList<QUrl> m_playlist;
+    QStringList m_titles;
+    double m_firstTrackStartSeconds{0.0};
+    bool m_loop{true};
     int m_currentIndex{-1};
     bool m_playing{false};
     bool m_fading{false};

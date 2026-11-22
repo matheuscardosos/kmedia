@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDate>
+#include <QDateTime>
 #include <QHash>
 #include <QObject>
 #include <QPair>
@@ -94,6 +95,9 @@ public:
     [[nodiscard]] Q_INVOKABLE QString eventTypeForDate(const QString& isoDate) const;
     [[nodiscard]] Q_INVOKABLE QString eventLabelForDate(const QString& isoDate) const;
     [[nodiscard]] Q_INVOKABLE QString meetingKindForDate(const QString& isoDate) const;
+    // When the meeting of `date` starts, honoring temporary schedules and special weeks;
+    // invalid when that day has no meeting.
+    [[nodiscard]] QDateTime meetingStartForDate(const QDate& date) const;
     [[nodiscard]] Q_INVOKABLE QString meetingDateInWeek(const QString& isoDate,
                                                         const QString& kind) const;
     [[nodiscard]] QHash<QString, QPair<QString, QString>> specialEventsMap() const;

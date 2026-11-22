@@ -51,8 +51,9 @@ Ative e escolha uma pasta. Cada dia com mídias é copiado para uma pasta com a 
 
 ## Áudio
 
-- **Música Ambiente e Tempo de Fade:** o volume da música ambiente, de 0 a 100%.
+- **Música Ambiente e Tempo de Fade:** o volume da música ambiente, de 0 a 100%. A música toca o cancioneiro no idioma das mídias; o [Guia do Usuário](./user-guide.md#musica-ambiente) explica como.
 - **Duração do Fade-Out:** 3, 5 ou 8 segundos (5 por padrão). A música ambiente vai diminuindo durante esse tempo quando você a para, e sozinha antes de cada reunião começar.
+- **Começar antes das reuniões:** começa a música sozinha na hora e quinze minutos antes de uma reunião quando o KMedia está aberto, com o fim marcado para o começo da reunião. Vem ativado por padrão.
 - **Saída de áudio:** onde as mídias e a música ambiente tocam, por exemplo a saída ligada ao som do salão. **Padrão do sistema** segue a configuração do computador.
 
 ## Integrações

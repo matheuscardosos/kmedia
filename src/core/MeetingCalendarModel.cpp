@@ -241,6 +241,25 @@ MeetingCalendarModel::effectivePlanForWeek(const QDate& weekMonday) const
     return plan;
 }
 
+QDateTime MeetingCalendarModel::meetingStartForDate(const QDate& date) const
+{
+    if (!date.isValid()) {
+        return {};
+    }
+    const EffectiveWeekPlan plan =
+        effectivePlanForWeek(MeetingCatalogService::weekMondayForDate(date));
+    QString clock;
+    if (plan.isMemorial && date == plan.memorialDate) {
+        clock = plan.memorialTime;
+    } else if (!plan.midweekSuppressed && date.dayOfWeek() == plan.midweekDay) {
+        clock = plan.midweekTime;
+    } else if (!plan.weekendSuppressed && date.dayOfWeek() == plan.weekendDay) {
+        clock = plan.weekendTime;
+    }
+    const QTime start = QTime::fromString(clock, QStringLiteral("HH:mm"));
+    return start.isValid() ? QDateTime(date, start) : QDateTime{};
+}
+
 QString MeetingCalendarModel::meetingKindForDate(const QString& isoDate) const
 {
     const QDate parsed = QDate::fromString(isoDate.trimmed(), Qt::ISODate);

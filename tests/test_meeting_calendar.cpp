@@ -160,6 +160,18 @@ TEST_CASE("MeetingCalendarModel handles CO visit and special week overrides",
                                  QStringLiteral("17:00"));
     REQUIRE(restored.meetingKindForDate(QStringLiteral("2026-12-10")) == QStringLiteral("midweek"));
     REQUIRE(restored.meetingKindForDate(QStringLiteral("2026-12-12")) == QStringLiteral("weekend"));
+
+    // Meeting start times follow the same overrides; days without a meeting have none.
+    REQUIRE(restored.meetingStartForDate(QDate(2026, 12, 10)) ==
+            QDateTime(QDate(2026, 12, 10), QTime(20, 0)));
+    REQUIRE(restored.meetingStartForDate(QDate(2026, 12, 12)) ==
+            QDateTime(QDate(2026, 12, 12), QTime(17, 0)));
+    REQUIRE(restored.meetingStartForDate(QDate(2026, 11, 17)) ==
+            QDateTime(QDate(2026, 11, 17), QTime(19, 30)));
+    REQUIRE(restored.meetingStartForDate(QDate(2026, 11, 22)) ==
+            QDateTime(QDate(2026, 11, 22), QTime(9, 30)));
+    REQUIRE_FALSE(restored.meetingStartForDate(QDate(2026, 11, 18)).isValid());
+    REQUIRE_FALSE(restored.meetingStartForDate(QDate(2026, 11, 16)).isValid());
     const QString exportedTemp = restored.exportTempSchedulesJson();
     kmedia::MeetingCalendarModel reloadedTemp;
     reloadedTemp.loadTempSchedulesJson(exportedTemp);

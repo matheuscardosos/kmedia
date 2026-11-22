@@ -8,6 +8,7 @@
 
 #include <mpv/client.h>
 
+#include <algorithm>
 #include <cmath>
 #include <mutex>
 #include <utility>
@@ -199,6 +200,9 @@ QString BackgroundMusicEngine::currentTrackTitle() const
     if (m_currentIndex < 0 || m_currentIndex >= m_playlist.size()) {
         return {};
     }
+    if (m_currentIndex < m_titles.size() && !m_titles.at(m_currentIndex).isEmpty()) {
+        return m_titles.at(m_currentIndex);
+    }
     const QUrl& url = m_playlist.at(m_currentIndex);
     return url.isLocalFile() ? QFileInfo(url.toLocalFile()).completeBaseName() : url.fileName();
 }
@@ -284,9 +288,23 @@ QDateTime BackgroundMusicEngine::computeNextFadeTrigger(const QDateTime& now,
 
 void BackgroundMusicEngine::setPlaylist(const QList<QUrl>& tracks)
 {
+    setQueue(tracks, {}, 0.0, true);
+}
+
+void BackgroundMusicEngine::setQueue(const QList<QUrl>& tracks, const QStringList& titles,
+                                     double firstTrackStartSeconds, bool loop)
+{
     m_playlist = tracks;
+    m_titles = titles;
+    m_firstTrackStartSeconds = std::max(0.0, firstTrackStartSeconds);
+    m_loop = loop;
     m_currentIndex = m_playlist.isEmpty() ? -1 : 0;
     emit queueChanged();
+}
+
+bool BackgroundMusicEngine::isLooping() const
+{
+    return m_loop;
 }
 
 void BackgroundMusicEngine::addTrack(const QUrl& track)
@@ -435,7 +453,12 @@ void BackgroundMusicEngine::processMpvEvents()
         if (event->event_id == MPV_EVENT_END_FILE) {
             const auto* endData = static_cast<const mpv_event_end_file*>(event->data);
             if (endData != nullptr && endData->reason == MPV_END_FILE_REASON_EOF && m_playing) {
-                next();
+                if (!m_loop && m_currentIndex >= m_playlist.size() - 1) {
+                    stop();
+                    emit queueFinished();
+                } else {
+                    next();
+                }
             }
         }
     }
@@ -482,12 +505,20 @@ void BackgroundMusicEngine::loadTrackAtIndex(int index)
     int unpause = 0;
     mpv_set_property(m_mpv.get(), "pause", MPV_FORMAT_FLAG, &unpause);
 
+    // Only the first song of a timed queue starts late, and only once.
+    const QByteArray start = m_firstTrackStartSeconds > 0.0
+                                 ? QByteArray::number(m_firstTrackStartSeconds, 'f', 1)
+                                 : QByteArrayLiteral("none");
+    m_firstTrackStartSeconds = 0.0;
+    mpv_set_property_string(m_mpv.get(), "start", start.constData());
+
     const char* cmd[] = {"loadfile", pathUtf8.constData(), nullptr};
     if (mpv_command_async(m_mpv.get(), 0, cmd) >= 0) {
         if (!m_playing) {
             m_playing = true;
             emit playbackStateChanged();
         }
+        emit trackStarted(index);
     }
 }
 

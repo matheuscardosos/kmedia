@@ -38,6 +38,8 @@ features:
     details: Detecta monitores externos automaticamente, projeta sem bordas na segunda tela e oferece modo Standby ou Blackout instantâneo.
   - title: Página da Reunião Dia a Dia
     details: Abre cada dia de reunião seção por seção, com miniaturas reais e um calendário cujos pontos coloridos mostram quais dias estão prontos.
+  - title: Música Ambiente com o Cancioneiro
+    details: Toca o cancioneiro no idioma das mídias antes das reuniões, com o fim marcado para o começo da reunião e os cânticos do dia por último.
   - title: Perfis para Múltiplas Congregações
     details: Mantém bancos SQLite WAL, pastas de mídia, horários e ajustes de OBS/Zoom isolados por congregação com troca em menos de 100 ms.
   - title: Integração com OBS Studio e Zoom

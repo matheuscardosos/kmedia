@@ -16,6 +16,7 @@ Q_MOC_INCLUDE("integrations/ObsWebSocketClient.h")
 Q_MOC_INCLUDE("integrations/ProcessMonitor.h")
 Q_MOC_INCLUDE("integrations/ZoomBridge.h")
 Q_MOC_INCLUDE("media/BackgroundMusicEngine.h")
+Q_MOC_INCLUDE("media/BackgroundMusicService.h")
 Q_MOC_INCLUDE("media/MediaAutoExport.h")
 Q_MOC_INCLUDE("media/MpvRendererItem.h")
 Q_MOC_INCLUDE("media/PdfViewerController.h")
@@ -39,6 +40,8 @@ class QTranslator;
 
 namespace kmedia {
 class BackgroundMusicEngine;
+class BackgroundMusicLibrary;
+class BackgroundMusicService;
 class CatalogClient;
 class CloudSyncWatcher;
 class DisplayManager;
@@ -91,6 +94,7 @@ class ApplicationController : public QObject
         QStringList availableProfileIds READ availableProfileIds NOTIFY profilesChanged FINAL)
     Q_PROPERTY(kmedia::PlaybackController* playback READ playback CONSTANT FINAL)
     Q_PROPERTY(kmedia::BackgroundMusicEngine* backgroundMusic READ backgroundMusic CONSTANT FINAL)
+    Q_PROPERTY(kmedia::BackgroundMusicService* music READ music CONSTANT FINAL)
     Q_PROPERTY(kmedia::DisplayManager* displayManager READ displayManager CONSTANT FINAL)
     Q_PROPERTY(kmedia::PdfViewerController* pdf READ pdfController CONSTANT FINAL)
     Q_PROPERTY(kmedia::DownloadService* downloads READ downloadService CONSTANT FINAL)
@@ -141,6 +145,7 @@ public:
 
     [[nodiscard]] kmedia::PlaybackController* playback() const;
     [[nodiscard]] kmedia::BackgroundMusicEngine* backgroundMusic() const;
+    [[nodiscard]] kmedia::BackgroundMusicService* music() const;
     [[nodiscard]] kmedia::DisplayManager* displayManager() const;
     [[nodiscard]] kmedia::PdfViewerController* pdfController() const;
     [[nodiscard]] kmedia::DownloadService* downloadService() const;
@@ -171,6 +176,7 @@ public:
     Q_INVOKABLE void saveAudioOutputDevice(const QString& deviceName);
     // The picture shown on the presentation display during standby; an empty url clears it.
     Q_INVOKABLE void saveStandbyImage(const QUrl& imageUrl);
+    Q_INVOKABLE void saveMusicAutoStart(bool enabled);
     Q_INVOKABLE bool enableBoothPin(const QString& newPin);
     Q_INVOKABLE bool disableBoothPin(const QString& currentPin);
     Q_INVOKABLE bool unlockBoothSettings(const QString& candidatePin);
@@ -236,6 +242,8 @@ private:
     std::unique_ptr<kmedia::PublicTalkMedia> m_publicTalks;
     std::unique_ptr<kmedia::PublicationMediaPicker> m_publicationPicker;
     std::unique_ptr<kmedia::JwVideoCatalog> m_videoCatalog;
+    std::unique_ptr<kmedia::BackgroundMusicLibrary> m_musicLibrary;
+    std::unique_ptr<kmedia::BackgroundMusicService> m_musicService;
     std::unique_ptr<kmedia::WatchedFolderMedia> m_watchedFolder;
     std::unique_ptr<kmedia::MediaAutoExport> m_autoExport;
     QTimer* m_exportTimer{nullptr};

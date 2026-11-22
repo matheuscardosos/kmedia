@@ -6,8 +6,12 @@ import KMedia.UI
 import ".."
 import "../controls"
 
+// Background music: the songbook in the media language, timed to end when a meeting starts.
 ColumnLayout {
     id: root
+
+    readonly property var engine: ApplicationController.backgroundMusic
+    readonly property var music: ApplicationController.music
 
     signal closeRequested()
 
@@ -20,7 +24,7 @@ ColumnLayout {
         StudioIcon {
             name: "audio-lines"
             size: 17
-            color: ApplicationController.backgroundMusic.playing ? Theme.accentPrimary : Theme.textSecondary
+            color: root.engine.playing ? Theme.accentPrimary : Theme.textSecondary
         }
 
         ColumnLayout {
@@ -37,9 +41,11 @@ ColumnLayout {
             }
 
             Text {
-                text: ApplicationController.backgroundMusic.trackCount > 0
-                      ? ApplicationController.backgroundMusic.currentTrackTitle
-                      : qsTr("No ambient tracks queued")
+                text: root.music.loading
+                      ? qsTr("Loading the songbook...")
+                      : (root.engine.playing && root.engine.trackCount > 0
+                         ? root.engine.currentTrackTitle
+                         : qsTr("Songs in the media language"))
                 color: Theme.textSecondary
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeXs
@@ -49,15 +55,25 @@ ColumnLayout {
         }
 
         StudioBadge {
-            text: ApplicationController.backgroundMusic.fading
+            text: root.engine.fading
                   ? qsTr("Fading")
-                  : (ApplicationController.backgroundMusic.playing ? qsTr("Live") : qsTr("Idle"))
+                  : (root.engine.playing ? qsTr("Live") : qsTr("Idle"))
             showDot: true
-            dotColor: ApplicationController.backgroundMusic.fading
+            dotColor: root.engine.fading
                       ? Theme.statusStandby
-                      : (ApplicationController.backgroundMusic.playing ? Theme.statusReady : Theme.statusOff)
+                      : (root.engine.playing ? Theme.statusReady : Theme.statusOff)
             hasBorder: true
         }
+    }
+
+    Text {
+        visible: root.engine.playing && !isNaN(root.music.stopTime.getTime())
+        text: qsTr("Ends at %1, when the meeting starts").arg(Qt.formatTime(root.music.stopTime, "HH:mm"))
+        color: Theme.textSecondary
+        font.family: Theme.fontFamily
+        font.pixelSize: Theme.fontSizeXs
+        elide: Text.ElideRight
+        Layout.fillWidth: true
     }
 
     RowLayout {
@@ -70,24 +86,19 @@ ColumnLayout {
             implicitWidth: 36
             leftPadding: 0
             rightPadding: 0
-            enabled: ApplicationController.backgroundMusic.trackCount > 0
-            onClicked: ApplicationController.backgroundMusic.previous()
+            enabled: root.engine.playing
+            onClicked: root.engine.previous()
             ToolTip.visible: hovered
             ToolTip.text: qsTr("Previous track")
         }
 
         StudioButton {
             variant: "primary"
-            iconName: ApplicationController.backgroundMusic.playing ? "pause" : "play"
-            text: ApplicationController.backgroundMusic.playing ? qsTr("Pause") : qsTr("Play")
+            iconName: root.engine.playing ? "square" : "play"
+            text: root.engine.playing ? qsTr("Stop") : qsTr("Play")
+            enabled: !root.music.loading && !root.engine.fading
             Layout.fillWidth: true
-            onClicked: {
-                if (ApplicationController.backgroundMusic.playing) {
-                    ApplicationController.backgroundMusic.pause()
-                } else {
-                    ApplicationController.backgroundMusic.play()
-                }
-            }
+            onClicked: root.music.toggle()
         }
 
         StudioButton {
@@ -96,22 +107,10 @@ ColumnLayout {
             implicitWidth: 36
             leftPadding: 0
             rightPadding: 0
-            enabled: ApplicationController.backgroundMusic.trackCount > 0
-            onClicked: ApplicationController.backgroundMusic.next()
+            enabled: root.engine.playing
+            onClicked: root.engine.next()
             ToolTip.visible: hovered
             ToolTip.text: qsTr("Next track")
-        }
-
-        StudioButton {
-            variant: "secondary"
-            iconName: "square"
-            implicitWidth: 36
-            leftPadding: 0
-            rightPadding: 0
-            enabled: ApplicationController.backgroundMusic.playing
-            onClicked: ApplicationController.backgroundMusic.stop()
-            ToolTip.visible: hovered
-            ToolTip.text: qsTr("Stop music")
         }
     }
 
@@ -130,53 +129,17 @@ ColumnLayout {
             from: 0
             to: 100
             stepSize: 1
-            value: ApplicationController.backgroundMusic.targetVolume
-            onMoved: ApplicationController.backgroundMusic.targetVolume = Math.round(value)
+            value: root.engine.targetVolume
+            onMoved: root.engine.targetVolume = Math.round(value)
         }
 
         Text {
-            text: ApplicationController.backgroundMusic.targetVolume + "%"
+            text: root.engine.targetVolume + "%"
             color: Theme.textSecondary
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSizeXs
             Layout.preferredWidth: 32
             horizontalAlignment: Text.AlignRight
-        }
-    }
-
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: 8
-
-        RowLayout {
-            spacing: 6
-
-            Text {
-                text: qsTr("Shuffle")
-                color: Theme.textSecondary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeSm
-            }
-
-            StudioSwitch {
-                checked: ApplicationController.backgroundMusic.shuffle
-                onToggled: ApplicationController.backgroundMusic.shuffle = checked
-            }
-        }
-
-        Item {
-            Layout.fillWidth: true
-        }
-
-        StudioButton {
-            variant: "secondary"
-            iconName: "audio-lines"
-            text: qsTr("Fade Out")
-            enabled: ApplicationController.backgroundMusic.playing && !ApplicationController.backgroundMusic.fading
-            onClicked: {
-                ApplicationController.backgroundMusic.fadeOutAndStop(-1)
-                root.closeRequested()
-            }
         }
     }
 }

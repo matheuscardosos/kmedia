@@ -701,6 +701,24 @@ ColumnLayout {
                             }
                         }
 
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Text {
+                                text: qsTr("Start before meetings")
+                                color: Theme.textPrimary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeSm
+                                Layout.fillWidth: true
+                            }
+
+                            StudioSwitch {
+                                checked: ApplicationController.music.autoStart
+                                onToggled: ApplicationController.saveMusicAutoStart(checked)
+                            }
+                        }
+
                         Rectangle {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 1

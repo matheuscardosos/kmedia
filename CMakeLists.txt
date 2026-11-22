@@ -75,6 +75,10 @@ qt_add_library(kmedia_core STATIC
     src/integrations/ZoomBridge.cpp
     src/media/BackgroundMusicEngine.h
     src/media/BackgroundMusicEngine.cpp
+    src/media/BackgroundMusicPlanner.h
+    src/media/BackgroundMusicPlanner.cpp
+    src/media/BackgroundMusicService.h
+    src/media/BackgroundMusicService.cpp
     src/media/MpvRendererItem.h
     src/media/MpvRendererItem.cpp
     src/media/PdfViewerController.h
@@ -97,6 +101,8 @@ qt_add_library(kmedia_core STATIC
     src/models/PlaylistModel.cpp
     src/network/CatalogClient.h
     src/network/CatalogClient.cpp
+    src/network/BackgroundMusicLibrary.h
+    src/network/BackgroundMusicLibrary.cpp
     src/network/DownloadService.h
     src/network/DownloadService.cpp
     src/network/MeetingCatalogService.h
