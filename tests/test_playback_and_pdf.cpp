@@ -98,7 +98,18 @@ TEST_CASE("PlaybackController detects kinds, normalizes trims, and preserves sta
 
     controller.toggleStandby();
     REQUIRE(controller.isStandbyActive());
+    REQUIRE_FALSE(controller.isBlackoutActive());
     REQUIRE(controller.source() == imageUrl);
+
+    // Blackout is a standby without the picture, and leaving standby ends it.
+    controller.blackout();
+    REQUIRE(controller.isStandbyActive());
+    REQUIRE(controller.isBlackoutActive());
+    controller.toggleStandby();
+    REQUIRE_FALSE(controller.isStandbyActive());
+    REQUIRE_FALSE(controller.isBlackoutActive());
+    controller.toggleStandby();
+    REQUIRE_FALSE(controller.isBlackoutActive());
 
     QSignalSpy subSpy(&controller, &kmedia::PlaybackController::subtitlesChanged);
     REQUIRE(controller.areSubtitlesVisible());

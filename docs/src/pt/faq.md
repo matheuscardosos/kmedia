@@ -50,11 +50,11 @@ O [Guia do Usuário](./user-guide.md#atalhos-de-teclado) lista todos. Os princip
 
 ### Como uso o KMedia com o Zoom?
 
-Salve o ID da reunião em *Configurações > Integrações*. Depois entre por **Abrir Reunião Zoom** ali mesmo ou pelo botão do Zoom da barra em pílula, e compartilhe a tela de apresentação no Zoom como de costume.
+Salve o ID da reunião, a senha e o nome com que entrar em *Configurações > Integrações*. Depois entre por **Abrir Reunião Zoom** ali mesmo ou pelo botão do Zoom da barra em pílula, e compartilhe a tela de apresentação no Zoom como de costume.
 
 ### Como conecto o OBS Studio?
 
-No OBS Studio, ative o servidor WebSocket em *Ferramentas > Configurações do servidor WebSocket*. No KMedia, informe o host e a porta em *Configurações > Integrações* e clique em **Salvar e Conectar**. O botão do OBS na barra em pílula passa a listar suas cenas.
+No OBS Studio, ative o servidor WebSocket em *Ferramentas > Configurações do servidor WebSocket* e anote a porta e a senha. No KMedia, ative o OBS Studio em *Configurações > Integrações*, informe o host, a porta e a senha e clique em **Salvar e Conectar**. Depois escolha as cenas de palco e de mídia, para o KMedia trocar para a cena de mídia enquanto uma mídia é apresentada e voltar ao palco depois. O [Guia de Configurações](./settings-guide.md#obs-studio) explica cada cena.
 
 ### Como funciona a pasta compartilhada?
 
@@ -80,8 +80,9 @@ Sim. Cada perfil de congregação tem suas próprias configurações, mídias, a
 ### O OBS Studio não conecta. O que devo conferir?
 
 - O OBS Studio está aberto e o servidor WebSocket dele está ativo.
-- O host e a porta em *Configurações > Integrações* são os mesmos do OBS Studio (`127.0.0.1` e `4455` no mesmo computador).
+- O host, a porta e a senha em *Configurações > Integrações* são os mesmos de *Ferramentas > Configurações do servidor WebSocket* no OBS Studio (`127.0.0.1` e `4455` no mesmo computador).
 - Clique em **Salvar e Conectar** de novo depois de mudá-los.
+- Se ele conecta mas nunca troca de cena, escolha as cenas de palco e de mídia em *Configurações > Integrações*.
 
 ### As mídias da pasta compartilhada não aparecem. O que devo conferir?
 

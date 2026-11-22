@@ -107,9 +107,8 @@ TEST_CASE("ObsWebSocketClient computes v5 SHA-256 auth hash and automates scenes
     client.setHost(QStringLiteral("127.0.0.1"));
     client.setPort(static_cast<int>(server.serverPort()));
     client.setPassword(QStringLiteral("supersecret"));
-    client.setPlayScene(QStringLiteral("Media Playback"));
-    client.setPauseScene(QStringLiteral("Paused Camera"));
-    client.setStandbyScene(QStringLiteral("Platform Camera"));
+    client.setStageScene(QStringLiteral("Platform Camera"));
+    client.setMediaScene(QStringLiteral("Media Playback"));
 
     QSignalSpy scenesSpy(&client, &kmedia::ObsWebSocketClient::availableScenesChanged);
     QSignalSpy reqSpy(&client, &kmedia::ObsWebSocketClient::requestCompleted);
@@ -135,6 +134,27 @@ TEST_CASE("ObsWebSocketClient computes v5 SHA-256 auth hash and automates scenes
     REQUIRE(client.isRecordingActive());
 
     client.disconnectFromObs();
+}
+
+TEST_CASE("ObsWebSocketClient picks the stage, media, or image scene for playback",
+          "[integrations][obs]")
+{
+    kmedia::ObsWebSocketClient client;
+    client.setStageScene(QStringLiteral("Stage"));
+    client.setMediaScene(QStringLiteral("Media"));
+
+    REQUIRE(client.sceneForPlayback(false, false, false) == QStringLiteral("Stage"));
+    REQUIRE(client.sceneForPlayback(true, false, false) == QStringLiteral("Media"));
+    // Without an image scene, pictures use the media scene.
+    REQUIRE(client.sceneForPlayback(true, true, false) == QStringLiteral("Media"));
+
+    client.setImageScene(QStringLiteral("  Picture in picture "));
+    REQUIRE(client.imageScene() == QStringLiteral("Picture in picture"));
+    REQUIRE(client.sceneForPlayback(true, true, false) == QStringLiteral("Picture in picture"));
+    REQUIRE(client.sceneForPlayback(true, false, false) == QStringLiteral("Media"));
+    // Standby always shows the stage.
+    REQUIRE(client.sceneForPlayback(true, true, true) == QStringLiteral("Stage"));
+    REQUIRE(client.sceneForPlayback(true, false, true) == QStringLiteral("Stage"));
 }
 
 TEST_CASE("ZoomBridge formats sanitized zoommtg deep links and coordinates audio/share settings",

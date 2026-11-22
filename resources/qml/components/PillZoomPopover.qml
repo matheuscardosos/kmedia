@@ -105,8 +105,8 @@ ColumnLayout {
                 }
 
                 Text {
-                    text: ApplicationController.zoomBridge.dedicatedAudioDevice.length > 0
-                          ? ApplicationController.zoomBridge.dedicatedAudioDevice
+                    text: ApplicationController.playback.audioDeviceDescription.length > 0
+                          ? ApplicationController.playback.audioDeviceDescription
                           : qsTr("System default")
                     color: Theme.textSecondary
                     font.family: Theme.fontFamily

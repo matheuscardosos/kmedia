@@ -50,11 +50,11 @@ The [User Guide](./user-guide.md#keyboard-shortcuts) lists them all. The main on
 
 ### How do I use KMedia with Zoom?
 
-Save the meeting ID in *Settings > Integrations*. Then join from **Launch Zoom Meeting** there or from the Zoom button of the pill bar, and share the presentation display in Zoom as usual.
+Save the meeting ID, the passcode, and the name to join with in *Settings > Integrations*. Then join from **Launch Zoom Meeting** there or from the Zoom button of the pill bar, and share the presentation display in Zoom as usual.
 
 ### How do I connect OBS Studio?
 
-In OBS Studio, turn on the WebSocket server in *Tools > WebSocket Server Settings*. In KMedia, enter its host and port in *Settings > Integrations* and click **Save & Connect**. The OBS button of the pill bar then lists your scenes.
+In OBS Studio, turn on the WebSocket server in *Tools > WebSocket Server Settings* and note its port and password. In KMedia, turn on OBS Studio in *Settings > Integrations*, enter the host, port, and password, and click **Save & Connect**. Then pick the stage and media scenes, so KMedia switches to the media scene while media is presented and back to the stage afterward. The [Settings Guide](./settings-guide.md#obs-studio) explains each scene.
 
 ### How does the shared folder work?
 
@@ -80,8 +80,9 @@ Yes. Each congregation profile has its own settings, media, schedule, and integr
 ### OBS Studio does not connect. What should I check?
 
 - OBS Studio is open and its WebSocket server is on.
-- The host and port in *Settings > Integrations* match the ones in OBS Studio (`127.0.0.1` and `4455` on the same computer).
+- The host, port, and password in *Settings > Integrations* match the ones in *Tools > WebSocket Server Settings* of OBS Studio (`127.0.0.1` and `4455` on the same computer).
 - Click **Save & Connect** again after changing them.
+- If it connects but never switches scenes, pick the stage and media scenes in *Settings > Integrations*.
 
 ### Shared folder media does not show up. What should I check?
 

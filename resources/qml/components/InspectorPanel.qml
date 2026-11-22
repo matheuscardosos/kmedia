@@ -198,6 +198,7 @@ Rectangle {
                                 implicitHeight: 24
                                 radius: Theme.radiusSmall
                                 color: ApplicationController.playback.standbyActive
+                                       && !ApplicationController.playback.blackoutActive
                                        ? Theme.statusStandby
                                        : "#B816191F"
                                 border.width: 1
@@ -235,7 +236,9 @@ Rectangle {
                                 implicitWidth: blackoutPillRow.implicitWidth + 14
                                 implicitHeight: 24
                                 radius: Theme.radiusSmall
-                                color: "#B816191F"
+                                color: ApplicationController.playback.blackoutActive
+                                       ? Theme.statusStandby
+                                       : "#B816191F"
                                 border.width: 1
                                 border.color: "#38FFFFFF"
 
@@ -263,10 +266,7 @@ Rectangle {
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        ApplicationController.playback.standbyActive = true
-                                        ApplicationController.playback.pause()
-                                    }
+                                    onClicked: ApplicationController.playback.blackout()
                                 }
                             }
                         }

@@ -167,6 +167,10 @@ public:
                                       const QString& mediaLanguage = QStringLiteral("E"));
     Q_INVOKABLE void saveObsAndZoomSettings();
     Q_INVOKABLE void saveFadeDurationMs(int ms);
+    // The output of media and background music; an empty name means the system default.
+    Q_INVOKABLE void saveAudioOutputDevice(const QString& deviceName);
+    // The picture shown on the presentation display during standby; an empty url clears it.
+    Q_INVOKABLE void saveStandbyImage(const QUrl& imageUrl);
     Q_INVOKABLE bool enableBoothPin(const QString& newPin);
     Q_INVOKABLE bool disableBoothPin(const QString& currentPin);
     Q_INVOKABLE bool unlockBoothSettings(const QString& candidatePin);

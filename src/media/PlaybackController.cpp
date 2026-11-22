@@ -63,6 +63,8 @@ void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
         emit tracksChanged();
     });
 
+    connect(m_mpvItem.data(), &MpvRendererItem::audioDevicesChanged, this,
+            &PlaybackController::audioChanged);
     connect(m_mpvItem.data(), &MpvRendererItem::playbackFinished, this,
             &PlaybackController::playbackFinished);
     connect(m_mpvItem.data(), &MpvRendererItem::playbackError, this,
@@ -99,13 +101,31 @@ bool PlaybackController::isStandbyActive() const
     return m_standbyActive;
 }
 
+bool PlaybackController::isBlackoutActive() const
+{
+    return m_blackoutActive;
+}
+
 void PlaybackController::setStandbyActive(bool active)
 {
-    if (m_standbyActive == active) {
+    // Leaving standby also ends a blackout.
+    const bool blackout = active && m_blackoutActive;
+    if (m_standbyActive == active && m_blackoutActive == blackout) {
         return;
     }
     m_standbyActive = active;
+    m_blackoutActive = blackout;
     emit standbyChanged();
+}
+
+void PlaybackController::blackout()
+{
+    if (!m_standbyActive || !m_blackoutActive) {
+        m_standbyActive = true;
+        m_blackoutActive = true;
+        emit standbyChanged();
+    }
+    pause();
 }
 
 QUrl PlaybackController::standbyImageUrl() const
@@ -255,6 +275,26 @@ void PlaybackController::setMuted(bool muted)
 QString PlaybackController::audioDevice() const
 {
     return m_audioDevice;
+}
+
+QVariantList PlaybackController::audioDevices() const
+{
+    return m_mpvItem.isNull() ? QVariantList{} : m_mpvItem->audioDevices();
+}
+
+QString PlaybackController::audioDeviceDescription() const
+{
+    if (m_audioDevice == QStringLiteral("auto")) {
+        return {};
+    }
+    const QVariantList devices = audioDevices();
+    for (const QVariant& device : devices) {
+        const QVariantMap entry = device.toMap();
+        if (entry.value(QStringLiteral("name")).toString() == m_audioDevice) {
+            return entry.value(QStringLiteral("description")).toString();
+        }
+    }
+    return {};
 }
 
 void PlaybackController::setAudioDevice(const QString& deviceId)

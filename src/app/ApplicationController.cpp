@@ -418,14 +418,12 @@ void ApplicationController::saveObsAndZoomSettings()
                              m_obsClient->port());
     (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kObsPassword),
                              m_obsClient->password());
-    (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kObsScenePlay),
-                             m_obsClient->playScene());
-    (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kObsScenePause),
-                             m_obsClient->pauseScene());
-    (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kObsSceneStop),
-                             m_obsClient->stopScene());
-    (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kObsSceneStandby),
-                             m_obsClient->standbyScene());
+    (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kObsSceneStage),
+                             m_obsClient->stageScene());
+    (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kObsSceneMedia),
+                             m_obsClient->mediaScene());
+    (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kObsSceneImage),
+                             m_obsClient->imageScene());
     (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kZoomMeetingId),
                              m_zoomBridge->meetingId());
     (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kZoomMeetingPass),
@@ -452,6 +450,30 @@ void ApplicationController::saveFadeDurationMs(int ms)
         if (auto* settings = m_profileManager->activeSettings()) {
             (void)settings->setValue(
                 QLatin1StringView(kmedia::settings_keys::kBackgroundMusicFadeMs), cleanMs);
+        }
+    }
+}
+
+void ApplicationController::saveAudioOutputDevice(const QString& deviceName)
+{
+    const QString cleaned =
+        deviceName.trimmed() == QStringLiteral("auto") ? QString{} : deviceName.trimmed();
+    if (!m_demoMode) {
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kAudioOutputDevice),
+                                     cleaned);
+        }
+    }
+    syncAudioRouting();
+}
+
+void ApplicationController::saveStandbyImage(const QUrl& imageUrl)
+{
+    const QString path = imageUrl.isLocalFile() ? imageUrl.toLocalFile() : QString{};
+    m_playbackController->setStandbyImageUrl(path.isEmpty() ? QUrl{} : QUrl::fromLocalFile(path));
+    if (!m_demoMode) {
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kStandbyImage), path);
         }
     }
 }
@@ -670,14 +692,12 @@ void ApplicationController::applyProfileSettings()
     m_obsClient->setPort(obsPort > 0 ? obsPort : 4455);
     m_obsClient->setPassword(
         settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsPassword)));
-    m_obsClient->setPlayScene(
-        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsScenePlay)));
-    m_obsClient->setPauseScene(
-        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsScenePause)));
-    m_obsClient->setStopScene(
-        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsSceneStop)));
-    m_obsClient->setStandbyScene(
-        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsSceneStandby)));
+    m_obsClient->setStageScene(
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsSceneStage)));
+    m_obsClient->setMediaScene(
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsSceneMedia)));
+    m_obsClient->setImageScene(
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kObsSceneImage)));
     m_obsClient->setEnabled(
         settings->boolValue(QLatin1StringView(kmedia::settings_keys::kObsEnabled), false));
 
@@ -691,6 +711,11 @@ void ApplicationController::applyProfileSettings()
         settings->stringValue(QLatin1StringView(kmedia::settings_keys::kZoomAudioDevice)));
     m_zoomBridge->setAutoShareOnPlayback(
         settings->boolValue(QLatin1StringView(kmedia::settings_keys::kZoomAutoShare), false));
+
+    const QString standbyImage =
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kStandbyImage));
+    m_playbackController->setStandbyImageUrl(
+        standbyImage.isEmpty() ? QUrl{} : QUrl::fromLocalFile(standbyImage));
 
     syncAudioRouting();
 
@@ -732,9 +757,7 @@ void ApplicationController::syncAudioRouting()
 
     m_playbackController->setAudioDevice(playbackTarget.isEmpty() ? QStringLiteral("auto")
                                                                   : playbackTarget);
-    if (!musicTarget.isEmpty()) {
-        m_backgroundMusic->setAudioDevice(musicTarget);
-    }
+    m_backgroundMusic->setAudioDevice(musicTarget.isEmpty() ? QStringLiteral("auto") : musicTarget);
 }
 
 std::vector<QDate> ApplicationController::meetingDaysInWindow() const
@@ -913,12 +936,13 @@ void ApplicationController::wireIntegrations()
             });
 
     auto syncPlaybackIntegrations = [this]() {
-        const bool hasMedia =
-            m_playbackController->mediaKind() != kmedia::PlaybackController::MediaKind::None;
+        const auto kind = m_playbackController->mediaKind();
+        const bool hasMedia = kind != kmedia::PlaybackController::MediaKind::None;
+        const bool stillImage = kind == kmedia::PlaybackController::MediaKind::Image ||
+                                kind == kmedia::PlaybackController::MediaKind::Pdf;
         const bool activePresentation = m_playbackController->isActivePresentation();
-        const bool effectivelyPaused = hasMedia && !activePresentation;
         const bool standby = m_playbackController->isStandbyActive();
-        m_obsClient->applyPlaybackState(hasMedia, effectivelyPaused, standby);
+        m_obsClient->applyPlaybackState(hasMedia, stillImage, standby);
         if (activePresentation && !standby) {
             m_zoomBridge->notifyPresentationPlaybackStarted();
         }

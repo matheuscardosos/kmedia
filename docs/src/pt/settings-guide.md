@@ -2,7 +2,7 @@
 
 As *Configurações* têm seis categorias, na ordem em que aparecem à esquerda: Geral, Reuniões, Tela, Áudio, Integrações e Segurança. Cada perfil de congregação guarda suas próprias configurações, então trocar de perfil também troca as configurações.
 
-Digite em **Buscar configurações...** para mostrar todas as categorias que combinam com uma palavra, como `obs`, `zoom` ou `pin`.
+Digite em **Buscar configurações...** para mostrar todas as categorias que combinam com uma palavra, como `obs`, `idioma` ou `senha`. Maiúsculas e acentos não fazem diferença.
 
 ![Configurações do KMedia](../assets/kmedia-settings-preview.png)
 
@@ -47,20 +47,31 @@ Ative e escolha uma pasta. Cada dia com mídias é copiado para uma pasta com a 
 - **Auto:** apresenta na segunda tela automaticamente, que é o padrão.
 - **Saída de Apresentação Ativa:** mostra ou esconde a janela de apresentação. `Ctrl+P` faz o mesmo.
 - **Lista de telas:** clique numa tela para apresentar nela. Se essa tela for desconectada, o KMedia volta a apresentar automaticamente.
+- **Imagem de espera:** a imagem mostrada na tela de apresentação durante a espera e enquanto nada é apresentado, como o texto do ano. Sem ela, a espera é uma tela preta. **Blackout**, no painel de prévia, sempre mostra preto.
 
 ## Áudio
 
 - **Música Ambiente e Tempo de Fade:** o volume da música ambiente, de 0 a 100%.
 - **Duração do Fade-Out:** 3, 5 ou 8 segundos (5 por padrão). A música ambiente vai diminuindo durante esse tempo quando você a para, e sozinha antes de cada reunião começar.
+- **Saída de áudio:** onde as mídias e a música ambiente tocam, por exemplo a saída ligada ao som do salão. **Padrão do sistema** segue a configuração do computador.
 
 ## Integrações
 
-### OBS Studio e Zoom
+### OBS Studio
 
-- **Host OBS** e porta: o endereço do servidor WebSocket do OBS Studio, `127.0.0.1` e `4455` quando o OBS roda no mesmo computador. No OBS Studio, ative o servidor em *Ferramentas > Configurações do servidor WebSocket*.
-- **ID da Reunião Zoom:** o ID da reunião Zoom da congregação.
-- **Salvar e Conectar:** salva os dois e conecta ao OBS Studio. O estado do OBS e do Zoom aparece embaixo, na navegação.
-- **Abrir Reunião Zoom:** abre a reunião no aplicativo do Zoom.
+Ative a chave para conectar o KMedia ao OBS Studio, que passa a trocar as cenas para quem acompanha a reunião pelo Zoom.
+
+- **Host**, porta e **Senha do WebSocket:** ficam no OBS Studio em *Ferramentas > Configurações do servidor WebSocket*, onde o servidor precisa estar ativado. No mesmo computador, o host é `127.0.0.1` e a porta `4455`. Clique em **Salvar e Conectar**; a etiqueta mostra quando o KMedia está conectado.
+- **Cena de palco:** a cena mostrada enquanto nada é apresentado e durante a espera, normalmente o plano aberto da tribuna.
+- **Cena de mídia:** a cena mostrada enquanto uma mídia é apresentada, inclusive um vídeo pausado.
+- **Cena de imagens:** uma cena opcional para imagens e páginas de PDF, por exemplo com a imagem num canto. **Igual à cena de mídia** usa a cena de mídia.
+
+As cenas são escolhidas na lista que o OBS Studio envia depois que o KMedia conecta. Uma cena **Não definida** faz o KMedia deixar o OBS como está. O botão do OBS na barra em pílula continua trocando as cenas na mão a qualquer momento.
+
+### Zoom
+
+- **ID da Reunião Zoom**, **Senha** e **Nome exibido no Zoom:** a reunião da congregação e o nome com que a cabine entra. Clique em **Salvar**.
+- **Abrir Reunião Zoom:** entra na reunião pelo aplicativo do Zoom. O botão do Zoom na barra em pílula faz o mesmo.
 
 ### Pasta compartilhada
 

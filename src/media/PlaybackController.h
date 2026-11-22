@@ -25,6 +25,8 @@ class PlaybackController : public QObject
         bool standbyActive READ isStandbyActive WRITE setStandbyActive NOTIFY standbyChanged FINAL)
     Q_PROPERTY(QUrl standbyImageUrl READ standbyImageUrl WRITE setStandbyImageUrl NOTIFY
                    standbyChanged FINAL)
+    // Standby that shows plain black instead of the standby picture.
+    Q_PROPERTY(bool blackoutActive READ isBlackoutActive NOTIFY standbyChanged FINAL)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY transportChanged FINAL)
     Q_PROPERTY(qint64 positionMs READ positionMs NOTIFY positionChanged FINAL)
     Q_PROPERTY(qint64 durationMs READ durationMs NOTIFY durationChanged FINAL)
@@ -36,6 +38,9 @@ class PlaybackController : public QObject
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY audioChanged FINAL)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY audioChanged FINAL)
     Q_PROPERTY(QString audioDevice READ audioDevice WRITE setAudioDevice NOTIFY audioChanged FINAL)
+    // The outputs mpv offers ({name, description}) and the description of the one in use.
+    Q_PROPERTY(QVariantList audioDevices READ audioDevices NOTIFY audioChanged FINAL)
+    Q_PROPERTY(QString audioDeviceDescription READ audioDeviceDescription NOTIFY audioChanged FINAL)
     Q_PROPERTY(bool subtitlesVisible READ areSubtitlesVisible WRITE setSubtitlesVisible NOTIFY
                    subtitlesChanged FINAL)
     Q_PROPERTY(QVariantList subtitleTracks READ subtitleTracks NOTIFY tracksChanged FINAL)
@@ -66,6 +71,7 @@ public:
     [[nodiscard]] QString mediaTitle() const;
 
     [[nodiscard]] bool isStandbyActive() const;
+    [[nodiscard]] bool isBlackoutActive() const;
     void setStandbyActive(bool active);
     [[nodiscard]] QUrl standbyImageUrl() const;
     void setStandbyImageUrl(const QUrl& url);
@@ -91,6 +97,8 @@ public:
     [[nodiscard]] bool isMuted() const;
     void setMuted(bool muted);
     [[nodiscard]] QString audioDevice() const;
+    [[nodiscard]] QVariantList audioDevices() const;
+    [[nodiscard]] QString audioDeviceDescription() const;
     void setAudioDevice(const QString& deviceId);
     [[nodiscard]] bool areSubtitlesVisible() const;
     void setSubtitlesVisible(bool visible);
@@ -111,6 +119,8 @@ public slots:
                            qint64 trimStartMs = 0, qint64 trimEndMs = 0);
     void play();
     void pause();
+    // Covers the presentation with black, without the standby picture, and pauses the media.
+    void blackout();
     void togglePause();
     void stop();
     void seekMs(qint64 positionMs);
@@ -145,6 +155,7 @@ private:
     QUrl m_source;
     QString m_mediaTitle;
     bool m_standbyActive{false};
+    bool m_blackoutActive{false};
     QUrl m_standbyImageUrl;
     bool m_paused{true};
     qint64 m_positionMs{0};

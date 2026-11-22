@@ -15,6 +15,10 @@ namespace kmedia {
  * Native OBS Studio WebSocket v5 client built on Qt6::WebSockets.
  * Implements Hello -> SHA-256 Challenge/Identify -> Identified handshake,
  * scene enumeration, and playback-driven program scene automation.
+ *
+ * Scene automation follows three scenes, inspired by Meeting Media Manager: the stage scene
+ * while nothing is shown (and during standby), the media scene while media is shown, and an
+ * optional image scene for pictures and PDF pages that falls back to the media scene.
  */
 class ObsWebSocketClient : public QObject
 {
@@ -27,11 +31,9 @@ class ObsWebSocketClient : public QObject
     Q_PROPERTY(QString host READ host WRITE setHost NOTIFY configChanged FINAL)
     Q_PROPERTY(int port READ port WRITE setPort NOTIFY configChanged FINAL)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY configChanged FINAL)
-    Q_PROPERTY(QString playScene READ playScene WRITE setPlayScene NOTIFY sceneMapChanged FINAL)
-    Q_PROPERTY(QString pauseScene READ pauseScene WRITE setPauseScene NOTIFY sceneMapChanged FINAL)
-    Q_PROPERTY(QString stopScene READ stopScene WRITE setStopScene NOTIFY sceneMapChanged FINAL)
-    Q_PROPERTY(
-        QString standbyScene READ standbyScene WRITE setStandbyScene NOTIFY sceneMapChanged FINAL)
+    Q_PROPERTY(QString stageScene READ stageScene WRITE setStageScene NOTIFY sceneMapChanged FINAL)
+    Q_PROPERTY(QString mediaScene READ mediaScene WRITE setMediaScene NOTIFY sceneMapChanged FINAL)
+    Q_PROPERTY(QString imageScene READ imageScene WRITE setImageScene NOTIFY sceneMapChanged FINAL)
     Q_PROPERTY(QStringList availableScenes READ availableScenes NOTIFY availableScenesChanged FINAL)
     Q_PROPERTY(QString currentProgramScene READ currentProgramScene NOTIFY
                    currentProgramSceneChanged FINAL)
@@ -67,14 +69,16 @@ public:
     [[nodiscard]] QString password() const;
     void setPassword(const QString& password);
 
-    [[nodiscard]] QString playScene() const;
-    void setPlayScene(const QString& sceneName);
-    [[nodiscard]] QString pauseScene() const;
-    void setPauseScene(const QString& sceneName);
-    [[nodiscard]] QString stopScene() const;
-    void setStopScene(const QString& sceneName);
-    [[nodiscard]] QString standbyScene() const;
-    void setStandbyScene(const QString& sceneName);
+    [[nodiscard]] QString stageScene() const;
+    void setStageScene(const QString& sceneName);
+    [[nodiscard]] QString mediaScene() const;
+    void setMediaScene(const QString& sceneName);
+    [[nodiscard]] QString imageScene() const;
+    void setImageScene(const QString& sceneName);
+
+    // The scene playback calls for: stage while nothing is shown or during standby, the image
+    // scene (or else the media scene) for a still picture, and the media scene otherwise.
+    [[nodiscard]] QString sceneForPlayback(bool hasMedia, bool stillImage, bool standby) const;
 
     [[nodiscard]] QStringList availableScenes() const;
     [[nodiscard]] QString currentProgramScene() const;
@@ -90,7 +94,7 @@ public:
     Q_INVOKABLE bool setCurrentProgramScene(const QString& sceneName);
     Q_INVOKABLE bool startRecording();
     Q_INVOKABLE bool stopRecording();
-    Q_INVOKABLE void applyPlaybackState(bool playing, bool paused, bool standby);
+    Q_INVOKABLE void applyPlaybackState(bool hasMedia, bool stillImage, bool standby);
 
     [[nodiscard]] static QString computeAuthResponse(const QString& password, const QString& salt,
                                                      const QString& challenge);
@@ -132,10 +136,9 @@ private:
     int m_port{4455};
     QString m_password;
 
-    QString m_playScene;
-    QString m_pauseScene;
-    QString m_stopScene;
-    QString m_standbyScene;
+    QString m_stageScene;
+    QString m_mediaScene;
+    QString m_imageScene;
 
     QStringList m_availableScenes;
     QString m_currentProgramScene;
