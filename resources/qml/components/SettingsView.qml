@@ -632,68 +632,8 @@ ColumnLayout {
                         }
                     }
 
-                    StudioCard {
+                    SharedFolderCard {
                         Layout.fillWidth: true
-                        implicitHeight: cloudFolderCol.implicitHeight + 28
-                        surfaceColor: Theme.panelSurface
-
-                        ColumnLayout {
-                            id: cloudFolderCol
-
-                            anchors.fill: parent
-                            anchors.margins: 14
-                            spacing: 10
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 8
-
-                                StudioIcon {
-                                    name: "folder-open"
-                                    size: 17
-                                    color: Theme.accentPrimary
-                                }
-
-                                Text {
-                                    text: qsTr("Watched Cloud Sync Folder")
-                                    color: Theme.textPrimary
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeLg
-                                    font.weight: Font.DemiBold
-                                    Layout.fillWidth: true
-                                }
-                            }
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 8
-
-                                TextField {
-                                    id: cloudFolderField
-
-                                    Layout.fillWidth: true
-                                    placeholderText: qsTr("Local Dropbox / OneDrive / Nextcloud path")
-                                    text: ApplicationController.cloudWatcher.watchedFolders.join(";")
-                                    color: Theme.textPrimary
-                                    placeholderTextColor: Theme.textMuted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeSm
-                                    background: StudioCard {
-                                        surfaceColor: Theme.windowBase
-                                        cornerRadius: Theme.radiusSmall
-                                    }
-                                }
-
-                                StudioButton {
-                                    variant: "secondary"
-                                    text: qsTr("Watch")
-                                    onClicked: {
-                                        ApplicationController.saveCloudFolder(cloudFolderField.text)
-                                        ApplicationController.showToast(qsTr("Updated watched folders"), "info")
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
 

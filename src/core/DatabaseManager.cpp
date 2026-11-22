@@ -988,10 +988,33 @@ QStringList DatabaseManager::listDatesWithAddedMedia() const
         return dates;
     }
     QSqlQuery query(databaseHandle());
-    if (!query.exec(QStringLiteral("SELECT DISTINCT p.meeting_date FROM playlists p "
-                                   "JOIN playlist_items pi ON pi.playlist_id = p.id "
-                                   "WHERE pi.source = 'additional' AND pi.item_kind <> 'divider' "
-                                   "AND p.meeting_date <> '' ORDER BY p.meeting_date"))) {
+    if (!query.exec(QStringLiteral(
+            "SELECT DISTINCT p.meeting_date FROM playlists p "
+            "JOIN playlist_items pi ON pi.playlist_id = p.id "
+            "WHERE pi.source IN ('additional', 'watched') AND pi.item_kind <> 'divider' "
+            "AND p.meeting_date <> '' ORDER BY p.meeting_date"))) {
+        m_lastError = query.lastError().text();
+        return dates;
+    }
+    while (query.next()) {
+        dates << query.value(0).toString();
+    }
+    return dates;
+}
+
+QStringList DatabaseManager::listDatesWithSource(const QString& source) const
+{
+    QStringList dates;
+    if (!m_isOpen) {
+        return dates;
+    }
+    QSqlQuery query(databaseHandle());
+    query.prepare(QStringLiteral("SELECT DISTINCT p.meeting_date FROM playlists p "
+                                 "JOIN playlist_items pi ON pi.playlist_id = p.id "
+                                 "WHERE pi.source = :source AND p.meeting_date <> '' "
+                                 "ORDER BY p.meeting_date"));
+    query.bindValue(QStringLiteral(":source"), source);
+    if (!query.exec()) {
         m_lastError = query.lastError().text();
         return dates;
     }

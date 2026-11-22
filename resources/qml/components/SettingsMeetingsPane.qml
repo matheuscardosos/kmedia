@@ -563,4 +563,8 @@ ColumnLayout {
             }
         }
     }
+
+    MediaExportCard {
+        Layout.fillWidth: true
+    }
 }

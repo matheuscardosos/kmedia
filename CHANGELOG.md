@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Shared folder and media export, inspired by the Meeting Media Manager folder watcher and auto-export (`WatchedFolderMedia`, `MediaAutoExport`): media dropped into the `YYYY-MM-DD` folders of a shared folder shows up in that day, placed by `.section-order.json`, exported names, or the day's main section, with moves written back and folders prepared for the coming meetings; every day with media is exported into numbered date folders after each sync and each change, optionally converted to MP4.
 - JW.org videos in the Add media menu (`JwVideoCatalog`), inspired by the Meeting Media Manager video picker: the latest videos first, then the whole video library in the media language, newest first and searchable by title; a picked video is downloaded at or below the preferred resolution with its preview picture.
 - Publication media by document (`PublicationMediaPicker`), inspired by the Meeting Media Manager publication media dialog: open a JW.org publication by symbol and issue, or a `.jwpub` from the computer, then pick the document whose media you need; it is added in document order with paragraph tags, and linked videos download like synced media. A `.jwpub` picked or dropped no longer adds every picture of the whole publication.
 - Public talk media from the S-34mp (`PublicTalkMedia`), inspired by the Meeting Media Manager picker: pick the congregation's `.jwpub` once, search the talks by number or title, and the picked talk's media lands in *Public Talk* in outline order with the talk title as the section subtitle; media the outline only links to is downloaded like synced media.
@@ -23,6 +24,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- Media from the watched cloud folder no longer lands in whatever day is open: it now goes to the day of its date folder.
 - Removed the old weekly sync that `MeetingSyncEngine` replaced: `MeetingCatalogService` now only keeps the congregation lookup, the language catalog, and the media filters, and a `.jwpub` added by hand no longer guesses meeting sections from English or Portuguese words in its titles.
 - Sign language congregations now get their songs from the sign language songbook (`sjj`) instead of `sjjm`, in the meeting sync and when adding a song.
 - Text fields and other customized controls now draw with the KMedia theme on Windows and macOS: the native styles ignored their custom backgrounds, so the app now builds on the Qt Quick Controls *Basic* style everywhere.

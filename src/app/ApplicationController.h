@@ -1,11 +1,13 @@
 #pragma once
 
+#include <QDate>
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QtQmlIntegration/qqmlintegration.h>
 
 #include <memory>
+#include <vector>
 
 Q_MOC_INCLUDE("core/MeetingCalendarModel.h")
 Q_MOC_INCLUDE("core/MeetingTimer.h")
@@ -14,6 +16,7 @@ Q_MOC_INCLUDE("integrations/ObsWebSocketClient.h")
 Q_MOC_INCLUDE("integrations/ProcessMonitor.h")
 Q_MOC_INCLUDE("integrations/ZoomBridge.h")
 Q_MOC_INCLUDE("media/BackgroundMusicEngine.h")
+Q_MOC_INCLUDE("media/MediaAutoExport.h")
 Q_MOC_INCLUDE("media/MpvRendererItem.h")
 Q_MOC_INCLUDE("media/PdfViewerController.h")
 Q_MOC_INCLUDE("media/PlaybackController.h")
@@ -24,12 +27,14 @@ Q_MOC_INCLUDE("network/MeetingCatalogService.h")
 Q_MOC_INCLUDE("network/MeetingSyncEngine.h")
 Q_MOC_INCLUDE("network/PublicTalkMedia.h")
 Q_MOC_INCLUDE("network/PublicationMediaPicker.h")
+Q_MOC_INCLUDE("network/WatchedFolderMedia.h")
 Q_MOC_INCLUDE("network/JwVideoCatalog.h")
 Q_MOC_INCLUDE("parsers/CloudSyncWatcher.h")
 
 class MpvRendererItem;
 class QQmlEngine;
 class QTemporaryDir;
+class QTimer;
 class QTranslator;
 
 namespace kmedia {
@@ -52,6 +57,8 @@ class ProcessMonitor;
 class ProfileManager;
 class DocumentMediaImporter;
 class JwVideoCatalog;
+class MediaAutoExport;
+class WatchedFolderMedia;
 class PublicTalkMedia;
 class PublicationMediaPicker;
 class PublicationStore;
@@ -101,6 +108,8 @@ class ApplicationController : public QObject
     Q_PROPERTY(
         kmedia::PublicationMediaPicker* publicationMedia READ publicationMedia CONSTANT FINAL)
     Q_PROPERTY(kmedia::JwVideoCatalog* videos READ videos CONSTANT FINAL)
+    Q_PROPERTY(kmedia::WatchedFolderMedia* watchedFolder READ watchedFolder CONSTANT FINAL)
+    Q_PROPERTY(kmedia::MediaAutoExport* autoExport READ autoExport CONSTANT FINAL)
 
 public:
     static void setStartupDemoMode(bool enabled);
@@ -148,13 +157,14 @@ public:
     [[nodiscard]] kmedia::PublicTalkMedia* publicTalks() const;
     [[nodiscard]] kmedia::PublicationMediaPicker* publicationMedia() const;
     [[nodiscard]] kmedia::JwVideoCatalog* videos() const;
+    [[nodiscard]] kmedia::WatchedFolderMedia* watchedFolder() const;
+    [[nodiscard]] kmedia::MediaAutoExport* autoExport() const;
 
     Q_INVOKABLE void bindPresentationMpv(MpvRendererItem* mpvItem);
     Q_INVOKABLE bool setUiLanguage(const QString& languageCode);
     Q_INVOKABLE bool switchProfile(const QString& profileId);
     Q_INVOKABLE QString createProfile(const QString& name,
                                       const QString& mediaLanguage = QStringLiteral("E"));
-    Q_INVOKABLE void saveCloudFolder(const QString& folderPath);
     Q_INVOKABLE void saveObsAndZoomSettings();
     Q_INVOKABLE void saveFadeDurationMs(int ms);
     Q_INVOKABLE bool enableBoothPin(const QString& newPin);
@@ -180,6 +190,8 @@ private:
     void applyProfileSettings();
     void syncAudioRouting();
     void applySyncSettings(bool resetWhenChanged);
+    void applyFolderSettings();
+    [[nodiscard]] std::vector<QDate> meetingDaysInWindow() const;
     void wireIntegrations();
 
     static bool s_startupDemoMode;
@@ -220,4 +232,7 @@ private:
     std::unique_ptr<kmedia::PublicTalkMedia> m_publicTalks;
     std::unique_ptr<kmedia::PublicationMediaPicker> m_publicationPicker;
     std::unique_ptr<kmedia::JwVideoCatalog> m_videoCatalog;
+    std::unique_ptr<kmedia::WatchedFolderMedia> m_watchedFolder;
+    std::unique_ptr<kmedia::MediaAutoExport> m_autoExport;
+    QTimer* m_exportTimer{nullptr};
 };

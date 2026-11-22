@@ -7,6 +7,7 @@
 #include "integrations/ProcessMonitor.h"
 #include "integrations/ZoomBridge.h"
 #include "media/BackgroundMusicEngine.h"
+#include "media/MediaAutoExport.h"
 #include "media/MpvRendererItem.h"
 #include "media/PdfViewerController.h"
 #include "media/PlaybackController.h"
@@ -18,6 +19,7 @@
 #include "network/MeetingSyncEngine.h"
 #include "network/PublicTalkMedia.h"
 #include "network/PublicationMediaPicker.h"
+#include "network/WatchedFolderMedia.h"
 #include "parsers/CloudSyncWatcher.h"
 
 #include <QtQmlIntegration/qqmlintegration.h>
@@ -114,6 +116,22 @@ struct MeetingDayModelForeign
     Q_GADGET
     QML_FOREIGN(kmedia::MeetingDayModel)
     QML_NAMED_ELEMENT(MeetingDayModel)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct WatchedFolderMediaForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::WatchedFolderMedia)
+    QML_NAMED_ELEMENT(WatchedFolderMedia)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct MediaAutoExportForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::MediaAutoExport)
+    QML_NAMED_ELEMENT(MediaAutoExport)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

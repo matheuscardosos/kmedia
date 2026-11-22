@@ -57,12 +57,30 @@
 <context>
     <name>ApplicationController</name>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="782"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="104"/>
+        <source>Song</source>
+        <translation>Cântico</translation>
+    </message>
+    <message>
+        <location filename="../../src/app/ApplicationController.cpp" line="830"/>
+        <source>The shared folder and the export folder must be different</source>
+        <translation>A pasta compartilhada e a pasta de exportação precisam ser diferentes</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../src/app/ApplicationController.cpp" line="837"/>
+        <source>%n file(s) could not be converted to MP4</source>
+        <translation>
+            <numerusform>%n arquivo não pôde ser convertido em MP4</numerusform>
+            <numerusform>%n arquivos não puderam ser convertidos em MP4</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../../src/app/ApplicationController.cpp" line="911"/>
         <source>Zoom screen share ready (%1): %2</source>
         <translation>Compartilhamento no Zoom pronto (%1): %2</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="867"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="990"/>
         <source>Applied congregation schedule: %1</source>
         <translation>Horário da congregação aplicado: %1</translation>
     </message>
@@ -363,6 +381,19 @@
         <location filename="../qml/components/CustomSectionPopup.qml" line="268"/>
         <source>Save</source>
         <translation>Salvar</translation>
+    </message>
+</context>
+<context>
+    <name>FolderPathField</name>
+    <message>
+        <location filename="../qml/components/FolderPathField.qml" line="25"/>
+        <source>Choose a folder</source>
+        <translation>Escolha uma pasta</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/FolderPathField.qml" line="44"/>
+        <source>Browse</source>
+        <translation>Procurar</translation>
     </message>
 </context>
 <context>
@@ -682,6 +713,30 @@
     </message>
 </context>
 <context>
+    <name>MediaExportCard</name>
+    <message>
+        <location filename="../qml/components/MediaExportCard.qml" line="34"/>
+        <location filename="../qml/components/MediaExportCard.qml" line="61"/>
+        <source>Media export</source>
+        <translation>Exportação de mídias</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MediaExportCard.qml" line="50"/>
+        <source>Each day with media is copied into a date folder, in meeting order.</source>
+        <translation>Cada dia com mídias é copiado para uma pasta com a data, na ordem da reunião.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MediaExportCard.qml" line="76"/>
+        <source>Convert images and audio to MP4</source>
+        <translation>Converter imagens e áudios em MP4</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MediaExportCard.qml" line="86"/>
+        <source>Needs FFmpeg installed on this computer.</source>
+        <translation>Precisa do FFmpeg instalado neste computador.</translation>
+    </message>
+</context>
+<context>
     <name>MeetingMediaPage</name>
     <message>
         <location filename="../qml/components/MeetingMediaPage.qml" line="32"/>
@@ -715,7 +770,7 @@
     </message>
     <message>
         <location filename="../qml/components/MeetingMediaPage.qml" line="173"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1523"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1524"/>
         <source>There are no media items for the selected date.</source>
         <translation>Não há nenhuma mídia para a data selecionada.</translation>
     </message>
@@ -742,7 +797,7 @@
     <message>
         <location filename="../qml/components/MeetingMediaPage.qml" line="272"/>
         <location filename="../qml/components/MeetingMediaPage.qml" line="644"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1538"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1539"/>
         <source>Add media</source>
         <translation>Adicionar mídia</translation>
     </message>
@@ -882,7 +937,7 @@
     </message>
     <message>
         <location filename="../qml/components/MeetingMediaPage.qml" line="623"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1546"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1547"/>
         <source>Next day with media</source>
         <translation>Próximo dia com mídia</translation>
     </message>
@@ -1007,7 +1062,7 @@
         <translation>Quebra de Seção</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1488"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1489"/>
         <source>Delete</source>
         <translation>Excluir</translation>
     </message>
@@ -1779,25 +1834,24 @@
         <source>Set a valid Zoom Meeting ID first</source>
         <translation>Defina um ID de reunião do Zoom válido primeiro</translation>
     </message>
+</context>
+<context>
+    <name>SharedFolderCard</name>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="658"/>
-        <source>Watched Cloud Sync Folder</source>
-        <translation>Pasta Sincronizada na Nuvem</translation>
+        <location filename="../qml/components/SharedFolderCard.qml" line="34"/>
+        <location filename="../qml/components/SharedFolderCard.qml" line="61"/>
+        <source>Shared folder</source>
+        <translation>Pasta compartilhada</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="675"/>
-        <source>Local Dropbox / OneDrive / Nextcloud path</source>
-        <translation>Caminho local Dropbox / OneDrive / Nextcloud</translation>
+        <location filename="../qml/components/SharedFolderCard.qml" line="50"/>
+        <source>Media in its date folders (YYYY-MM-DD) shows up in that day.</source>
+        <translation>As mídias das pastas com data (AAAA-MM-DD) aparecem naquele dia.</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="689"/>
-        <source>Watch</source>
-        <translation>Monitorar</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/SettingsView.qml" line="692"/>
-        <source>Updated watched folders</source>
-        <translation>Pastas monitoradas atualizadas</translation>
+        <location filename="../qml/components/SharedFolderCard.qml" line="72"/>
+        <source>Delete the folders of past weeks</source>
+        <translation>Excluir as pastas de semanas passadas</translation>
     </message>
 </context>
 <context>

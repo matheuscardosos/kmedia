@@ -23,6 +23,7 @@ qt_add_executable(kmedia_tests
     test_public_talk_media.cpp
     test_cloud_sync_watcher.cpp
     test_dated_folders_and_export.cpp
+    test_watched_folder_and_export.cpp
     test_publication_queries.cpp
     test_process_monitor.cpp
     test_obs_and_zoom.cpp
