@@ -597,14 +597,6 @@ void ApplicationController::applyProfileSettings()
     m_calendarModel->loadTempSchedulesJson(settings->stringValue(
         QLatin1StringView(kmedia::settings_keys::kMeetingTempScheduleChanges)));
     m_meetingCatalog->setSpecialWeekEvents(m_calendarModel->specialEventsMap());
-    if (!m_demoMode) {
-        const QString dateIso = m_calendarModel->selectedDateIso();
-        const QString kind = m_calendarModel->meetingKindForDate(dateIso);
-        const bool isCo =
-            (m_calendarModel->eventTypeForDate(dateIso) == QStringLiteral("co_visit"));
-        (void)m_playlistModel->openWorkspaceForDate(dateIso, kind, {}, isCo);
-        m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
-    }
     m_syncEngine->setDatabase(m_demoMode ? nullptr : m_profileManager->activeDatabase());
     m_syncEngine->setScheduleProviders(
         [this](const QDate& date) {
@@ -616,6 +608,19 @@ void ApplicationController::applyProfileSettings()
         });
     applySyncSettings(false);
     if (!m_demoMode) {
+        // The meeting media page opens on the first day from today on with a meeting or media.
+        m_syncEngine->refreshAddedMediaDays();
+        const QString firstDay =
+            m_syncEngine->dayWithContent(QDate::currentDate().toString(Qt::ISODate), 0);
+        if (!firstDay.isEmpty()) {
+            m_calendarModel->selectDate(firstDay);
+        }
+        const QString dateIso = m_calendarModel->selectedDateIso();
+        const QString kind = m_calendarModel->meetingKindForDate(dateIso);
+        const bool isCo =
+            (m_calendarModel->eventTypeForDate(dateIso) == QStringLiteral("co_visit"));
+        (void)m_playlistModel->openWorkspaceForDate(dateIso, kind, {}, isCo);
+        m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
         QTimer::singleShot(0, m_syncEngine.get(), &kmedia::MeetingSyncEngine::refresh);
     }
 
@@ -951,6 +956,8 @@ void ApplicationController::applySyncSettings(bool resetWhenChanged)
     next.excludeTh = m_meetingCatalog->excludeTh();
     next.excludeCbsVideos = m_meetingCatalog->excludeCbsPubs();
     next.signLanguage = m_meetingCatalog->isSignLanguage(next.languageCode);
+    // Sign languages publish their songs in their own songbook.
+    next.songbookSymbol = next.signLanguage ? QStringLiteral("sjj") : QStringLiteral("sjjm");
     // Only a real change of what gets synced resets the synced media of the window.
     const bool mediaChanged = next.languageCode != current.languageCode ||
                               next.fallbackLanguageCode != current.fallbackLanguageCode ||

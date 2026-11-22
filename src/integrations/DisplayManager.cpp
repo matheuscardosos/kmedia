@@ -158,9 +158,9 @@ void DisplayManager::connectScreenGeometry(QScreen* screen)
     if (screen == nullptr) {
         return;
     }
-    connect(
-        screen, &QScreen::geometryChanged, this, [this](const QRect&) { refreshScreens(); },
-        Qt::UniqueConnection);
+    // A unique connection needs a member function; with a lambda Qt refuses to connect at all.
+    connect(screen, &QScreen::geometryChanged, this, &DisplayManager::refreshScreens,
+            Qt::UniqueConnection);
 }
 
 void DisplayManager::recomputeTarget()

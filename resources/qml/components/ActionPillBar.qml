@@ -99,7 +99,7 @@ Item {
         Keys.onSpacePressed: btn.triggered()
 
         FocusRing {
-            active: btn.visualFocus
+            active: btn.activeFocus
             targetRadius: btn.radius
         }
 

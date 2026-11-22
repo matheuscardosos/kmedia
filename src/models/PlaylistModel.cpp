@@ -555,6 +555,12 @@ QString PlaylistModel::activeSourceKind() const
     return m_items.at(static_cast<size_t>(m_activeIndex)).sourceKind;
 }
 
+bool PlaylistModel::activeIsSynced() const
+{
+    return m_activeIndex >= 0 && m_activeIndex < static_cast<int>(m_items.size()) &&
+           m_items.at(static_cast<size_t>(m_activeIndex)).source == QStringLiteral("dynamic");
+}
+
 int PlaylistModel::activeMediaKind() const
 {
     if (m_activeIndex < 0 || m_activeIndex >= static_cast<int>(m_items.size())) {

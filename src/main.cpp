@@ -12,6 +12,7 @@
 #include <QIcon>
 #include <QImage>
 #include <QQmlApplicationEngine>
+#include <QQuickStyle>
 #include <QQuickWindow>
 #include <QSGRendererInterface>
 #include <QSurfaceFormat>
@@ -80,6 +81,10 @@ int main(int argc, char* argv[])
 
     // libmpv requires C numeric locale to parse decimal numbers consistently.
     std::setlocale(LC_NUMERIC, "C");
+
+    // Every control is drawn by the Studio components; the native Windows and macOS styles would
+    // ignore their custom backgrounds, so all platforms build on the plain Basic style.
+    QQuickStyle::setStyle(QStringLiteral("Basic"));
 
     QCommandLineParser parser;
     parser.setApplicationDescription(

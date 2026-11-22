@@ -117,7 +117,14 @@ ApplicationWindow {
         enabled: !root.editingTextInput && !commandPalette.opened
                  && root.currentTabIndex === 0
                  && ApplicationController.playlist.activeIndex >= 0
-        onActivated: ApplicationController.playlist.removeAt(ApplicationController.playlist.activeIndex)
+        // Synced media is only hidden: the next sync would bring a deleted item back.
+        onActivated: {
+            if (ApplicationController.playlist.activeIsSynced) {
+                ApplicationController.playlist.setItemHidden(ApplicationController.playlist.activeIndex, true)
+            } else {
+                ApplicationController.playlist.removeAt(ApplicationController.playlist.activeIndex)
+            }
+        }
     }
     Shortcut {
         sequence: "1"
