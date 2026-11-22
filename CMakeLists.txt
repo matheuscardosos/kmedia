@@ -85,6 +85,8 @@ qt_add_library(kmedia_core STATIC
     src/media/PlaylistExporter.cpp
     src/media/MediaAutoExport.h
     src/media/MediaAutoExport.cpp
+    src/media/IconImageProvider.h
+    src/media/IconImageProvider.cpp
     src/media/ThumbnailCache.h
     src/media/ThumbnailCache.cpp
     src/media/VideoFrameExtractor.h
@@ -162,6 +164,7 @@ target_link_libraries(kmedia_core
         Qt6::Sql
         Qt6::WebSockets
     PRIVATE
+        Qt6::Svg
         LibMPV::LibMPV
         MINIZIP::minizip-ng
         $<$<PLATFORM_ID:Windows>:psapi>

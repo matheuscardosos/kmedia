@@ -1,7 +1,8 @@
 import QtQuick
-import QtQuick.Effects
 import ".."
 
+// A bundled icon drawn in any color: the icon provider recolors the SVG once and Qt caches the
+// image, so no shader layer is needed per icon.
 Item {
     id: root
 
@@ -14,25 +15,15 @@ Item {
     implicitHeight: root.size
 
     Image {
-        id: glyph
-
         anchors.fill: parent
-        visible: false
+        visible: root.name.length > 0
         source: root.name.length > 0
-                ? ("qrc:/qt/qml/KMedia/UI/icons/" + root.category + "/" + root.name + ".svg")
+                ? ("image://icon/" + root.category + "/" + root.name + "/" + root.color.toString().slice(-6))
                 : ""
         sourceSize.width: Math.max(24, root.size * 2)
         sourceSize.height: Math.max(24, root.size * 2)
+        opacity: root.color.a
         fillMode: Image.PreserveAspectFit
         smooth: true
-        mipmap: true
-    }
-
-    MultiEffect {
-        anchors.fill: glyph
-        source: glyph
-        visible: root.name.length > 0 && glyph.status === Image.Ready
-        colorization: 1.0
-        colorizationColor: root.color
     }
 }

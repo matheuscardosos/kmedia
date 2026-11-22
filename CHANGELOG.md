@@ -22,6 +22,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Added `YYYY-MM-DD` day folder support shared by the watched folder and the media auto-export (`DatedFolderLayout`, `PlaylistExporter`): the date comes from the parent folder, placements live in a per-folder `.section-order.json`, exports use numbered `NN Section - NN Title` names that stay in sync between runs, day folders are removed once their week is over, images and audio can become MP4 clips through FFmpeg, and `CloudSyncWatcher` gains an opt-in mode that only watches recent day folders. `PdfViewerController` can also export a page range as PNG images.
 - Upgraded `JwpubParser`, `CatalogClient`, `MeetingCalendarModel`, and `MeetingCatalogService` with `DatedText` week matching, `[6, 8, 10, 12]`-week *Watchtower* `Class = 40` resolution, `DocumentExtract` song/reference parsing, `SuppressZoom` / `LinkMultimediaId` filtering, Mediator `v1/media-items` + `GETPUBMEDIALINKS` + secondary language fallback, `2100 s` stream-only threshold, CO Tuesday shift + hidden CBS/closing song rules, Memorial suppression + `mi<YY>` support, temporary schedule overrides, extraction filter toggles, and `hub.jw.org` Congregation Lookup UI.
 
+### Changed
+
+- Icons are drawn by an image provider that recolors each SVG once and lets Qt cache it, instead of a shader effect with its own layer per icon, so a busy meeting page uses far fewer GPU layers; icons now also show in software rendering and in `--screenshot` captures.
+
 ### Fixed
 
 - Media from the watched cloud folder no longer lands in whatever day is open: it now goes to the day of its date folder.

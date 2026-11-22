@@ -1,3 +1,4 @@
+#include "media/IconImageProvider.h"
 #include "media/ThumbnailCache.h"
 #include "media/VideoFrameExtractor.h"
 
@@ -171,4 +172,30 @@ TEST_CASE("VideoFrameExtractor reads a still frame from a short video", "[media]
 
     REQUIRE(kmedia::VideoFrameExtractor::extract(tempDir.filePath(QStringLiteral("missing.mp4")))
                 .isNull());
+}
+
+TEST_CASE("IconImageProvider draws a white icon in the requested color", "[media][icons]")
+{
+    const QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+    REQUIRE(QDir().mkpath(tempDir.filePath(QStringLiteral("lucide"))));
+    QFile svg(tempDir.filePath(QStringLiteral("lucide/block.svg")));
+    REQUIRE(svg.open(QIODevice::WriteOnly));
+    svg.write(QByteArrayLiteral(
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 "
+        "24\">"
+        "<rect x=\"0\" y=\"0\" width=\"24\" height=\"24\" fill=\"#FFFFFF\"/></svg>"));
+    svg.close();
+
+    kmedia::IconImageProvider provider(tempDir.path());
+    QSize size;
+    const QImage icon =
+        provider.requestImage(QStringLiteral("lucide/block/ff6b00"), &size, QSize(32, 32));
+    REQUIRE(size == QSize(32, 32));
+    REQUIRE(icon.pixelColor(16, 16) == QColor(QStringLiteral("#ff6b00")));
+
+    // Only bundled icons can be asked for: anything else comes back empty.
+    const QImage outside =
+        provider.requestImage(QStringLiteral("../secret/file/ff6b00"), &size, QSize(32, 32));
+    REQUIRE(outside.pixelColor(16, 16).alpha() == 0);
 }
