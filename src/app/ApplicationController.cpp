@@ -78,8 +78,7 @@ ApplicationController::ApplicationController(QObject* parent)
       m_playlistModel(std::make_unique<kmedia::PlaylistModel>()),
       m_meetingDayModel(std::make_unique<kmedia::MeetingDayModel>(m_playlistModel.get())),
       m_meetingTimer(std::make_unique<kmedia::MeetingTimer>()),
-      m_meetingCatalog(std::make_unique<kmedia::MeetingCatalogService>(
-          m_catalogClient.get(), m_downloadService.get(), m_playlistModel.get())),
+      m_meetingCatalog(std::make_unique<kmedia::MeetingCatalogService>(m_catalogClient.get())),
       m_calendarModel(std::make_unique<kmedia::MeetingCalendarModel>())
 {
     m_publicationStore =
@@ -550,7 +549,6 @@ void ApplicationController::applyProfileSettings()
     if (profile.has_value() && !profile->storagePath.isEmpty()) {
         m_playlistModel->setPackageExtractDir(
             QDir(profile->storagePath).filePath(QStringLiteral("packages")));
-        m_meetingCatalog->setStorageRoot(profile->storagePath);
         m_publicationStore->setCacheRoot(profile->storagePath);
         m_calendarModel->setStorageRoot(profile->storagePath);
     }
@@ -578,8 +576,6 @@ void ApplicationController::applyProfileSettings()
         settings->boolValue(QLatin1StringView(kmedia::settings_keys::kFilterExcludeTh), false));
     m_meetingCatalog->setExcludeCbsPubs(settings->boolValue(
         QLatin1StringView(kmedia::settings_keys::kFilterExcludeCbsPubs), false));
-    m_meetingCatalog->setAutoLoadWeekMedia(
-        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kAutoLoadWeekMedia), true));
 
     const int midDay =
         settings->intValue(QLatin1StringView(kmedia::settings_keys::kMeetingMidweekDay), 3);
@@ -596,7 +592,6 @@ void ApplicationController::applyProfileSettings()
         settings->stringValue(QLatin1StringView(kmedia::settings_keys::kMeetingSpecialEvents)));
     m_calendarModel->loadTempSchedulesJson(settings->stringValue(
         QLatin1StringView(kmedia::settings_keys::kMeetingTempScheduleChanges)));
-    m_meetingCatalog->setSpecialWeekEvents(m_calendarModel->specialEventsMap());
     m_syncEngine->setDatabase(m_demoMode ? nullptr : m_profileManager->activeDatabase());
     m_syncEngine->setScheduleProviders(
         [this](const QDate& date) {
@@ -620,7 +615,6 @@ void ApplicationController::applyProfileSettings()
         const bool isCo =
             (m_calendarModel->eventTypeForDate(dateIso) == QStringLiteral("co_visit"));
         (void)m_playlistModel->openWorkspaceForDate(dateIso, kind, {}, isCo);
-        m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
         QTimer::singleShot(0, m_syncEngine.get(), &kmedia::MeetingSyncEngine::refresh);
     }
 
@@ -833,8 +827,6 @@ void ApplicationController::wireIntegrations()
             (void)settings->setValue(
                 QLatin1StringView(kmedia::settings_keys::kFilterExcludeCbsPubs),
                 m_meetingCatalog->excludeCbsPubs());
-            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kAutoLoadWeekMedia),
-                                     m_meetingCatalog->autoLoadWeekMedia());
         }
     });
     connect(
@@ -844,12 +836,6 @@ void ApplicationController::wireIntegrations()
             m_calendarModel->setScheduleDays(midDay, midTime, endDay, endTime);
             showToast(tr("Applied congregation schedule: %1").arg(name), QStringLiteral("success"));
         });
-    connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::weekSynced, this,
-            [this](int importedCount) {
-                m_calendarModel->refreshReadiness();
-                showToast(tr("Synced %1 week item(s) into playlist").arg(importedCount),
-                          QStringLiteral("success"));
-            });
     connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::catalogError, this,
             [this](const QString& errorMessage) {
                 showToast(errorMessage, QStringLiteral("warning"));
@@ -893,7 +879,6 @@ void ApplicationController::wireIntegrations()
 
     connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::specialEventsChanged, this,
             [this]() {
-                m_meetingCatalog->setSpecialWeekEvents(m_calendarModel->specialEventsMap());
                 if (m_demoMode) {
                     return;
                 }
@@ -920,14 +905,11 @@ void ApplicationController::wireIntegrations()
             [this](const QDate& date, const QString& meetingKind, bool isCoVisit) {
                 const QString dateIso = date.toString(Qt::ISODate);
                 (void)m_playlistModel->openWorkspaceForDate(dateIso, meetingKind, {}, isCoVisit);
-                m_meetingCatalog->setTargetMeetingContext(date, meetingKind);
             });
 
     connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::weekOpenRequested, this,
-            [this](const QDate& weekMonday, bool syncNow) {
+            [this](const QDate&, bool syncNow) {
                 const QString dateIso = m_calendarModel->selectedDateIso();
-                const QString kind = m_calendarModel->meetingKindForDate(dateIso);
-                m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
                 if (syncNow) {
                     m_syncEngine->resyncDay(dateIso);
                 } else if (!m_calendarModel->selectedWeekEventType().isEmpty()) {
@@ -938,8 +920,6 @@ void ApplicationController::wireIntegrations()
                         (void)m_playlistModel->ensureSection(
                             kmedia::MeetingSections::kCircuitOverseer);
                     }
-                } else {
-                    m_meetingCatalog->setTargetWeekDate(weekMonday);
                 }
             });
 }
@@ -980,7 +960,6 @@ void ApplicationController::openDateWorkspace(const QString& isoDate, bool force
     const bool isCoVisit =
         (m_calendarModel->eventTypeForDate(effectiveIso) == QStringLiteral("co_visit"));
     (void)m_playlistModel->openWorkspaceForDate(effectiveIso, kind, {}, isCoVisit);
-    m_meetingCatalog->setTargetMeetingContext(m_calendarModel->selectedDate(), kind);
 
     if (!m_demoMode && forceSync) {
         m_syncEngine->resyncDay(effectiveIso);

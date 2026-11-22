@@ -4,11 +4,9 @@
 
 #include <QSignalSpy>
 
-#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("MeetingCatalogService resolves weekly dates, issue tags, sections, and video quality",
-          "[network][catalog]")
+TEST_CASE("MeetingCatalogService resolves weekly dates and issue tags", "[network][catalog]")
 {
     using MCS = kmedia::MeetingCatalogService;
 
@@ -19,57 +17,14 @@ TEST_CASE("MeetingCatalogService resolves weekly dates, issue tags, sections, an
     REQUIRE(MCS::watchtowerIssueTagForDate(QDate(2026, 11, 19)) == 202609);
     REQUIRE(MCS::watchtowerIssueTagForDate(QDate(2026, 1, 12)) == 202511);
     REQUIRE(MCS::formatWeekRange(QDate(2026, 11, 19)) == QStringLiteral("2026-11-16 - 2026-11-22"));
-
-    REQUIRE(MCS::inferMeetingSection(QStringLiteral("mwb"),
-                                     QStringLiteral("Treasures From God's Word"),
-                                     {}) == QStringLiteral("tgw"));
-    REQUIRE(MCS::inferMeetingSection(QStringLiteral("mwb"), QStringLiteral("Nossa Vida Cristã"),
-                                     {}) == QStringLiteral("lac"));
-    REQUIRE(MCS::inferMeetingSection(QStringLiteral("w"), QStringLiteral("Lesson 10"), {}) ==
-            QStringLiteral("wt"));
-    REQUIRE(MCS::inferMeetingSection(QStringLiteral("S-34"), QStringLiteral("Talk 42"), {}) ==
-            QStringLiteral("pt"));
-
-    std::vector<kmedia::CatalogMediaAsset> raw;
-    kmedia::CatalogMediaAsset vid360;
-    vid360.keySymbol = QStringLiteral("mwb");
-    vid360.issueTagNumber = 202611;
-    vid360.track = 1;
-    vid360.fileFormat = QStringLiteral("MP4");
-    vid360.label = QStringLiteral("360p");
-    vid360.url = QStringLiteral("https://cdn.example/video_r360P.mp4");
-    raw.push_back(vid360);
-
-    kmedia::CatalogMediaAsset vid720 = vid360;
-    vid720.label = QStringLiteral("720p");
-    vid720.url = QStringLiteral("https://cdn.example/video_r720P.mp4");
-    raw.push_back(vid720);
-
-    kmedia::CatalogMediaAsset vid240 = vid360;
-    vid240.label = QStringLiteral("240p");
-    vid240.url = QStringLiteral("https://cdn.example/video_r240P.mp4");
-    raw.push_back(vid240);
-
-    kmedia::CatalogMediaAsset jwpub;
-    jwpub.keySymbol = QStringLiteral("mwb");
-    jwpub.issueTagNumber = 202611;
-    jwpub.fileFormat = QStringLiteral("JWPUB");
-    jwpub.url = QStringLiteral("https://cdn.example/mwb_E_202611.jwpub");
-    raw.push_back(jwpub);
-
-    const std::vector<kmedia::CatalogMediaAsset> dedup = MCS::deduplicateAssets(raw);
-    REQUIRE(dedup.size() == 2);
-    REQUIRE(dedup.at(0).label == QStringLiteral("720p"));
-    REQUIRE(dedup.at(1).fileFormat == QStringLiteral("JWPUB"));
 }
 
-TEST_CASE(
-    "MeetingCatalogService switches weeks/languages and DownloadService exposes task variants",
-    "[network][catalog][downloads]")
+TEST_CASE("MeetingCatalogService switches languages and DownloadService exposes task variants",
+          "[network][catalog][downloads]")
 {
     kmedia::CatalogClient catalogClient;
     kmedia::DownloadService downloads;
-    kmedia::MeetingCatalogService service(&catalogClient, &downloads);
+    kmedia::MeetingCatalogService service(&catalogClient);
 
     REQUIRE_FALSE(service.languagesVariant().isEmpty());
     REQUIRE(service.selectedLanguageCode() == QStringLiteral("E"));
@@ -78,12 +33,6 @@ TEST_CASE(
     service.setSelectedLanguageCode(QStringLiteral("T"));
     REQUIRE(service.selectedLanguageCode() == QStringLiteral("T"));
     REQUIRE(langSpy.count() == 1);
-
-    const QDate initialWeek = service.targetWeekMonday();
-    service.nextWeek();
-    REQUIRE(service.targetWeekMonday() == initialWeek.addDays(7));
-    service.previousWeek();
-    REQUIRE(service.targetWeekMonday() == initialWeek);
 
     const QString invalidId =
         downloads.enqueue(QUrl(), QString(), QString(), kmedia::DownloadService::Priority::Normal,
@@ -99,15 +48,8 @@ TEST_CASE(
     REQUIRE(downloads.tasksVariant().isEmpty());
 }
 
-TEST_CASE("CatalogClient & MeetingCatalogService support Mediator, Pinyin, Watchtower probe, and "
-          "hub congregations",
-          "[network][catalog]")
+TEST_CASE("CatalogClient supports Mediator, Pinyin, and hub congregations", "[network][catalog]")
 {
-    const std::vector<int> wtTags =
-        kmedia::MeetingCatalogService::watchtowerCandidateIssueTags(QDate(2026, 11, 22));
-    REQUIRE(wtTags.size() >= 2);
-    REQUIRE(std::find(wtTags.begin(), wtTags.end(), 202609) != wtTags.end());
-
     REQUIRE(kmedia::CatalogClient::pinyinSongFilename(18, 720) ==
             QStringLiteral("sjjm_s-Pi_CHS_018_r720P.mp4"));
 
