@@ -178,6 +178,12 @@ QByteArray ThumbnailCache::imageFormat() const
 void ThumbnailCache::setCustomExtractor(CustomExtractor extractor)
 {
     m_customExtractor = std::move(extractor);
+    m_failed.clear();
+}
+
+bool ThumbnailCache::hasCustomExtractor() const
+{
+    return static_cast<bool>(m_customExtractor);
 }
 
 QString ThumbnailCache::cachedPathIfPresent(const QString& key)
@@ -220,6 +226,11 @@ void ThumbnailCache::requestThumbnail(const QString& key, const QString& sourceP
     }
 
     if (m_inFlight.contains(safeKey)) {
+        return;
+    }
+    if (m_failed.contains(safeKey)) {
+        // A file that could not be decoded is not tried again until it changes.
+        emit thumbnailFailed(key, QStringLiteral("Unable to decode thumbnail from source"));
         return;
     }
     m_inFlight.insert(safeKey);
@@ -278,6 +289,7 @@ void ThumbnailCache::clear()
     m_lruList.clear();
     m_index.clear();
     m_inFlight.clear();
+    m_failed.clear();
     m_totalBytes = 0;
 }
 
@@ -309,6 +321,7 @@ void ThumbnailCache::handleTaskFinished(quint64 generation, const QString& cache
 
     m_inFlight.remove(cacheKey);
     if (!ok || bytes <= 0) {
+        m_failed.insert(cacheKey);
         emit thumbnailFailed(originalKey, error);
         return;
     }

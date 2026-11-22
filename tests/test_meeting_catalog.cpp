@@ -117,11 +117,13 @@ TEST_CASE("CatalogClient & MeetingCatalogService support Mediator, Pinyin, Watch
         QStringLiteral("v1/media-items/T/pub-mwbv_202611_1_VIDEO")));
 
     const QByteArray mediatorJson = QByteArrayLiteral(
-        R"({"media":[{"title":"Full Convention Session","naturalKey":"pub-co-r26_1_VIDEO","duration":2400.0,"files":[{"progressiveDownloadURL":"https://cdn.example/long.mp4","label":"720p","mimetype":"video/mp4","filesize":500000000}]}]})");
+        R"({"media":[{"title":"Full Convention Session","naturalKey":"pub-co-r26_1_VIDEO","duration":2400.0,"images":{"sqr":{"sm":"https://cdn.example/sqr_sm.jpg"},"lsr":{"xs":"https://cdn.example/lsr_xs.jpg","md":"https://cdn.example/lsr_md.jpg"}},"files":[{"progressiveDownloadURL":"https://cdn.example/long.mp4","label":"720p","mimetype":"video/mp4","filesize":500000000}]}]})");
     const auto medAssets = kmedia::CatalogClient::parseMediatorMediaJson(mediatorJson);
     REQUIRE(medAssets.size() == 1);
     REQUIRE(medAssets.at(0).streamOnly);
     REQUIRE(medAssets.at(0).fileFormat == QStringLiteral("MP4"));
+    // A wide picture wins over a square one, at the smallest size from "sm" up.
+    REQUIRE(medAssets.at(0).imageUrl == QStringLiteral("https://cdn.example/lsr_md.jpg"));
 
     const QByteArray hubJson = QByteArrayLiteral(
         R"({"geoLocationList":[{"properties":{"orgName":"Central English","address":"100 Main St","lang":"E","schedule":{"midweek":{"weekday":3,"time":"19:00"},"weekend":{"weekday":7,"time":"10:00"}}}}]})");

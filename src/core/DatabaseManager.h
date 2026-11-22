@@ -2,6 +2,7 @@
 
 #include <QSqlDatabase>
 #include <QString>
+#include <QStringList>
 #include <QtGlobal>
 
 #include <functional>
@@ -72,6 +73,7 @@ struct PlaylistEntryRecord
     QString pairedAudioPath;
     QString source{QStringLiteral("additional")};
     QString uniqueKey;
+    QString thumbnailPath;
 };
 
 struct PlaylistItemRow
@@ -133,6 +135,7 @@ public:
                                                              const QString& accentColor = {});
     [[nodiscard]] bool updatePlaylistMetadata(const PlaylistRecord& playlist);
     [[nodiscard]] std::vector<PlaylistRecord> listPlaylists() const;
+    [[nodiscard]] QStringList listDatesWithAddedMedia() const;
     [[nodiscard]] bool setPlaylistSyncStatus(qint64 playlistId, const QString& syncStatus);
     [[nodiscard]] bool deletePlaylist(qint64 id);
 

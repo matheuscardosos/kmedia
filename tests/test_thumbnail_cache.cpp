@@ -1,7 +1,9 @@
 #include "media/ThumbnailCache.h"
+#include "media/VideoFrameExtractor.h"
 
 #include <QColor>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QImage>
 #include <QPainter>
@@ -137,4 +139,36 @@ TEST_CASE("ThumbnailCache enforces disk LRU eviction when byte budget is exceede
     REQUIRE_FALSE(lru.cachedPathIfPresent(QStringLiteral("item1")).isEmpty());
     REQUIRE_FALSE(lru.cachedPathIfPresent(QStringLiteral("item3")).isEmpty());
     REQUIRE(lru.cachedPathIfPresent(QStringLiteral("item2")).isEmpty());
+}
+
+TEST_CASE("VideoFrameExtractor reads a still frame from a short video", "[media][thumbnails]")
+{
+    const QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+
+    // One second of raw 4:2:0 video, shorter than the usual frame time, so the first frame is used.
+    constexpr int kWidth = 64;
+    constexpr int kHeight = 36;
+    const QString videoPath = tempDir.filePath(QStringLiteral("clip.y4m"));
+    QFile video(videoPath);
+    REQUIRE(video.open(QIODevice::WriteOnly));
+    video.write(QByteArrayLiteral("YUV4MPEG2 W64 H36 F10:1 Ip A1:1 C420jpeg\n"));
+    const QByteArray luma(kWidth * kHeight, static_cast<char>(81));
+    const QByteArray blue((kWidth / 2) * (kHeight / 2), static_cast<char>(90));
+    const QByteArray red((kWidth / 2) * (kHeight / 2), static_cast<char>(240));
+    for (int frame = 0; frame < 10; ++frame) {
+        video.write(QByteArrayLiteral("FRAME\n"));
+        video.write(luma);
+        video.write(blue);
+        video.write(red);
+    }
+    video.close();
+
+    const QImage still = kmedia::VideoFrameExtractor::extract(videoPath);
+    REQUIRE_FALSE(still.isNull());
+    REQUIRE(still.size() == QSize(kWidth, kHeight));
+    REQUIRE(QColor(still.pixel(kWidth / 2, kHeight / 2)).red() > 200);
+
+    REQUIRE(kmedia::VideoFrameExtractor::extract(tempDir.filePath(QStringLiteral("missing.mp4")))
+                .isNull());
 }

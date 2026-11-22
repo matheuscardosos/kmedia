@@ -1,6 +1,7 @@
 #include "TestZipFixtures.h"
 #include "core/DatabaseManager.h"
 #include "media/PlaybackController.h"
+#include "media/ThumbnailCache.h"
 #include "models/PlaylistModel.h"
 
 #include <QDir>
@@ -248,4 +249,32 @@ TEST_CASE(
         REQUIRE(model.data(model.index(0, 0), kmedia::PlaylistModel::SlideIntervalMsRole).toInt() ==
                 30000);
     }
+}
+
+TEST_CASE("PlaylistModel rows show small cached thumbnails instead of the full picture",
+          "[models][playlist][thumbnails]")
+{
+    const QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+    const QString picture = tempDir.filePath(QStringLiteral("poster.png"));
+    QImage image(1280, 720, QImage::Format_ARGB32);
+    image.fill(Qt::darkCyan);
+    REQUIRE(image.save(picture, "PNG"));
+
+    kmedia::ThumbnailCache cache;
+    REQUIRE(cache.initialize(tempDir.filePath(QStringLiteral("thumbs"))));
+    kmedia::PlaylistModel model;
+    model.attachThumbnailCache(&cache);
+    QSignalSpy thumbnails(&model, &QAbstractItemModel::dataChanged);
+
+    REQUIRE(model.importLocalFile(picture));
+    const auto thumbUrl = [&model]() {
+        return model.data(model.index(0, 0), kmedia::PlaylistModel::ThumbnailUrlRole).toString();
+    };
+    if (thumbUrl().isEmpty()) {
+        REQUIRE(thumbnails.wait(5000));
+    }
+    const QString cachedPath = QUrl(thumbUrl()).toLocalFile();
+    REQUIRE(cachedPath.startsWith(tempDir.filePath(QStringLiteral("thumbs"))));
+    REQUIRE(QImage(cachedPath).width() <= cache.targetWidth());
 }

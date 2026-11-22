@@ -21,7 +21,7 @@ TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs schema migrations",
     REQUIRE(db.open(dbPath));
     REQUIRE(db.isOpen());
     REQUIRE(QFileInfo::exists(dbPath));
-    REQUIRE(db.schemaVersion() == 3);
+    REQUIRE(db.schemaVersion() == 4);
     REQUIRE(db.pragmaValue(QStringLiteral("journal_mode")).toLower() == QStringLiteral("wal"));
     REQUIRE(db.pragmaValue(QStringLiteral("foreign_keys")) == QStringLiteral("1"));
 
@@ -30,7 +30,7 @@ TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs schema migrations",
 
     // Reopening an existing database preserves schema version without reapplying migrations
     REQUIRE(db.open(dbPath));
-    REQUIRE(db.schemaVersion() == 3);
+    REQUIRE(db.schemaVersion() == 4);
 }
 
 TEST_CASE("DatabaseManager supports date-keyed playlists and v2 entry metadata", "[database][core]")
@@ -237,7 +237,7 @@ TEST_CASE("DatabaseManager migrates title-based sections to stable section ids",
         // Roll the file back to schema V2 so the next open migrates these legacy rows.
         REQUIRE(db.executeTransaction([](QSqlDatabase& handle) {
             QSqlQuery query(handle);
-            return query.exec(QStringLiteral("DELETE FROM schema_migrations WHERE version = 3")) &&
+            return query.exec(QStringLiteral("DELETE FROM schema_migrations WHERE version >= 3")) &&
                    query.exec(QStringLiteral("UPDATE playlist_items SET section_id = '', "
                                              "source = 'additional'"));
         }));
@@ -245,7 +245,7 @@ TEST_CASE("DatabaseManager migrates title-based sections to stable section ids",
 
     kmedia::DatabaseManager reopened;
     REQUIRE(reopened.open(dbPath));
-    REQUIRE(reopened.schemaVersion() == 3);
+    REQUIRE(reopened.schemaVersion() == 4);
 
     const auto entries = reopened.listPlaylistEntries(playlistId);
     REQUIRE(entries.size() == 2);

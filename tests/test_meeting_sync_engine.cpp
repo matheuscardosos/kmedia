@@ -1,6 +1,7 @@
 #include "TestZipFixtures.h"
 #include "core/DatabaseManager.h"
 #include "core/NetworkManager.h"
+#include "media/VideoFrameExtractor.h"
 #include "network/CatalogClient.h"
 #include "network/MeetingSyncEngine.h"
 #include "network/PublicationStore.h"
@@ -286,9 +287,18 @@ TEST_CASE("MeetingSyncEngine syncs this week's meetings from JW.org", "[.network
             if (!hasFile && row.entry.streamUrl.isEmpty()) {
                 ++missing;
             }
-            lines << QStringLiteral("  [%1] %2 %3%4 %5")
+            const bool video =
+                row.media.has_value() && row.media->filePath.endsWith(QStringLiteral(".mp4"));
+            if (video) {
+                // Synced videos bring their preview picture along, or show a frame of their own.
+                INFO(row.media->filePath.toStdString());
+                CHECK((QFileInfo::exists(row.entry.thumbnailPath) ||
+                       !kmedia::VideoFrameExtractor::extract(row.media->filePath).isNull()));
+            }
+            lines << QStringLiteral("  [%1] %2 %3%4 %5%6")
                          .arg(row.entry.sectionId, row.entry.tagType, row.entry.tagValue,
                               row.entry.hidden ? QStringLiteral(" (hidden)") : QString(),
+                              video ? QStringLiteral("(video) ") : QString(),
                               row.entry.customTitle.left(60));
         }
         WARN(QStringLiteral("%1 %2: %3, %4 items, %5 missing\n%6")
@@ -301,4 +311,51 @@ TEST_CASE("MeetingSyncEngine syncs this week's meetings from JW.org", "[.network
         CHECK(missing == 0);
         CHECK_FALSE(rows.empty());
     }
+}
+
+TEST_CASE("MeetingSyncEngine marks days that hold added media", "[sync][engine][calendar]")
+{
+    const QTemporaryDir root;
+    REQUIRE(root.isValid());
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(root.filePath(QStringLiteral("profile.db"))));
+
+    const auto addItem = [&db](const QString& dateIso, const QString& kind, const QString& source) {
+        const kmedia::PlaylistRecord playlist =
+            db.findOrCreatePlaylistForDate(dateIso, kind, dateIso);
+        kmedia::PlaylistEntryRecord entry;
+        entry.playlistId = playlist.id;
+        entry.customTitle = QStringLiteral("Item");
+        entry.streamUrl = QStringLiteral("https://example.org/item.mp4");
+        entry.source = source;
+        REQUIRE(db.addPlaylistEntry(entry) > 0);
+        return playlist.id;
+    };
+    addItem(QStringLiteral("2026-11-20"), QStringLiteral("custom"), QStringLiteral("additional"));
+    const qint64 midweek = addItem(QStringLiteral("2026-11-18"), QStringLiteral("midweek"),
+                                   QStringLiteral("additional"));
+    addItem(QStringLiteral("2026-11-22"), QStringLiteral("weekend"), QStringLiteral("dynamic"));
+    REQUIRE(db.setPlaylistSyncStatus(midweek, QStringLiteral("complete")));
+
+    kmedia::PublicationStore store(nullptr, nullptr);
+    MeetingSyncEngine engine(&store);
+    engine.setToday(QDate(2026, 11, 18));
+    engine.setDatabase(&db);
+    engine.setScheduleProviders(
+        [](const QDate& date) {
+            if (date.dayOfWeek() == 3) {
+                return QStringLiteral("midweek");
+            }
+            return date.dayOfWeek() == 7 ? QStringLiteral("weekend") : QStringLiteral("custom");
+        },
+        [](const QDate&) { return false; });
+    engine.refresh();
+
+    const QVariantMap statuses = engine.dayStatuses();
+    REQUIRE(statuses.value(QStringLiteral("2026-11-20")).toString() == QStringLiteral("media"));
+    // A finished meeting keeps its own color even when media was added to it.
+    REQUIRE(statuses.value(QStringLiteral("2026-11-18")).toString() == QStringLiteral("complete"));
+    REQUIRE(statuses.value(QStringLiteral("2026-11-22")).toString() != QStringLiteral("media"));
+    REQUIRE(engine.windowStart() == QStringLiteral("2026-11-16"));
+    REQUIRE(engine.windowEnd() >= QStringLiteral("2026-12-21"));
 }

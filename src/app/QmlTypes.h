@@ -10,9 +10,11 @@
 #include "media/MpvRendererItem.h"
 #include "media/PdfViewerController.h"
 #include "media/PlaybackController.h"
+#include "models/MeetingDayModel.h"
 #include "models/PlaylistModel.h"
 #include "network/DownloadService.h"
 #include "network/MeetingCatalogService.h"
+#include "network/MeetingSyncEngine.h"
 #include "parsers/CloudSyncWatcher.h"
 
 #include <QtQmlIntegration/qqmlintegration.h>
@@ -101,6 +103,22 @@ struct PlaylistModelForeign
     Q_GADGET
     QML_FOREIGN(kmedia::PlaylistModel)
     QML_NAMED_ELEMENT(PlaylistModel)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct MeetingDayModelForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::MeetingDayModel)
+    QML_NAMED_ELEMENT(MeetingDayModel)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct MeetingSyncEngineForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::MeetingSyncEngine)
+    QML_NAMED_ELEMENT(MeetingSyncEngine)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

@@ -192,13 +192,14 @@ TEST_CASE("CatalogClient builds standardized endpoints and parses JW catalog JSO
     REQUIRE(langs.at(1).name == QStringLiteral("Portuguese"));
 
     const QByteArray pubMediaJson = QByteArrayLiteral(
-        R"({"pub":"mwb","issue":"20261100","files":{"E":{"MP4":[{"title":"Treasures Video","label":"720p","track":1,"filesize":12345,"mimetype":"video/mp4","duration":185.5,"file":{"url":"https://cdn.example/v.mp4","checksum":"deadbeef","modifiedDatetime":"2026-11-01"}}]}}})");
+        R"({"pub":"mwb","issue":"20261100","files":{"E":{"MP4":[{"title":"Treasures Video","label":"720p","track":1,"filesize":12345,"mimetype":"video/mp4","duration":185.5,"file":{"url":"https://cdn.example/v.mp4","checksum":"deadbeef","modifiedDatetime":"2026-11-01"},"trackImage":{"url":"https://cdn.example/v_lsr_sm.jpg","checksum":""}}]}}})");
     const auto assets =
         kmedia::CatalogClient::parsePubMediaLinksJson(pubMediaJson, QStringLiteral("E"));
     REQUIRE(assets.size() == 1);
     REQUIRE(assets.at(0).url == QStringLiteral("https://cdn.example/v.mp4"));
     REQUIRE(assets.at(0).sha256 == QStringLiteral("deadbeef"));
     REQUIRE(assets.at(0).track == 1);
+    REQUIRE(assets.at(0).imageUrl == QStringLiteral("https://cdn.example/v_lsr_sm.jpg"));
 }
 
 TEST_CASE("DownloadService streams files, validates ETags, checks checksums, retries, and bounds "

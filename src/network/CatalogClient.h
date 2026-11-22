@@ -40,6 +40,7 @@ struct CatalogMediaAsset
     QString modifiedDatetime;
     QString pubMediaId;
     bool streamOnly{false};
+    QString imageUrl;
 };
 
 struct CatalogCongregationResult

@@ -33,6 +33,8 @@ class MeetingSyncEngine : public QObject
 
     Q_PROPERTY(bool busy READ isBusy NOTIFY busyChanged FINAL)
     Q_PROPERTY(QVariantMap dayStatuses READ dayStatuses NOTIFY dayStatusesChanged FINAL)
+    Q_PROPERTY(QString windowStart READ windowStart NOTIFY dayStatusesChanged FINAL)
+    Q_PROPERTY(QString windowEnd READ windowEnd NOTIFY dayStatusesChanged FINAL)
 
 public:
     struct Settings
@@ -68,6 +70,8 @@ public:
 
     [[nodiscard]] bool isBusy() const;
     [[nodiscard]] QVariantMap dayStatuses() const;
+    [[nodiscard]] QString windowStart() const;
+    [[nodiscard]] QString windowEnd() const;
     Q_INVOKABLE [[nodiscard]] QString statusForDate(const QString& dateIso) const;
 
     [[nodiscard]] static std::vector<QDate> lookupWindow(const QDate& today, bool metered);
@@ -81,6 +85,7 @@ public slots:
     void refresh();
     void resyncDay(const QString& dateIso);
     void resetAll();
+    void refreshAddedMediaDays();
 
 signals:
     void busyChanged();
@@ -138,6 +143,7 @@ private:
     std::deque<JobPtr> m_queue;
     QHash<QString, JobPtr> m_active;
     QHash<QString, QString> m_statuses;
+    QSet<QString> m_addedMediaDays;
     QHash<QString, QSet<QString>> m_daysByFile;
     quint64 m_generation{0};
 };

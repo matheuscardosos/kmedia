@@ -85,6 +85,10 @@ qt_add_library(kmedia_core STATIC
     src/media/PlaylistExporter.cpp
     src/media/ThumbnailCache.h
     src/media/ThumbnailCache.cpp
+    src/media/VideoFrameExtractor.h
+    src/media/VideoFrameExtractor.cpp
+    src/models/MeetingDayModel.h
+    src/models/MeetingDayModel.cpp
     src/models/PlaylistModel.h
     src/models/PlaylistModel.cpp
     src/network/CatalogClient.h

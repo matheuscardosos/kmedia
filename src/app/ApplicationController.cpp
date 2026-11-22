@@ -19,6 +19,8 @@
 #include "media/PdfViewerController.h"
 #include "media/PlaybackController.h"
 #include "media/ThumbnailCache.h"
+#include "media/VideoFrameExtractor.h"
+#include "models/MeetingDayModel.h"
 #include "models/PlaylistModel.h"
 #include "network/CatalogClient.h"
 #include "network/DownloadService.h"
@@ -74,6 +76,7 @@ ApplicationController::ApplicationController(QObject* parent)
       m_obsClient(std::make_unique<kmedia::ObsWebSocketClient>()),
       m_zoomBridge(std::make_unique<kmedia::ZoomBridge>()),
       m_playlistModel(std::make_unique<kmedia::PlaylistModel>()),
+      m_meetingDayModel(std::make_unique<kmedia::MeetingDayModel>(m_playlistModel.get())),
       m_meetingTimer(std::make_unique<kmedia::MeetingTimer>()),
       m_meetingCatalog(std::make_unique<kmedia::MeetingCatalogService>(
           m_catalogClient.get(), m_downloadService.get(), m_playlistModel.get())),
@@ -84,6 +87,9 @@ ApplicationController::ApplicationController(QObject* parent)
     m_syncEngine = std::make_unique<kmedia::MeetingSyncEngine>(m_publicationStore.get());
     m_playbackController->attachPdfController(m_pdfController.get());
     m_playlistModel->attachPlaybackController(m_playbackController.get());
+    m_thumbnailCache->setCustomExtractor([](const QString& sourcePath, int) {
+        return kmedia::VideoFrameExtractor::extract(sourcePath);
+    });
     m_playlistModel->attachThumbnailCache(m_thumbnailCache.get());
 
     connect(m_profileManager.get(), &kmedia::ProfileManager::activeProfileChanged, this,
@@ -271,6 +277,11 @@ kmedia::ZoomBridge* ApplicationController::zoomBridge() const
 kmedia::PlaylistModel* ApplicationController::playlist() const
 {
     return m_playlistModel.get();
+}
+
+kmedia::MeetingDayModel* ApplicationController::meetingDay() const
+{
+    return m_meetingDayModel.get();
 }
 
 kmedia::MeetingTimer* ApplicationController::meetingTimer() const
@@ -710,6 +721,9 @@ void ApplicationController::wireIntegrations()
                 }
                 m_calendarModel->refreshReadiness();
             });
+    // Adding or removing media changes which days the date picker marks.
+    connect(m_playlistModel.get(), &kmedia::PlaylistModel::countChanged, m_syncEngine.get(),
+            &kmedia::MeetingSyncEngine::refreshAddedMediaDays);
     for (auto signal : {&kmedia::MeetingCatalogService::selectedLanguageChanged,
                         &kmedia::MeetingCatalogService::fallbackLanguageChanged,
                         &kmedia::MeetingCatalogService::filtersChanged}) {

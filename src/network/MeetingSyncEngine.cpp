@@ -21,6 +21,7 @@ const QString kComplete = QStringLiteral("complete");
 const QString kError = QStringLiteral("error");
 const QString kSyncing = QStringLiteral("syncing");
 const QString kPending = QStringLiteral("pending");
+const QString kAddedMedia = QStringLiteral("media");
 const QString kDynamic = QStringLiteral("dynamic");
 
 QDate mondayOf(const QDate& date)
@@ -88,6 +89,7 @@ PlaylistEntryRecord entryFromItem(qint64 playlistId, const DayMediaItem& item)
     entry.sortOrderOriginal = item.sortOrderOriginal;
     entry.source = kDynamic;
     entry.uniqueKey = item.uniqueKey;
+    entry.thumbnailPath = item.thumbnailPath;
     return entry;
 }
 
@@ -147,6 +149,7 @@ void MeetingSyncEngine::setDatabase(DatabaseManager* database)
     m_queue.clear();
     m_active.clear();
     m_statuses.clear();
+    m_addedMediaDays.clear();
     m_daysByFile.clear();
     m_database = database;
     emit dayStatusesChanged();
@@ -190,7 +193,39 @@ QVariantMap MeetingSyncEngine::dayStatuses() const
     for (auto it = m_statuses.constBegin(); it != m_statuses.constEnd(); ++it) {
         statuses.insert(it.key(), it.value());
     }
+    // A finished or failed meeting keeps its own color; otherwise added media marks the day.
+    for (const QString& dateIso : m_addedMediaDays) {
+        const QString status = m_statuses.value(dateIso);
+        if (status != kComplete && status != kError) {
+            statuses.insert(dateIso, kAddedMedia);
+        }
+    }
     return statuses;
+}
+
+QString MeetingSyncEngine::windowStart() const
+{
+    const std::vector<QDate> window = lookupWindow(today(), m_settings.meteredConnection);
+    return window.empty() ? QString() : window.front().toString(Qt::ISODate);
+}
+
+QString MeetingSyncEngine::windowEnd() const
+{
+    const std::vector<QDate> window = lookupWindow(today(), m_settings.meteredConnection);
+    return window.empty() ? QString() : window.back().toString(Qt::ISODate);
+}
+
+void MeetingSyncEngine::refreshAddedMediaDays()
+{
+    QSet<QString> days;
+    if (m_database != nullptr && m_database->isOpen()) {
+        const QStringList dates = m_database->listDatesWithAddedMedia();
+        days = QSet<QString>(dates.cbegin(), dates.cend());
+    }
+    if (days != m_addedMediaDays) {
+        m_addedMediaDays = std::move(days);
+        emit dayStatusesChanged();
+    }
 }
 
 QString MeetingSyncEngine::statusForDate(const QString& dateIso) const
@@ -334,6 +369,7 @@ void MeetingSyncEngine::refresh()
             enqueue(date, kind, playlist.id);
         }
     }
+    refreshAddedMediaDays();
     pump();
 }
 
@@ -682,6 +718,9 @@ void MeetingSyncEngine::resolveMissingMedia(const JobPtr& job)
                                           target.filePath = resolved.filePath;
                                           target.streamUrl = resolved.streamUrl;
                                           target.durationSeconds = resolved.durationSeconds;
+                                          if (target.linkedPreviewFilePath.isEmpty()) {
+                                              target.linkedPreviewFilePath = resolved.thumbnailPath;
+                                          }
                                           if (target.label.isEmpty()) {
                                               target.label = resolved.title;
                                           }
@@ -801,6 +840,7 @@ void MeetingSyncEngine::writeDay(const JobPtr& job, const std::vector<DayMediaIt
                 entry.markerRangesJson = item.markerRangesJson;
                 entry.originalSection = item.sectionId;
                 entry.sortOrderOriginal = item.sortOrderOriginal;
+                entry.thumbnailPath = item.thumbnailPath;
                 (void)m_database->updatePlaylistEntryFull(entry);
                 const auto position = std::find(order.begin(), order.end(), entry.id);
                 insertAfter = position == order.end()
@@ -837,8 +877,10 @@ void MeetingSyncEngine::writeDay(const JobPtr& job, const std::vector<DayMediaIt
     });
 
     for (const DayMediaItem& item : items) {
-        if (!item.filePath.isEmpty()) {
-            m_daysByFile[item.filePath].insert(job->dateIso);
+        for (const QString& path : {item.filePath, item.thumbnailPath}) {
+            if (!path.isEmpty()) {
+                m_daysByFile[QDir::cleanPath(path)].insert(job->dateIso);
+            }
         }
     }
 }

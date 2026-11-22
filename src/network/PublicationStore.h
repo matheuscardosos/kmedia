@@ -45,6 +45,7 @@ struct ResolvedMediaFile
     QString streamUrl;
     QString title;
     double durationSeconds{0.0};
+    QString thumbnailPath;
 };
 
 /**
@@ -107,6 +108,8 @@ private:
     void tryResolveLanguage(const MediaFileRequest& request, int languageIndex,
                             DownloadService::Priority priority, const QPointer<QObject>& context,
                             const MediaCallback& callback);
+    void queueFileDownload(const QUrl& url, const QString& filePath, const QString& checksum,
+                           DownloadService::Priority priority, const QString& title);
     void onDownloadFinished(const QString& taskId, bool success);
 
     CatalogClient* m_catalogClient{nullptr};
