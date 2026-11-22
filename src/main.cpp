@@ -1,5 +1,6 @@
 #include "app/ApplicationController.h"
 #include "core/BoothSecurity.h"
+#include "media/IconImageProvider.h"
 #include "media/PdfViewerController.h"
 
 #include <QCommandLineOption>
@@ -135,6 +136,7 @@ int main(int argc, char* argv[])
     }
 
     QQmlApplicationEngine engine;
+    engine.addImageProvider(QStringLiteral("icon"), new kmedia::IconImageProvider);
     if (auto* controller = engine.singletonInstance<ApplicationController*>(
             "KMedia.UI", "ApplicationController")) {
         controller->attachQmlEngine(&engine);
