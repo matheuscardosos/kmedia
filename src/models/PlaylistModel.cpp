@@ -636,7 +636,8 @@ bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sect
 
     const QString ext = info.suffix().toLower();
     if (ext == QStringLiteral("jwpub")) {
-        return importJwpubMedia(filePath, targetSection) > 0;
+        emit publicationFileRequested(QUrl::fromLocalFile(info.absoluteFilePath()), targetSection);
+        return false;
     }
 
     if (ext == QStringLiteral("jwlplaylist")) {
@@ -693,61 +694,6 @@ bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sect
     entry.filePath = info.absoluteFilePath();
     entry.sourceKind = QStringLiteral("local");
     return appendEntry(entry);
-}
-
-int PlaylistModel::importJwpubMedia(const QString& filePath, const QString& sectionId)
-{
-    const JwpubPackage pkg = JwpubParser::parse(filePath);
-    if (!pkg.valid) {
-        emit importNotice(pkg.errorMessage);
-        return 0;
-    }
-
-    std::vector<QString> assetPaths;
-    for (const JwpubMediaItem& mm : pkg.mediaItems) {
-        if (!mm.filePath.isEmpty()) {
-            assetPaths.push_back(mm.filePath);
-        }
-    }
-
-    const QString outDir = extractSubdirForPackage(filePath);
-    std::vector<QString> extracted;
-    QString err;
-    if (!JwpubParser::extractMediaAssets(filePath, outDir, assetPaths, &extracted, &err)) {
-        emit importNotice(err);
-        return 0;
-    }
-
-    // Media from a publication added by hand goes where the operator put it; the meeting sync
-    // places the meeting's own media by paragraph instead.
-    const QString targetSection =
-        sectionId.isEmpty() ? QString(MeetingSections::kImportedMedia) : sectionId;
-    int added = 0;
-    for (const JwpubMediaItem& mm : pkg.mediaItems) {
-        if (mm.filePath.isEmpty()) {
-            continue;
-        }
-        const QString target = QDir(outDir).filePath(mm.filePath);
-        if (!QFileInfo::exists(target)) {
-            continue;
-        }
-        PlaylistEntryView entry;
-        entry.title =
-            mm.label.isEmpty() ? (mm.caption.isEmpty() ? mm.documentTitle : mm.caption) : mm.label;
-        if (entry.title.isEmpty()) {
-            entry.title = QFileInfo(target).completeBaseName();
-        }
-        entry.sectionId = targetSection;
-        entry.filePath = target;
-        entry.sourceKind = QStringLiteral("jwpub");
-        entry.groupKey = mm.groupCaption;
-        entry.tagType = mm.tagType;
-        entry.tagValue = mm.tagValue;
-        if (appendEntry(entry)) {
-            ++added;
-        }
-    }
-    return added;
 }
 
 bool PlaylistModel::appendEntry(const PlaylistEntryView& input)

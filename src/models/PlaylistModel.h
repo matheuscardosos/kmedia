@@ -206,7 +206,6 @@ public:
 
     Q_INVOKABLE int importUrls(const QList<QUrl>& urls, const QString& sectionId = {});
     Q_INVOKABLE bool importLocalFile(const QString& filePath, const QString& sectionId = {});
-    int importJwpubMedia(const QString& filePath, const QString& sectionId);
     Q_INVOKABLE bool appendEntry(const PlaylistEntryView& entry);
     Q_INVOKABLE bool moveItem(int fromIndex, int toIndex);
     Q_INVOKABLE bool removeAt(int index);
@@ -274,6 +273,7 @@ signals:
     void playlistSubtitleChanged();
     void availablePlaylistsChanged();
     void sectionsChanged();
+    void publicationFileRequested(const QUrl& fileUrl, const QString& sectionId);
     void workspaceDateChanged();
     void showHiddenChanged();
     void searchQueryChanged();

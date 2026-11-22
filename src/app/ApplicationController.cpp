@@ -23,10 +23,12 @@
 #include "models/MeetingDayModel.h"
 #include "models/PlaylistModel.h"
 #include "network/CatalogClient.h"
+#include "network/DocumentMediaImporter.h"
 #include "network/DownloadService.h"
 #include "network/MeetingCatalogService.h"
 #include "network/MeetingSyncEngine.h"
 #include "network/PublicTalkMedia.h"
+#include "network/PublicationMediaPicker.h"
 #include "network/PublicationStore.h"
 #include "parsers/CloudSyncWatcher.h"
 
@@ -85,8 +87,12 @@ ApplicationController::ApplicationController(QObject* parent)
     m_publicationStore =
         std::make_unique<kmedia::PublicationStore>(m_catalogClient.get(), m_downloadService.get());
     m_syncEngine = std::make_unique<kmedia::MeetingSyncEngine>(m_publicationStore.get());
-    m_publicTalks =
-        std::make_unique<kmedia::PublicTalkMedia>(m_publicationStore.get(), m_playlistModel.get());
+    m_documentImporter = std::make_unique<kmedia::DocumentMediaImporter>(m_publicationStore.get(),
+                                                                         m_playlistModel.get());
+    m_publicTalks = std::make_unique<kmedia::PublicTalkMedia>(m_publicationStore.get(),
+                                                              m_documentImporter.get());
+    m_publicationPicker = std::make_unique<kmedia::PublicationMediaPicker>(
+        m_publicationStore.get(), m_documentImporter.get());
     m_playbackController->attachPdfController(m_pdfController.get());
     m_playlistModel->attachPlaybackController(m_playbackController.get());
     m_thumbnailCache->setCustomExtractor([](const QString& sourcePath, int) {
@@ -309,6 +315,11 @@ kmedia::MeetingSyncEngine* ApplicationController::syncEngine() const
 kmedia::PublicTalkMedia* ApplicationController::publicTalks() const
 {
     return m_publicTalks.get();
+}
+
+kmedia::PublicationMediaPicker* ApplicationController::publicationMedia() const
+{
+    return m_publicationPicker.get();
 }
 
 void ApplicationController::bindPresentationMpv(MpvRendererItem* mpvItem)
@@ -962,7 +973,8 @@ void ApplicationController::applySyncSettings(bool resetWhenChanged)
     if (!next.fallbackLanguageCode.isEmpty() && next.fallbackLanguageCode != next.languageCode) {
         languages << next.fallbackLanguageCode;
     }
-    m_publicTalks->setLanguages(languages);
+    m_documentImporter->setLanguages(languages);
+    m_publicationPicker->setLanguages(languages);
     if (resetWhenChanged && mediaChanged && !m_demoMode) {
         m_syncEngine->resetAll();
     }
