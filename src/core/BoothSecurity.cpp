@@ -65,24 +65,11 @@ bool BoothSecurity::verifyPin(const QString& candidatePin, const QString& salt,
 
 int BoothSecurity::parseTabArgument(const QString& raw)
 {
+    // The calendar, library, playlists, and downloads moved into the meeting page and settings,
+    // so their old names open the meeting page.
     const QString key = raw.trimmed().toLower();
-    if (key == QStringLiteral("meeting") || key == QStringLiteral("0")) {
-        return 0;
-    }
-    if (key == QStringLiteral("calendar") || key == QStringLiteral("1")) {
+    if (key == QStringLiteral("settings") || key == QStringLiteral("1")) {
         return 1;
-    }
-    if (key == QStringLiteral("media") || key == QStringLiteral("2")) {
-        return 2;
-    }
-    if (key == QStringLiteral("playlists") || key == QStringLiteral("3")) {
-        return 3;
-    }
-    if (key == QStringLiteral("downloads") || key == QStringLiteral("4")) {
-        return 4;
-    }
-    if (key == QStringLiteral("settings") || key == QStringLiteral("5")) {
-        return 5;
     }
     return 0;
 }

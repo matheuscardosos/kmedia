@@ -19,11 +19,10 @@ TEST_CASE("BoothSecurity validates PIN format, salts, hashes, and startup tabs c
     REQUIRE_FALSE(kmedia::BoothSecurity::verifyPin(QStringLiteral(""), salt, hash));
 
     REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("meeting")) == 0);
-    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("calendar")) == 1);
-    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("media")) == 2);
-    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("playlists")) == 3);
-    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("downloads")) == 4);
-    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("settings")) == 5);
-    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("2")) == 2);
+    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("settings")) == 1);
+    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("1")) == 1);
+    // Pages that moved into the meeting page open it instead.
+    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("calendar")) == 0);
+    REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("downloads")) == 0);
     REQUIRE(kmedia::BoothSecurity::parseTabArgument(QStringLiteral("unknown")) == 0);
 }

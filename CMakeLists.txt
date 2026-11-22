@@ -221,17 +221,11 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/TagEditPopup.qml
     resources/qml/components/RenamePopup.qml
     resources/qml/components/CalendarEventPopup.qml
-    resources/qml/components/CalendarSchedulePopup.qml
-    resources/qml/components/CalendarView.qml
     resources/qml/components/CustomSectionPopup.qml
-    resources/qml/components/MediaLibraryView.qml
-    resources/qml/components/PlaylistsView.qml
-    resources/qml/components/DownloadsView.qml
-    resources/qml/components/DownloadQueueCard.qml
-    resources/qml/components/CatalogBrowserCard.qml
     resources/qml/components/SettingsPinGate.qml
     resources/qml/components/SettingsSecurityCard.qml
     resources/qml/components/SettingsView.qml
+    resources/qml/components/SettingsMeetingsPane.qml
     resources/qml/components/CenterWorkspace.qml
     resources/qml/components/InspectorPanel.qml
 )

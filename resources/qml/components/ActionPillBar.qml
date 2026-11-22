@@ -13,7 +13,6 @@ Item {
     property string activePopover: ""
     signal openCommandPalette()
     signal openBoothSettings()
-    signal openDownloadsTab()
 
     implicitHeight: root.compactMode ? 48 : 54
 
@@ -208,12 +207,7 @@ Item {
     Component {
         id: downloadsPopoverComp
 
-        PillDownloadsPopover {
-            onOpenDownloadsRequested: {
-                popover.close()
-                root.openDownloadsTab()
-            }
-        }
+        PillDownloadsPopover {}
     }
 
     Popup {
