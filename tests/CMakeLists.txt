@@ -20,6 +20,7 @@ qt_add_executable(kmedia_tests
     test_meeting_catalog.cpp
     test_meeting_day_model.cpp
     test_meeting_sync_engine.cpp
+    test_public_talk_media.cpp
     test_cloud_sync_watcher.cpp
     test_dated_folders_and_export.cpp
     test_publication_queries.cpp

@@ -229,6 +229,7 @@ public:
     Q_INVOKABLE QString createSection(const QString& label, const QString& colorHex = {});
     Q_INVOKABLE bool renameSection(const QString& sectionId, const QString& newLabel);
     Q_INVOKABLE bool setSectionColor(const QString& sectionId, const QString& colorHex);
+    Q_INVOKABLE bool setSectionSubtitle(const QString& sectionId, const QString& subtitle);
     Q_INVOKABLE bool removeSection(const QString& sectionId);
     Q_INVOKABLE bool moveSection(const QString& sectionId, int delta);
     Q_INVOKABLE bool assignItemToSection(int index, const QString& sectionId);

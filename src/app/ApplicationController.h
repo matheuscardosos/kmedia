@@ -22,6 +22,7 @@ Q_MOC_INCLUDE("models/PlaylistModel.h")
 Q_MOC_INCLUDE("network/DownloadService.h")
 Q_MOC_INCLUDE("network/MeetingCatalogService.h")
 Q_MOC_INCLUDE("network/MeetingSyncEngine.h")
+Q_MOC_INCLUDE("network/PublicTalkMedia.h")
 Q_MOC_INCLUDE("parsers/CloudSyncWatcher.h")
 
 class MpvRendererItem;
@@ -47,6 +48,7 @@ class PlaybackController;
 class PlaylistModel;
 class ProcessMonitor;
 class ProfileManager;
+class PublicTalkMedia;
 class PublicationStore;
 class ThumbnailCache;
 class ZoomBridge;
@@ -90,6 +92,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(kmedia::MeetingCatalogService* catalog READ catalog CONSTANT FINAL)
     Q_PROPERTY(kmedia::MeetingCalendarModel* calendar READ calendar CONSTANT FINAL)
     Q_PROPERTY(kmedia::MeetingSyncEngine* sync READ syncEngine CONSTANT FINAL)
+    Q_PROPERTY(kmedia::PublicTalkMedia* publicTalks READ publicTalks CONSTANT FINAL)
 
 public:
     static void setStartupDemoMode(bool enabled);
@@ -134,6 +137,7 @@ public:
     [[nodiscard]] kmedia::MeetingCatalogService* catalog() const;
     [[nodiscard]] kmedia::MeetingCalendarModel* calendar() const;
     [[nodiscard]] kmedia::MeetingSyncEngine* syncEngine() const;
+    [[nodiscard]] kmedia::PublicTalkMedia* publicTalks() const;
 
     Q_INVOKABLE void bindPresentationMpv(MpvRendererItem* mpvItem);
     Q_INVOKABLE bool setUiLanguage(const QString& languageCode);
@@ -202,4 +206,5 @@ private:
     std::unique_ptr<kmedia::MeetingCalendarModel> m_calendarModel;
     std::unique_ptr<kmedia::PublicationStore> m_publicationStore;
     std::unique_ptr<kmedia::MeetingSyncEngine> m_syncEngine;
+    std::unique_ptr<kmedia::PublicTalkMedia> m_publicTalks;
 };

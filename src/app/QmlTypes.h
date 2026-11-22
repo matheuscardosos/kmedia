@@ -15,6 +15,7 @@
 #include "network/DownloadService.h"
 #include "network/MeetingCatalogService.h"
 #include "network/MeetingSyncEngine.h"
+#include "network/PublicTalkMedia.h"
 #include "parsers/CloudSyncWatcher.h"
 
 #include <QtQmlIntegration/qqmlintegration.h>
@@ -111,6 +112,14 @@ struct MeetingDayModelForeign
     Q_GADGET
     QML_FOREIGN(kmedia::MeetingDayModel)
     QML_NAMED_ELEMENT(MeetingDayModel)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct PublicTalkMediaForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::PublicTalkMedia)
+    QML_NAMED_ELEMENT(PublicTalkMedia)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

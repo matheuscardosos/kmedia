@@ -94,8 +94,12 @@ Item {
 
     // Where added media goes when no section was picked: the public talk on a regular weekend,
     // the only section of a day without a meeting; otherwise the operator picks one.
-    function defaultSection() {
+    function defaultSection(sourceKind) {
         if (root.meetingKind === "weekend" && !ApplicationController.playlist.currentIsCoWeek) {
+            return "pt"
+        }
+        // Public talk media goes to the public talk whenever the day has one.
+        if (sourceKind === "publictalk" && ApplicationController.meetingDay.headerRowOfSection("pt") >= 0) {
             return "pt"
         }
         if (!root.isMeetingDay && ApplicationController.meetingDay.sectionCount <= 1) {
@@ -106,13 +110,15 @@ Item {
     }
 
     function addFrom(sourceKind, sectionId) {
-        const target = sectionId.length > 0 ? sectionId : root.defaultSection()
+        const target = sectionId.length > 0 ? sectionId : root.defaultSection(sourceKind)
         if (target.length === 0) {
             sectionChooser.openFor(sourceKind)
             return
         }
         if (sourceKind === "song") {
             songPicker.openFor(target)
+        } else if (sourceKind === "publictalk") {
+            publicTalkPicker.openFor(target)
         } else {
             mediaFileDialog.targetSection = target
             mediaFileDialog.open()
@@ -192,6 +198,22 @@ Item {
     }
 
     Connections {
+        target: ApplicationController.publicTalks
+
+        function onTalkAdded(count) {
+            if (count > 0) {
+                ApplicationController.showToast(qsTr("Added %1 media item(s)").arg(count), "success")
+            } else {
+                ApplicationController.showToast(qsTr("This talk has no media"), "warning")
+            }
+        }
+
+        function onImportFailed() {
+            ApplicationController.showToast(qsTr("This file has no public talks"), "warning")
+        }
+    }
+
+    Connections {
         target: ApplicationController.sync
 
         function onSongAdded(dateIso, number, title) {
@@ -240,6 +262,10 @@ Item {
 
     RenamePopup {
         id: renamePopup
+    }
+
+    PublicTalkPickerPopup {
+        id: publicTalkPicker
     }
 
     SongPickerPopup {
@@ -367,6 +393,11 @@ Item {
         StudioMenuItem {
             caption: true
             text: qsTr("From this computer")
+        }
+        StudioMenuItem {
+            iconName: "users"
+            text: qsTr("Public talk media")
+            onTriggered: root.addFrom("publictalk", addMenu.targetSection)
         }
         StudioMenuItem {
             iconName: "folder-open"

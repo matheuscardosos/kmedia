@@ -91,6 +91,19 @@ struct WatchtowerStudyDocument
     QString title;
 };
 
+struct PublicationDocumentEntry
+{
+    qint64 documentId{-1};
+    QString title;
+};
+
+struct PublicationSummary
+{
+    QString symbol;
+    int year{0};
+    int versionNumber{0};
+};
+
 /**
  * Read-only queries over an extracted publication database, matching what the meeting media
  * sync needs: the document of a meeting week, its media and paragraph labels, the extracts
@@ -132,6 +145,8 @@ public:
     [[nodiscard]] std::vector<PublicationVideoMarker> videoMarkers(qint64 multimediaId) const;
     [[nodiscard]] std::vector<PublicationLanguageRow> mediaLanguages() const;
     [[nodiscard]] std::vector<PublicationMediaRow> memorialMedia() const;
+    [[nodiscard]] std::vector<PublicationDocumentEntry> documentsWithMedia() const;
+    [[nodiscard]] PublicationSummary summary() const;
 
     [[nodiscard]] static std::vector<PublicationMediaRow>
     dedupeLinkedMultimedia(std::vector<PublicationMediaRow> rows);
