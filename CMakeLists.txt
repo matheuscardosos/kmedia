@@ -83,6 +83,8 @@ qt_add_library(kmedia_core STATIC
     src/media/PlaybackController.cpp
     src/media/PlaylistExporter.h
     src/media/PlaylistExporter.cpp
+    src/media/MediaAutoExport.h
+    src/media/MediaAutoExport.cpp
     src/media/ThumbnailCache.h
     src/media/ThumbnailCache.cpp
     src/media/VideoFrameExtractor.h
@@ -107,6 +109,8 @@ qt_add_library(kmedia_core STATIC
     src/network/DocumentMediaImporter.cpp
     src/network/JwVideoCatalog.h
     src/network/JwVideoCatalog.cpp
+    src/network/WatchedFolderMedia.h
+    src/network/WatchedFolderMedia.cpp
     src/network/PublicationStore.h
     src/network/PublicationStore.cpp
     src/parsers/CloudSyncWatcher.h
@@ -229,6 +233,9 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/PublicTalkPickerPopup.qml
     resources/qml/components/PublicationMediaPopup.qml
     resources/qml/components/JwVideoPickerPopup.qml
+    resources/qml/components/FolderPathField.qml
+    resources/qml/components/SharedFolderCard.qml
+    resources/qml/components/MediaExportCard.qml
     resources/qml/components/TagEditPopup.qml
     resources/qml/components/RenamePopup.qml
     resources/qml/components/CalendarEventPopup.qml

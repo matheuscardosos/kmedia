@@ -557,8 +557,12 @@ QString PlaylistModel::activeSourceKind() const
 
 bool PlaylistModel::activeIsSynced() const
 {
-    return m_activeIndex >= 0 && m_activeIndex < static_cast<int>(m_items.size()) &&
-           m_items.at(static_cast<size_t>(m_activeIndex)).source == QStringLiteral("dynamic");
+    if (m_activeIndex < 0 || m_activeIndex >= static_cast<int>(m_items.size())) {
+        return false;
+    }
+    // Media from the sync or the shared folder would come back if it were deleted.
+    const QString& source = m_items.at(static_cast<size_t>(m_activeIndex)).source;
+    return source == QStringLiteral("dynamic") || source == QStringLiteral("watched");
 }
 
 int PlaylistModel::activeMediaKind() const

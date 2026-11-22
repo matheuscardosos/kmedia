@@ -136,6 +136,7 @@ public:
     [[nodiscard]] bool updatePlaylistMetadata(const PlaylistRecord& playlist);
     [[nodiscard]] std::vector<PlaylistRecord> listPlaylists() const;
     [[nodiscard]] QStringList listDatesWithAddedMedia() const;
+    [[nodiscard]] QStringList listDatesWithSource(const QString& source) const;
     [[nodiscard]] bool setPlaylistSyncStatus(qint64 playlistId, const QString& syncStatus);
     [[nodiscard]] bool deletePlaylist(qint64 id);
 

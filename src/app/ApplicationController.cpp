@@ -15,6 +15,7 @@
 #include "integrations/ProcessMonitor.h"
 #include "integrations/ZoomBridge.h"
 #include "media/BackgroundMusicEngine.h"
+#include "media/MediaAutoExport.h"
 #include "media/MpvRendererItem.h"
 #include "media/PdfViewerController.h"
 #include "media/PlaybackController.h"
@@ -31,6 +32,7 @@
 #include "network/PublicTalkMedia.h"
 #include "network/PublicationMediaPicker.h"
 #include "network/PublicationStore.h"
+#include "network/WatchedFolderMedia.h"
 #include "parsers/CloudSyncWatcher.h"
 
 #include <QCoreApplication>
@@ -96,6 +98,14 @@ ApplicationController::ApplicationController(QObject* parent)
         m_publicationStore.get(), m_documentImporter.get());
     m_videoCatalog = std::make_unique<kmedia::JwVideoCatalog>(
         m_catalogClient.get(), m_publicationStore.get(), m_documentImporter.get());
+    m_watchedFolder =
+        std::make_unique<kmedia::WatchedFolderMedia>(m_cloudWatcher.get(), m_playlistModel.get());
+    m_autoExport = std::make_unique<kmedia::MediaAutoExport>();
+    m_autoExport->setSongLabel(tr("Song"));
+    // Edits settle for a second before the open day is exported again.
+    m_exportTimer = new QTimer(this);
+    m_exportTimer->setSingleShot(true);
+    m_exportTimer->setInterval(1000);
     m_playbackController->attachPdfController(m_pdfController.get());
     m_playlistModel->attachPlaybackController(m_playbackController.get());
     m_thumbnailCache->setCustomExtractor([](const QString& sourcePath, int) {
@@ -330,6 +340,16 @@ kmedia::JwVideoCatalog* ApplicationController::videos() const
     return m_videoCatalog.get();
 }
 
+kmedia::WatchedFolderMedia* ApplicationController::watchedFolder() const
+{
+    return m_watchedFolder.get();
+}
+
+kmedia::MediaAutoExport* ApplicationController::autoExport() const
+{
+    return m_autoExport.get();
+}
+
 void ApplicationController::bindPresentationMpv(MpvRendererItem* mpvItem)
 {
     m_playbackController->attachMpvItem(mpvItem);
@@ -378,23 +398,6 @@ bool ApplicationController::switchProfile(const QString& profileId)
 QString ApplicationController::createProfile(const QString& name, const QString& mediaLanguage)
 {
     return m_profileManager->createProfile(name, mediaLanguage);
-}
-
-void ApplicationController::saveCloudFolder(const QString& folderPath)
-{
-    const QString trimmed = folderPath.trimmed();
-    if (!m_demoMode) {
-        if (auto* settings = m_profileManager->activeSettings()) {
-            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kCloudSyncFolders),
-                                     trimmed);
-        }
-    }
-    m_cloudWatcher->clearWatchedFolders();
-    if (!trimmed.isEmpty()) {
-        for (const QString& folder : trimmed.split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
-            m_cloudWatcher->addWatchedFolder(folder.trimmed());
-        }
-    }
 }
 
 void ApplicationController::saveObsAndZoomSettings()
@@ -706,14 +709,7 @@ void ApplicationController::applyProfileSettings()
         }
     }
 
-    m_cloudWatcher->clearWatchedFolders();
-    const QString rawFolders =
-        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kCloudSyncFolders));
-    if (!rawFolders.isEmpty()) {
-        for (const QString& folder : rawFolders.split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
-            m_cloudWatcher->addWatchedFolder(folder.trimmed());
-        }
-    }
+    applyFolderSettings();
 
     m_boothPinSalt =
         settings->stringValue(QLatin1StringView(kmedia::settings_keys::kSecurityPinSalt));
@@ -741,6 +737,71 @@ void ApplicationController::syncAudioRouting()
     }
 }
 
+std::vector<QDate> ApplicationController::meetingDaysInWindow() const
+{
+    std::vector<QDate> days;
+    for (const QDate& date : kmedia::MeetingSyncEngine::lookupWindow(
+             QDate::currentDate(), m_syncEngine->settings().meteredConnection)) {
+        const QString kind = m_calendarModel->meetingKindForDate(date.toString(Qt::ISODate));
+        if (kind == QStringLiteral("midweek") || kind == QStringLiteral("weekend") ||
+            kind == QStringLiteral("memorial")) {
+            days.push_back(date);
+        }
+    }
+    return days;
+}
+
+void ApplicationController::applyFolderSettings()
+{
+    auto* settings = m_profileManager->activeSettings();
+    if (settings == nullptr) {
+        return;
+    }
+    QString watched =
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kWatchedFolder));
+    bool watchEnabled =
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kWatchedFolderEnabled), false);
+    // The folders of the old watcher become the shared folder once.
+    const QString legacy =
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kCloudSyncFolders));
+    if (watched.isEmpty() && !legacy.isEmpty()) {
+        watched = legacy.split(QLatin1Char(';'), Qt::SkipEmptyParts).value(0).trimmed();
+        watchEnabled = !watched.isEmpty();
+    }
+    const auto meetingKind = [this](const QDate& date) {
+        return m_calendarModel->meetingKindForDate(date.toString(Qt::ISODate));
+    };
+    const auto coWeek = [this](const QDate& date) {
+        return m_calendarModel->eventTypeForDate(date.toString(Qt::ISODate)) ==
+               QStringLiteral("co_visit");
+    };
+    const QSignalBlocker blockWatched(m_watchedFolder.get());
+    const QSignalBlocker blockExport(m_autoExport.get());
+    kmedia::DatabaseManager* database = m_demoMode ? nullptr : m_profileManager->activeDatabase();
+
+    m_autoExport->setScheduleProviders(meetingKind, coWeek);
+    m_autoExport->setDatabase(database);
+    if (const auto profile = m_profileManager->activeProfile();
+        profile.has_value() && !profile->storagePath.isEmpty()) {
+        m_autoExport->setConversionCacheDir(
+            QDir(profile->storagePath).filePath(QStringLiteral("Conversions")));
+    }
+    m_autoExport->setEnabled(
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kAutoExportEnabled), false));
+    m_autoExport->setFolder(
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kAutoExportFolder)));
+    m_autoExport->setConvertToMp4(settings->boolValue(
+        QLatin1StringView(kmedia::settings_keys::kAutoExportConvertMp4), false));
+
+    m_watchedFolder->setScheduleProviders(meetingKind, coWeek);
+    m_watchedFolder->setBlockedFolder(m_autoExport->folder());
+    m_watchedFolder->setEnabled(watchEnabled);
+    m_watchedFolder->setFolder(watched);
+    m_watchedFolder->setDeletePastFolders(settings->boolValue(
+        QLatin1StringView(kmedia::settings_keys::kWatchedFolderDeletePast), true));
+    m_watchedFolder->setDatabase(database);
+}
+
 void ApplicationController::wireIntegrations()
 {
     connect(m_syncEngine.get(), &kmedia::MeetingSyncEngine::dayContentChanged, this,
@@ -749,7 +810,75 @@ void ApplicationController::wireIntegrations()
                     m_playlistModel->reloadFromDatabase();
                 }
                 m_calendarModel->refreshReadiness();
+                m_autoExport->exportDay(dateIso);
             });
+    // Once the window is synced: day folders for the coming meetings, and every day exported.
+    connect(m_syncEngine.get(), &kmedia::MeetingSyncEngine::syncIdle, this, [this]() {
+        const std::vector<QDate> days = meetingDaysInWindow();
+        m_watchedFolder->prepareDayFolders(days);
+        m_autoExport->exportDays(days);
+    });
+    connect(m_watchedFolder.get(), &kmedia::WatchedFolderMedia::dayChanged, this,
+            [this](const QString& dateIso) {
+                if (m_playlistModel->currentDateIso() == dateIso) {
+                    m_playlistModel->reloadFromDatabase();
+                }
+                m_syncEngine->refreshAddedMediaDays();
+                m_autoExport->exportDay(dateIso);
+            });
+    connect(m_watchedFolder.get(), &kmedia::WatchedFolderMedia::folderConflict, this, [this]() {
+        showToast(tr("The shared folder and the export folder must be different"),
+                  QStringLiteral("warning"));
+    });
+    connect(m_autoExport.get(), &kmedia::MediaAutoExport::dayExported, this,
+            [this](const QString&, int, int conversionFailures) {
+                if (conversionFailures > 0) {
+                    showToast(
+                        tr("%n file(s) could not be converted to MP4", nullptr, conversionFailures),
+                        QStringLiteral("warning"));
+                }
+            });
+    // Any edit of the open day is exported a second after the last change.
+    const auto exportOpenDaySoon = [this]() {
+        if (m_autoExport->isActive()) {
+            m_exportTimer->start();
+        }
+    };
+    connect(m_exportTimer, &QTimer::timeout, this,
+            [this]() { m_autoExport->exportDay(m_playlistModel->currentDateIso()); });
+    connect(m_playlistModel.get(), &QAbstractItemModel::dataChanged, this, exportOpenDaySoon);
+    connect(m_playlistModel.get(), &QAbstractItemModel::rowsInserted, this, exportOpenDaySoon);
+    connect(m_playlistModel.get(), &QAbstractItemModel::rowsRemoved, this, exportOpenDaySoon);
+    connect(m_playlistModel.get(), &QAbstractItemModel::rowsMoved, this, exportOpenDaySoon);
+    connect(m_playlistModel.get(), &kmedia::PlaylistModel::sectionsChanged, this,
+            exportOpenDaySoon);
+    // Folder settings are saved per congregation as they change.
+    connect(m_watchedFolder.get(), &kmedia::WatchedFolderMedia::settingsChanged, this, [this]() {
+        m_watchedFolder->setBlockedFolder(m_autoExport->folder());
+        if (auto* settings = m_demoMode ? nullptr : m_profileManager->activeSettings()) {
+            (void)settings->setValue(
+                QLatin1StringView(kmedia::settings_keys::kWatchedFolderEnabled),
+                m_watchedFolder->isEnabled());
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kWatchedFolder),
+                                     m_watchedFolder->folder());
+            (void)settings->setValue(
+                QLatin1StringView(kmedia::settings_keys::kWatchedFolderDeletePast),
+                m_watchedFolder->deletePastFolders());
+        }
+    });
+    connect(m_autoExport.get(), &kmedia::MediaAutoExport::settingsChanged, this, [this]() {
+        m_watchedFolder->setBlockedFolder(m_autoExport->folder());
+        if (auto* settings = m_demoMode ? nullptr : m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kAutoExportEnabled),
+                                     m_autoExport->isEnabled());
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kAutoExportFolder),
+                                     m_autoExport->folder());
+            (void)settings->setValue(
+                QLatin1StringView(kmedia::settings_keys::kAutoExportConvertMp4),
+                m_autoExport->convertToMp4());
+        }
+        m_autoExport->exportDays(meetingDaysInWindow());
+    });
     // Adding or removing media changes which days the date picker marks.
     connect(m_playlistModel.get(), &kmedia::PlaylistModel::countChanged, m_syncEngine.get(),
             &kmedia::MeetingSyncEngine::refreshAddedMediaDays);
@@ -801,12 +930,6 @@ void ApplicationController::wireIntegrations()
             syncPlaybackIntegrations);
     connect(m_playbackController.get(), &kmedia::PlaybackController::standbyChanged, this,
             syncPlaybackIntegrations);
-
-    connect(m_cloudWatcher.get(), &kmedia::CloudSyncWatcher::mediaDiscovered, this,
-            [this](const QString& filePath, kmedia::CloudSyncWatcher::MediaCategory, const QString&,
-                   kmedia::CloudSyncWatcher::CloudProvider) {
-                (void)m_playlistModel->importLocalFile(filePath);
-            });
 
     connect(m_playlistModel.get(), &kmedia::PlaylistModel::importNotice, this,
             [this](const QString& message) { showToast(message, QStringLiteral("warning")); });

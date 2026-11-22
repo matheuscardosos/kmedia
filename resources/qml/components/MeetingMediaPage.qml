@@ -1478,11 +1478,12 @@ Item {
                                     qsTr("Section Break"), mediaRow.rowSectionId, "#D47B2A", mediaRow.sourceRow)
                             }
                             StudioMenuSeparator {
-                                visible: mediaRow.source !== "dynamic"
+                                visible: mediaRow.source === "additional"
                             }
                             StudioMenuItem {
-                                // Synced media can only be hidden; the next sync would bring it back.
-                                visible: mediaRow.source !== "dynamic"
+                                // Synced and shared folder media can only be hidden; the next sync
+                                // or the folder would bring it back.
+                                visible: mediaRow.source === "additional"
                                 iconName: "trash"
                                 destructive: true
                                 text: qsTr("Delete")

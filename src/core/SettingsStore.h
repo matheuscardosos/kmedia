@@ -46,6 +46,12 @@ inline constexpr auto kZoomDisplayName = "zoom/display_name";
 inline constexpr auto kZoomAudioDevice = "zoom/audio_device";
 inline constexpr auto kZoomAutoShare = "zoom/auto_share";
 inline constexpr auto kCloudSyncFolders = "cloud/watched_folders";
+inline constexpr auto kWatchedFolderEnabled = "watch/enabled";
+inline constexpr auto kWatchedFolder = "watch/folder";
+inline constexpr auto kWatchedFolderDeletePast = "watch/delete_past";
+inline constexpr auto kAutoExportEnabled = "export/enabled";
+inline constexpr auto kAutoExportFolder = "export/folder";
+inline constexpr auto kAutoExportConvertMp4 = "export/convert_mp4";
 inline constexpr auto kSecurityPinHash = "security/booth_pin_hash";
 inline constexpr auto kSecurityPinSalt = "security/booth_pin_salt";
 
