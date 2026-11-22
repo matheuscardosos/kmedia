@@ -2,7 +2,7 @@
 
 *Settings* has six categories in the order they appear on the left: General, Meetings, Display, Audio, Integrations, and Security. Each congregation profile keeps its own settings, so switching profiles also switches them.
 
-Type in **Search settings...** to show every category that matches a word, such as `obs`, `language`, or `pin`.
+Type in **Search settings...** to show every category that matches a word, such as `obs`, `language`, or `pin`. Case and accents do not matter.
 
 ![KMedia settings](../assets/kmedia-settings-preview.png)
 
@@ -47,20 +47,31 @@ Turn it on and pick a folder. Every day with media is copied into a date folder 
 - **Auto:** presents on the second display automatically, which is the default.
 - **Presentation Output Active:** shows or hides the presentation window. `Ctrl+P` does the same.
 - **Screen list:** click a screen to present on it instead. If that screen is disconnected, KMedia goes back to presenting automatically.
+- **Standby picture:** the picture shown on the presentation display during standby and while nothing is presented, such as the yeartext. Without one, standby is a black screen. **Blackout** in the preview panel always shows black.
 
 ## Audio
 
 - **Background Music & Fade Timing:** the volume of the background music, from 0 to 100%.
 - **Fade-Out Duration:** 3, 5, or 8 seconds (5 by default). Background music fades out over this time when you stop it, and on its own before each meeting starts.
+- **Audio output:** where media and background music play, for example the output that feeds the sound system of the hall. **System default** follows the computer's setting.
 
 ## Integrations
 
-### OBS Studio and Zoom
+### OBS Studio
 
-- **OBS Host** and port: the address of the OBS Studio WebSocket server, `127.0.0.1` and `4455` when OBS runs on the same computer. In OBS Studio, turn the server on in *Tools > WebSocket Server Settings*.
-- **Zoom Meeting ID:** the ID of the congregation's Zoom meeting.
-- **Save & Connect:** saves both and connects to OBS Studio. The status of OBS and Zoom shows at the bottom of the navigation.
-- **Launch Zoom Meeting:** opens the Zoom meeting in the Zoom app.
+Turn the switch on to connect KMedia to OBS Studio, so it switches scenes for the people following the meeting on Zoom.
+
+- **Host**, port, and **WebSocket password:** find them in OBS Studio under *Tools > WebSocket Server Settings*, where the server must be enabled. On the same computer the host is `127.0.0.1` and the port `4455`. Click **Save & Connect**; the badge shows when KMedia is connected.
+- **Stage scene:** the scene shown while nothing is presented and during standby, usually the wide shot of the platform.
+- **Media scene:** the scene shown while media is presented, including a paused video.
+- **Image scene:** an optional scene for pictures and PDF pages, for example a picture-in-picture layout. **Same as media scene** uses the media scene.
+
+The scenes are picked from the list OBS Studio sends once KMedia is connected. A scene left **Not set** makes KMedia leave OBS where it is. The OBS button of the pill bar still switches scenes by hand at any time.
+
+### Zoom
+
+- **Zoom Meeting ID**, **Passcode**, and **Name shown in Zoom:** the congregation's meeting and the name the booth joins with. Click **Save**.
+- **Launch Zoom Meeting:** joins the meeting in the Zoom app. The Zoom button of the pill bar does the same.
 
 ### Shared folder
 

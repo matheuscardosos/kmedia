@@ -32,6 +32,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- *Settings* now has every field the OBS Studio, Zoom, audio, and display features use: the OBS WebSocket password (OBS Studio turns authentication on by default, so KMedia could not connect to a default setup); a stage, a media, and an optional image scene picked from the scenes OBS returns, inspired by the Meeting Media Manager OBS settings, in place of play, pause, stop, and standby scenes that nothing could set; the Zoom passcode and name; the audio output of media and background music; and a standby picture, with **Blackout** staying black. The settings search now works in the interface language and ignores accents.
 - Media from the watched cloud folder no longer lands in whatever day is open: it now goes to the day of its date folder.
 - Removed the old weekly sync that `MeetingSyncEngine` replaced: `MeetingCatalogService` now only keeps the congregation lookup, the language catalog, and the media filters, and a `.jwpub` added by hand no longer guesses meeting sections from English or Portuguese words in its titles.
 - Sign language congregations now get their songs from the sign language songbook (`sjj`) instead of `sjjm`, in the meeting sync and when adding a song.

@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import KMedia.UI
 import ".."
@@ -12,26 +13,160 @@ ColumnLayout {
     property bool compactMode: false
     property string selectedCategory: "general"
 
+    // The keywords are translated, so the search finds a category in the interface language.
     readonly property var categories: [
-        { id: "general", label: qsTr("General"), icon: "globe", keywords: "general theme dark light language congregation profile" },
-        { id: "schedule", label: qsTr("Meetings"), icon: "calendar-days", keywords: "meetings congregation schedule midweek weekend day time language fallback footnote printed watchtower teaching study filter" },
-        { id: "display", label: qsTr("Display"), icon: "monitor", keywords: "display screen projector presentation standby blackout" },
-        { id: "audio", label: qsTr("Audio"), icon: "audio-lines", keywords: "audio background music fade volume duration" },
-        { id: "integrations", label: qsTr("Integrations"), icon: "radio", keywords: "obs websocket zoom meeting cloud folder watch dropbox" },
-        { id: "security", label: qsTr("Security"), icon: "lock", keywords: "pin lock security shortcuts diagnostics version memory" }
+        { id: "general", label: qsTr("General"), icon: "globe", keywords: qsTr("general appearance theme dark light interface language congregation profile") },
+        { id: "schedule", label: qsTr("Meetings"), icon: "calendar-days", keywords: qsTr("meetings congregation lookup schedule midweek weekend day time media language fallback footnote printed watchtower teaching study filter export ffmpeg mp4") },
+        { id: "display", label: qsTr("Display"), icon: "monitor", keywords: qsTr("display screen projector presentation standby blackout picture") },
+        { id: "audio", label: qsTr("Audio"), icon: "audio-lines", keywords: qsTr("audio background music fade volume output device speakers") },
+        { id: "integrations", label: qsTr("Integrations"), icon: "radio", keywords: qsTr("obs websocket password scene zoom meeting passcode shared folder cloud dropbox onedrive") },
+        { id: "security", label: qsTr("Security"), icon: "lock", keywords: qsTr("pin lock password security shortcuts diagnostics version memory") }
     ]
 
+    // Lower case without accents, so "audio" also finds "Áudio".
+    function fold(text) {
+        const lower = text.toLowerCase()
+        return lower.normalize ? lower.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : lower
+    }
+
     function isCategoryVisible(catId) {
-        const q = searchField.text.trim().toLowerCase()
+        const q = root.fold(searchField.text.trim())
         if (q.length === 0) {
             return root.selectedCategory === catId
         }
         for (let i = 0; i < root.categories.length; ++i) {
-            if (root.categories[i].id === catId) {
-                return root.categories[i].keywords.indexOf(q) >= 0 || catId.indexOf(q) >= 0
+            const category = root.categories[i]
+            if (category.id === catId) {
+                return root.fold(category.label + " " + category.keywords).indexOf(q) >= 0
             }
         }
         return false
+    }
+
+    function saveIntegrations() {
+        ApplicationController.saveObsAndZoomSettings()
+        ApplicationController.showToast(qsTr("Booth integration settings saved"), "success")
+    }
+
+    // A labeled value that opens a list of choices ({ value, label }) to pick from.
+    component ChoiceRow: RowLayout {
+        id: choiceRow
+
+        property string text: ""
+        property string value: ""
+        property string valueLabel: ""
+        property var choices: []
+        signal chosen(string value)
+
+        Layout.fillWidth: true
+        spacing: 8
+
+        Text {
+            Layout.fillWidth: true
+            text: choiceRow.text
+            color: Theme.textPrimary
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeSm
+            elide: Text.ElideRight
+        }
+
+        StudioButton {
+            id: choiceButton
+
+            variant: "secondary"
+            text: choiceRow.valueLabel
+            iconName: "chevron-down"
+            Layout.preferredHeight: 30
+            Layout.maximumWidth: 260
+            onClicked: choicePopup.open()
+
+            Popup {
+                id: choicePopup
+
+                y: choiceButton.height + 4
+                implicitWidth: Math.max(choiceButton.width, 240)
+                padding: 6
+                margins: 8
+                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+                background: StudioCard {
+                    surfaceColor: Theme.cardElevated
+                    strokeColor: Theme.borderStrong
+                }
+
+                contentItem: ListView {
+                    implicitHeight: Math.min(contentHeight, 260)
+                    clip: true
+                    spacing: 2
+                    model: choiceRow.choices
+
+                    ScrollBar.vertical: StudioScrollBar {
+                        policy: ScrollBar.AsNeeded
+                    }
+
+                    delegate: Rectangle {
+                        id: choiceItem
+
+                        required property var modelData
+                        readonly property bool selected: choiceItem.modelData.value === choiceRow.value
+
+                        width: ListView.view ? ListView.view.width : 240
+                        height: 32
+                        radius: Theme.radiusSmall
+                        color: choiceMouse.containsMouse ? Theme.cardHover
+                                                         : (choiceItem.selected ? Theme.accentSoft : "transparent")
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
+                            spacing: 6
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: choiceItem.modelData.label
+                                color: choiceItem.selected ? Theme.accentPrimary : Theme.textPrimary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeSm
+                                font.weight: choiceItem.selected ? Font.DemiBold : Font.Normal
+                                elide: Text.ElideRight
+                            }
+
+                            StudioIcon {
+                                visible: choiceItem.selected
+                                name: "check"
+                                size: 14
+                                color: Theme.accentPrimary
+                            }
+                        }
+
+                        MouseArea {
+                            id: choiceMouse
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                choiceRow.chosen(choiceItem.modelData.value)
+                                choicePopup.close()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    component SettingsField: TextField {
+        Layout.fillWidth: true
+        color: Theme.textPrimary
+        placeholderTextColor: Theme.textMuted
+        font.family: Theme.fontFamily
+        font.pixelSize: Theme.fontSizeSm
+        background: StudioCard {
+            surfaceColor: Theme.windowBase
+            cornerRadius: Theme.radiusSmall
+        }
     }
 
     spacing: Theme.spacingMd
@@ -418,6 +553,67 @@ ColumnLayout {
                                 }
                             }
                         }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: Theme.borderHairline
+                        }
+
+                        RowLayout {
+                            id: standbyRow
+
+                            readonly property string imagePath: ApplicationController.playback.standbyImageUrl.toString()
+
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Text {
+                                text: qsTr("Standby picture")
+                                color: Theme.textPrimary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeSm
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: decodeURIComponent(standbyRow.imagePath.substring(standbyRow.imagePath.lastIndexOf("/") + 1))
+                                color: Theme.textMuted
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeXs
+                                horizontalAlignment: Text.AlignRight
+                                elide: Text.ElideMiddle
+                            }
+
+                            StudioButton {
+                                variant: "secondary"
+                                iconName: "image"
+                                text: qsTr("Choose")
+                                Layout.preferredHeight: 30
+                                onClicked: standbyDialog.open()
+                            }
+
+                            StudioButton {
+                                visible: standbyRow.imagePath.length > 0
+                                variant: "ghost"
+                                iconName: "x"
+                                leftPadding: 0
+                                rightPadding: 0
+                                Layout.preferredWidth: 30
+                                Layout.preferredHeight: 30
+                                onClicked: ApplicationController.saveStandbyImage("")
+                                ToolTip.visible: hovered
+                                ToolTip.text: qsTr("Remove picture")
+                            }
+
+                            FileDialog {
+                                id: standbyDialog
+
+                                title: qsTr("Standby picture")
+                                nameFilters: [qsTr("Pictures (*.png *.jpg *.jpeg *.webp *.bmp)")]
+                                onAccepted: ApplicationController.saveStandbyImage(standbyDialog.selectedFile)
+                            }
+                        }
                     }
                 }
 
@@ -504,22 +700,57 @@ ColumnLayout {
                                 }
                             }
                         }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: Theme.borderHairline
+                        }
+
+                        ChoiceRow {
+                            text: qsTr("Audio output")
+                            value: ApplicationController.playback.audioDevice
+                            valueLabel: ApplicationController.playback.audioDeviceDescription.length > 0
+                                        ? ApplicationController.playback.audioDeviceDescription
+                                        : qsTr("System default")
+                            choices: {
+                                const list = [{ value: "auto", label: qsTr("System default") }]
+                                const devices = ApplicationController.playback.audioDevices
+                                for (let i = 0; i < devices.length; ++i) {
+                                    if (devices[i].name !== "auto") {
+                                        list.push({ value: devices[i].name, label: devices[i].description })
+                                    }
+                                }
+                                return list
+                            }
+                            onChosen: value => ApplicationController.saveAudioOutputDevice(value)
+                        }
                     }
                 }
 
-                // Category 4: OBS Studio, Zoom & Watched Cloud Folder
+                // Category 4: OBS Studio, Zoom, and the shared folder
                 ColumnLayout {
                     visible: root.isCategoryVisible("integrations")
                     Layout.fillWidth: true
                     spacing: Theme.spacingMd
 
+                    // OBS Studio: connection, then the scenes KMedia switches to on its own.
                     StudioCard {
                         Layout.fillWidth: true
-                        implicitHeight: boothCol.implicitHeight + 28
+                        implicitHeight: obsCol.implicitHeight + 28
                         surfaceColor: Theme.panelSurface
 
                         ColumnLayout {
-                            id: boothCol
+                            id: obsCol
+
+                            readonly property var obs: ApplicationController.obsClient
+                            readonly property var sceneChoices: {
+                                const list = [{ value: "", label: qsTr("Not set") }]
+                                for (let i = 0; i < obsCol.obs.availableScenes.length; ++i) {
+                                    list.push({ value: obsCol.obs.availableScenes[i], label: obsCol.obs.availableScenes[i] })
+                                }
+                                return list
+                            }
 
                             anchors.fill: parent
                             anchors.margins: 14
@@ -530,13 +761,159 @@ ColumnLayout {
                                 spacing: 8
 
                                 StudioIcon {
-                                    name: "radio"
+                                    name: "obs-studio"
+                                    category: "custom"
                                     size: 17
                                     color: Theme.accentPrimary
                                 }
 
                                 Text {
-                                    text: qsTr("OBS Studio WebSocket v5 & Zoom Bridge")
+                                    text: "OBS Studio"
+                                    color: Theme.textPrimary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeLg
+                                    font.weight: Font.DemiBold
+                                    Layout.fillWidth: true
+                                }
+
+                                StudioBadge {
+                                    visible: obsCol.obs.enabled
+                                    text: obsCol.obs.connected ? qsTr("Connected") : qsTr("Not connected")
+                                    badgeColor: Theme.cardSurface
+                                    textColor: obsCol.obs.connected ? Theme.statusReady : Theme.textSecondary
+                                    hasBorder: true
+                                }
+
+                                StudioSwitch {
+                                    checked: obsCol.obs.enabled
+                                    onToggled: {
+                                        obsCol.obs.enabled = checked
+                                        if (checked) {
+                                            obsCol.obs.connectToObs()
+                                        }
+                                        ApplicationController.saveObsAndZoomSettings()
+                                    }
+                                }
+                            }
+
+                            RowLayout {
+                                visible: obsCol.obs.enabled
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                SettingsField {
+                                    id: obsHostField
+
+                                    placeholderText: qsTr("OBS Host (127.0.0.1)")
+                                    text: obsCol.obs.host
+                                }
+
+                                SettingsField {
+                                    id: obsPortField
+
+                                    Layout.fillWidth: false
+                                    Layout.preferredWidth: 82
+                                    placeholderText: "4455"
+                                    text: String(obsCol.obs.port)
+                                    inputMethodHints: Qt.ImhDigitsOnly
+                                }
+                            }
+
+                            RowLayout {
+                                visible: obsCol.obs.enabled
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                SettingsField {
+                                    id: obsPasswordField
+
+                                    placeholderText: qsTr("WebSocket password")
+                                    text: obsCol.obs.password
+                                    echoMode: TextInput.Password
+                                }
+
+                                StudioButton {
+                                    variant: "primary"
+                                    text: qsTr("Save & Connect")
+                                    Layout.preferredHeight: 34
+                                    onClicked: {
+                                        obsCol.obs.host = obsHostField.text.trim()
+                                        obsCol.obs.port = parseInt(obsPortField.text, 10) || 4455
+                                        obsCol.obs.password = obsPasswordField.text
+                                        obsCol.obs.connectToObs()
+                                        root.saveIntegrations()
+                                    }
+                                }
+                            }
+
+                            ChoiceRow {
+                                visible: obsCol.obs.enabled && obsCol.obs.availableScenes.length > 0
+                                text: qsTr("Stage scene")
+                                value: obsCol.obs.stageScene
+                                valueLabel: obsCol.obs.stageScene.length > 0 ? obsCol.obs.stageScene : qsTr("Not set")
+                                choices: obsCol.sceneChoices
+                                onChosen: value => {
+                                    obsCol.obs.stageScene = value
+                                    ApplicationController.saveObsAndZoomSettings()
+                                }
+                            }
+
+                            ChoiceRow {
+                                visible: obsCol.obs.enabled && obsCol.obs.availableScenes.length > 0
+                                text: qsTr("Media scene")
+                                value: obsCol.obs.mediaScene
+                                valueLabel: obsCol.obs.mediaScene.length > 0 ? obsCol.obs.mediaScene : qsTr("Not set")
+                                choices: obsCol.sceneChoices
+                                onChosen: value => {
+                                    obsCol.obs.mediaScene = value
+                                    ApplicationController.saveObsAndZoomSettings()
+                                }
+                            }
+
+                            ChoiceRow {
+                                visible: obsCol.obs.enabled && obsCol.obs.availableScenes.length > 0
+                                text: qsTr("Image scene")
+                                value: obsCol.obs.imageScene
+                                valueLabel: obsCol.obs.imageScene.length > 0 ? obsCol.obs.imageScene : qsTr("Same as media scene")
+                                choices: {
+                                    const list = obsCol.sceneChoices.slice()
+                                    list[0] = { value: "", label: qsTr("Same as media scene") }
+                                    return list
+                                }
+                                onChosen: value => {
+                                    obsCol.obs.imageScene = value
+                                    ApplicationController.saveObsAndZoomSettings()
+                                }
+                            }
+                        }
+                    }
+
+                    // Zoom: the congregation's meeting, joined from here or from the pill bar.
+                    StudioCard {
+                        Layout.fillWidth: true
+                        implicitHeight: zoomCol.implicitHeight + 28
+                        surfaceColor: Theme.panelSurface
+
+                        ColumnLayout {
+                            id: zoomCol
+
+                            anchors.fill: parent
+                            anchors.margins: 14
+                            spacing: 10
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                StudioIcon {
+                                    name: "zoom"
+                                    category: "custom"
+                                    size: 17
+                                    color: Theme.accentPrimary
+                                }
+
+                                Text {
+                                    text: "Zoom"
                                     color: Theme.textPrimary
                                     font.family: Theme.fontFamily
                                     font.pixelSize: Theme.fontSizeLg
@@ -549,83 +926,56 @@ ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 8
 
-                                TextField {
-                                    id: obsHostField
+                                SettingsField {
+                                    id: zoomIdField
 
-                                    Layout.fillWidth: true
-                                    placeholderText: qsTr("OBS Host (127.0.0.1)")
-                                    text: ApplicationController.obsClient.host
-                                    color: Theme.textPrimary
-                                    placeholderTextColor: Theme.textMuted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeSm
-                                    background: StudioCard {
-                                        surfaceColor: Theme.windowBase
-                                        cornerRadius: Theme.radiusSmall
-                                    }
+                                    placeholderText: qsTr("Zoom Meeting ID")
+                                    text: ApplicationController.zoomBridge.meetingId
                                 }
 
-                                TextField {
-                                    id: obsPortField
+                                SettingsField {
+                                    id: zoomPassField
 
-                                    Layout.preferredWidth: 82
-                                    placeholderText: "4455"
-                                    text: String(ApplicationController.obsClient.port)
-                                    color: Theme.textPrimary
-                                    placeholderTextColor: Theme.textMuted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeSm
-                                    background: StudioCard {
-                                        surfaceColor: Theme.windowBase
-                                        cornerRadius: Theme.radiusSmall
-                                    }
+                                    placeholderText: qsTr("Passcode")
+                                    text: ApplicationController.zoomBridge.meetingPassword
+                                    echoMode: TextInput.Password
                                 }
+                            }
+
+                            SettingsField {
+                                id: zoomNameField
+
+                                placeholderText: qsTr("Name shown in Zoom")
+                                text: ApplicationController.zoomBridge.displayName
                             }
 
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 8
 
-                                TextField {
-                                    id: zoomIdField
-
-                                    Layout.fillWidth: true
-                                    placeholderText: qsTr("Zoom Meeting ID")
-                                    text: ApplicationController.zoomBridge.meetingId
-                                    color: Theme.textPrimary
-                                    placeholderTextColor: Theme.textMuted
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSizeSm
-                                    background: StudioCard {
-                                        surfaceColor: Theme.windowBase
-                                        cornerRadius: Theme.radiusSmall
+                                StudioButton {
+                                    variant: "primary"
+                                    text: qsTr("Save")
+                                    Layout.preferredHeight: 34
+                                    onClicked: {
+                                        ApplicationController.zoomBridge.meetingId = zoomIdField.text.trim()
+                                        ApplicationController.zoomBridge.meetingPassword = zoomPassField.text
+                                        ApplicationController.zoomBridge.displayName = zoomNameField.text.trim()
+                                        root.saveIntegrations()
                                     }
                                 }
 
                                 StudioButton {
-                                    variant: "primary"
-                                    text: qsTr("Save & Connect")
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 34
+                                    variant: "secondary"
+                                    iconName: "external-link"
+                                    text: qsTr("Launch Zoom Meeting")
+                                    enabled: ApplicationController.zoomBridge.meetingId.length > 0
                                     onClicked: {
-                                        ApplicationController.obsClient.host = obsHostField.text.trim()
-                                        ApplicationController.obsClient.port = parseInt(obsPortField.text, 10) || 4455
-                                        ApplicationController.obsClient.enabled = true
-                                        ApplicationController.obsClient.connectToObs()
-                                        ApplicationController.zoomBridge.meetingId = zoomIdField.text.trim()
-                                        ApplicationController.saveObsAndZoomSettings()
-                                        ApplicationController.showToast(qsTr("Booth integration settings saved"), "success")
-                                    }
-                                }
-                            }
-
-                            StudioButton {
-                                Layout.fillWidth: true
-                                variant: "secondary"
-                                iconName: "external-link"
-                                text: qsTr("Launch Zoom Meeting")
-                                enabled: ApplicationController.zoomBridge.meetingId.length > 0
-                                onClicked: {
-                                    if (!ApplicationController.zoomBridge.joinMeeting()) {
-                                        ApplicationController.showToast(qsTr("Set a valid Zoom Meeting ID first"), "warning")
+                                        if (!ApplicationController.zoomBridge.joinMeeting()) {
+                                            ApplicationController.showToast(qsTr("Set a valid Zoom Meeting ID first"), "warning")
+                                        }
                                     }
                                 }
                             }

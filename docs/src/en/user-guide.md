@@ -76,9 +76,9 @@ Drag an item by its handle onto another item to move it, also across sections. *
 ## Presenting
 
 - Click the play button of an item, or double click the item. The active item is highlighted and shown in the preview panel.
-- **Standby** (`B`) covers the presentation display with a black screen, and **Blackout** in the preview panel also pauses the media. Press **Standby** again to bring the media back where you left it.
+- **Standby** (`B`) covers the presentation display with the standby picture set in *Settings > Display*, or with black when there is none. **Blackout** in the preview panel always shows black and also pauses the media. Press **Standby** again to bring the media back where you left it.
 - **Trims** set a start and an end for a video or audio without changing the file. **Zoom and pan** work on pictures, videos, and PDF pages, and PDF documents can be paged.
-- With a second display or projector connected, KMedia presents on it full screen and keeps the controls on the main screen. *Settings > Display* picks another screen.
+- With a second display or projector connected, KMedia presents on it full screen and keeps the controls on the main screen. *Settings > Display* picks another screen, and *Settings > Audio* picks where the sound plays.
 
 ### Keyboard shortcuts
 
@@ -105,8 +105,8 @@ Shortcuts without `Ctrl` or `Alt` pause while you type in a text field.
 
 ## Zoom and OBS Studio
 
-- **Zoom:** save the meeting ID in *Settings > Integrations*, then join with **Launch Zoom Meeting** there or **Join Meeting** from the Zoom button of the pill bar.
-- **OBS Studio:** enter the WebSocket host and port (default `4455`) in *Settings > Integrations* and click **Save & Connect**. The OBS button of the pill bar then lists your scenes so you can switch between them.
+- **Zoom:** save the meeting ID, the passcode, and the name the booth joins with in *Settings > Integrations*, then join with **Launch Zoom Meeting** there or **Join Meeting** from the Zoom button of the pill bar.
+- **OBS Studio:** turn on OBS Studio in *Settings > Integrations*, enter the WebSocket host, port (default `4455`), and password, and click **Save & Connect**. Then pick the stage scene, the media scene, and optionally an image scene: KMedia switches to the media scene while media is presented and back to the stage scene when it stops. The OBS button of the pill bar switches scenes by hand.
 
 ## Several congregations
 

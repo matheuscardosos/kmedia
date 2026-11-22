@@ -76,9 +76,9 @@ Arraste um item pela alça até outro item para movê-lo, inclusive entre seçõ
 ## Apresentar
 
 - Clique no botão de reprodução de um item ou dê um duplo clique nele. O item ativo fica destacado e aparece no painel de prévia.
-- **Espera** (`B`) cobre a tela de apresentação com uma tela preta, e **Blackout**, no painel de prévia, também pausa a mídia. Clique em **Espera** de novo para voltar à mídia de onde parou.
+- **Espera** (`B`) cobre a tela de apresentação com a imagem de espera definida em *Configurações > Tela*, ou com preto quando não há uma. **Blackout**, no painel de prévia, sempre mostra preto e também pausa a mídia. Clique em **Espera** de novo para voltar à mídia de onde parou.
 - **Cortes** definem início e fim de um vídeo ou áudio sem mudar o arquivo. **Zoom e posição** funcionam em imagens, vídeos e páginas de PDF, e documentos PDF podem ser folheados.
-- Com uma segunda tela ou projetor conectado, o KMedia apresenta nela em tela cheia e deixa os controles na tela principal. *Configurações > Tela* escolhe outra tela.
+- Com uma segunda tela ou projetor conectado, o KMedia apresenta nela em tela cheia e deixa os controles na tela principal. *Configurações > Tela* escolhe outra tela, e *Configurações > Áudio* escolhe onde o som toca.
 
 ### Atalhos de teclado
 
@@ -105,8 +105,8 @@ Atalhos sem `Ctrl` ou `Alt` ficam pausados enquanto você digita num campo de te
 
 ## Zoom e OBS Studio
 
-- **Zoom:** salve o ID da reunião em *Configurações > Integrações* e entre com **Abrir Reunião Zoom** ali mesmo ou com **Entrar na Reunião** no botão do Zoom da barra em pílula.
-- **OBS Studio:** informe o host e a porta do WebSocket (padrão `4455`) em *Configurações > Integrações* e clique em **Salvar e Conectar**. O botão do OBS na barra em pílula passa a listar suas cenas para você alternar entre elas.
+- **Zoom:** salve o ID da reunião, a senha e o nome com que a cabine entra em *Configurações > Integrações*, e entre com **Abrir Reunião Zoom** ali mesmo ou com **Entrar na Reunião** no botão do Zoom da barra em pílula.
+- **OBS Studio:** ative o OBS Studio em *Configurações > Integrações*, informe o host, a porta (padrão `4455`) e a senha do WebSocket e clique em **Salvar e Conectar**. Depois escolha a cena de palco, a cena de mídia e, se quiser, uma cena de imagens: o KMedia troca para a cena de mídia enquanto uma mídia é apresentada e volta para a cena de palco quando ela para. O botão do OBS na barra em pílula troca as cenas na mão.
 
 ## Várias congregações
 

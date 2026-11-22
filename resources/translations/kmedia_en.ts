@@ -62,12 +62,12 @@
         <translation>Song</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="830"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="856"/>
         <source>The shared folder and the export folder must be different</source>
         <translation>The shared folder and the export folder must be different</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../src/app/ApplicationController.cpp" line="837"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="863"/>
         <source>%n file(s) could not be converted to MP4</source>
         <translation>
             <numerusform>%n file could not be converted to MP4</numerusform>
@@ -75,12 +75,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="911"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="937"/>
         <source>Zoom screen share ready (%1): %2</source>
         <translation>Zoom screen share ready (%1): %2</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="990"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1017"/>
         <source>Applied congregation schedule: %1</source>
         <translation>Applied congregation schedule: %1</translation>
     </message>
@@ -1705,132 +1705,247 @@
 <context>
     <name>SettingsView</name>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="16"/>
+        <location filename="../qml/components/SettingsView.qml" line="18"/>
         <source>General</source>
         <translation>General</translation>
     </message>
     <message>
         <location filename="../qml/components/SettingsView.qml" line="18"/>
+        <source>general appearance theme dark light interface language congregation profile</source>
+        <translation>general appearance theme dark light interface language congregation profile</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="19"/>
+        <source>meetings congregation lookup schedule midweek weekend day time media language fallback footnote printed watchtower teaching study filter export ffmpeg mp4</source>
+        <translation>meetings congregation lookup schedule midweek weekend day time media language fallback footnote printed watchtower teaching study filter export ffmpeg mp4</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="20"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="19"/>
+        <location filename="../qml/components/SettingsView.qml" line="20"/>
+        <source>display screen projector presentation standby blackout picture</source>
+        <translation>display screen projector presentation standby blackout picture</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="21"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="20"/>
+        <location filename="../qml/components/SettingsView.qml" line="21"/>
+        <source>audio background music fade volume output device speakers</source>
+        <translation>audio background music fade volume output device speakers</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="22"/>
         <source>Integrations</source>
         <translation>Integrations</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="21"/>
+        <location filename="../qml/components/SettingsView.qml" line="22"/>
+        <source>obs websocket password scene zoom meeting passcode shared folder cloud dropbox onedrive</source>
+        <translation>obs websocket password scene zoom meeting passcode shared folder cloud dropbox onedrive</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="23"/>
         <source>Security</source>
         <translation>Security</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="75"/>
+        <location filename="../qml/components/SettingsView.qml" line="23"/>
+        <source>pin lock password security shortcuts diagnostics version memory</source>
+        <translation>pin lock password security shortcuts diagnostics version memory</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="210"/>
         <source>Search settings...</source>
         <translation>Search settings...</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="93"/>
+        <location filename="../qml/components/SettingsView.qml" line="228"/>
         <source>Lock</source>
         <translation>Lock</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="286"/>
+        <location filename="../qml/components/SettingsView.qml" line="421"/>
         <source>Active Congregation: %1</source>
         <translation>Active Congregation: %1</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="296"/>
+        <location filename="../qml/components/SettingsView.qml" line="431"/>
         <source>English</source>
         <translation>English</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="303"/>
+        <location filename="../qml/components/SettingsView.qml" line="438"/>
         <source>Português</source>
         <translation>Português</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="539"/>
-        <source>OBS Studio WebSocket v5 &amp; Zoom Bridge</source>
-        <translation>OBS Studio WebSocket v5 &amp; Zoom Bridge</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/SettingsView.qml" line="556"/>
+        <location filename="../qml/components/SettingsView.qml" line="807"/>
         <source>OBS Host (127.0.0.1)</source>
         <translation>OBS Host (127.0.0.1)</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="241"/>
+        <location filename="../qml/components/SettingsView.qml" line="376"/>
         <source>Appearance &amp; Interface Language</source>
         <translation>Appearance &amp; Interface Language</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="17"/>
+        <location filename="../qml/components/SettingsView.qml" line="19"/>
         <source>Meetings</source>
         <translation>Meetings</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="261"/>
+        <location filename="../qml/components/SettingsView.qml" line="396"/>
         <source>Dark Booth Theme (Studio Carbon)</source>
         <translation>Dark Booth Theme (Studio Carbon)</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="342"/>
+        <location filename="../qml/components/SettingsView.qml" line="477"/>
         <source>Display Routing &amp; Standby</source>
         <translation>Display Routing &amp; Standby</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="352"/>
+        <location filename="../qml/components/SettingsView.qml" line="487"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="362"/>
+        <location filename="../qml/components/SettingsView.qml" line="497"/>
         <source>Presentation Output Active</source>
         <translation>Presentation Output Active</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="449"/>
+        <location filename="../qml/components/SettingsView.qml" line="572"/>
+        <location filename="../qml/components/SettingsView.qml" line="612"/>
+        <source>Standby picture</source>
+        <translation>Standby picture</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="591"/>
+        <source>Choose</source>
+        <translation>Choose</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="606"/>
+        <source>Remove picture</source>
+        <translation>Remove picture</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="613"/>
+        <source>Pictures (*.png *.jpg *.jpeg *.webp *.bmp)</source>
+        <translation>Pictures (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="645"/>
         <source>Background Music &amp; Fade Timing</source>
         <translation>Background Music &amp; Fade Timing</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="481"/>
+        <location filename="../qml/components/SettingsView.qml" line="677"/>
         <source>Fade-Out Duration</source>
         <translation>Fade-Out Duration</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="502"/>
+        <location filename="../qml/components/SettingsView.qml" line="698"/>
         <source>Updated fade duration</source>
         <translation>Updated fade duration</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="593"/>
+        <location filename="../qml/components/SettingsView.qml" line="711"/>
+        <source>Audio output</source>
+        <translation>Audio output</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="715"/>
+        <location filename="../qml/components/SettingsView.qml" line="717"/>
+        <source>System default</source>
+        <translation>System default</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="748"/>
+        <location filename="../qml/components/SettingsView.qml" line="853"/>
+        <location filename="../qml/components/SettingsView.qml" line="865"/>
+        <source>Not set</source>
+        <translation>Not set</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="781"/>
+        <source>Connected</source>
+        <translation>Connected</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="781"/>
+        <source>Not connected</source>
+        <translation>Not connected</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="830"/>
+        <source>WebSocket password</source>
+        <translation>WebSocket password</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="851"/>
+        <source>Stage scene</source>
+        <translation>Stage scene</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="863"/>
+        <source>Media scene</source>
+        <translation>Media scene</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="875"/>
+        <source>Image scene</source>
+        <translation>Image scene</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="877"/>
+        <location filename="../qml/components/SettingsView.qml" line="880"/>
+        <source>Same as media scene</source>
+        <translation>Same as media scene</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="932"/>
         <source>Zoom Meeting ID</source>
         <translation>Zoom Meeting ID</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="607"/>
+        <location filename="../qml/components/SettingsView.qml" line="837"/>
         <source>Save &amp; Connect</source>
         <translation>Save &amp; Connect</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="615"/>
+        <location filename="../qml/components/SettingsView.qml" line="48"/>
         <source>Booth integration settings saved</source>
         <translation>Booth integration settings saved</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="624"/>
+        <location filename="../qml/components/SettingsView.qml" line="939"/>
+        <source>Passcode</source>
+        <translation>Passcode</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="948"/>
+        <source>Name shown in Zoom</source>
+        <translation>Name shown in Zoom</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="958"/>
+        <source>Save</source>
+        <translation>Save</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="973"/>
         <source>Launch Zoom Meeting</source>
         <translation>Launch Zoom Meeting</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="628"/>
+        <location filename="../qml/components/SettingsView.qml" line="977"/>
         <source>Set a valid Zoom Meeting ID first</source>
         <translation>Set a valid Zoom Meeting ID first</translation>
     </message>

@@ -118,60 +118,57 @@ void ObsWebSocketClient::setPassword(const QString& password)
     emit configChanged();
 }
 
-QString ObsWebSocketClient::playScene() const
+QString ObsWebSocketClient::stageScene() const
 {
-    return m_playScene;
+    return m_stageScene;
 }
 
-void ObsWebSocketClient::setPlayScene(const QString& sceneName)
+void ObsWebSocketClient::setStageScene(const QString& sceneName)
 {
-    if (m_playScene == sceneName.trimmed()) {
+    if (m_stageScene == sceneName.trimmed()) {
         return;
     }
-    m_playScene = sceneName.trimmed();
+    m_stageScene = sceneName.trimmed();
     emit sceneMapChanged();
 }
 
-QString ObsWebSocketClient::pauseScene() const
+QString ObsWebSocketClient::mediaScene() const
 {
-    return m_pauseScene;
+    return m_mediaScene;
 }
 
-void ObsWebSocketClient::setPauseScene(const QString& sceneName)
+void ObsWebSocketClient::setMediaScene(const QString& sceneName)
 {
-    if (m_pauseScene == sceneName.trimmed()) {
+    if (m_mediaScene == sceneName.trimmed()) {
         return;
     }
-    m_pauseScene = sceneName.trimmed();
+    m_mediaScene = sceneName.trimmed();
     emit sceneMapChanged();
 }
 
-QString ObsWebSocketClient::stopScene() const
+QString ObsWebSocketClient::imageScene() const
 {
-    return m_stopScene;
+    return m_imageScene;
 }
 
-void ObsWebSocketClient::setStopScene(const QString& sceneName)
+void ObsWebSocketClient::setImageScene(const QString& sceneName)
 {
-    if (m_stopScene == sceneName.trimmed()) {
+    if (m_imageScene == sceneName.trimmed()) {
         return;
     }
-    m_stopScene = sceneName.trimmed();
+    m_imageScene = sceneName.trimmed();
     emit sceneMapChanged();
 }
 
-QString ObsWebSocketClient::standbyScene() const
+QString ObsWebSocketClient::sceneForPlayback(bool hasMedia, bool stillImage, bool standby) const
 {
-    return m_standbyScene;
-}
-
-void ObsWebSocketClient::setStandbyScene(const QString& sceneName)
-{
-    if (m_standbyScene == sceneName.trimmed()) {
-        return;
+    if (standby || !hasMedia) {
+        return m_stageScene;
     }
-    m_standbyScene = sceneName.trimmed();
-    emit sceneMapChanged();
+    if (stillImage && !m_imageScene.isEmpty()) {
+        return m_imageScene;
+    }
+    return m_mediaScene;
 }
 
 QStringList ObsWebSocketClient::availableScenes() const
@@ -289,23 +286,13 @@ bool ObsWebSocketClient::stopRecording()
     return !sendRequest(QStringLiteral("StopRecord")).isEmpty();
 }
 
-void ObsWebSocketClient::applyPlaybackState(bool playing, bool paused, bool standby)
+void ObsWebSocketClient::applyPlaybackState(bool hasMedia, bool stillImage, bool standby)
 {
     if (!isConnected()) {
         return;
     }
 
-    QString targetScene;
-    if (standby && !m_standbyScene.isEmpty()) {
-        targetScene = m_standbyScene;
-    } else if (playing && !paused && !m_playScene.isEmpty()) {
-        targetScene = m_playScene;
-    } else if (playing && paused && !m_pauseScene.isEmpty()) {
-        targetScene = m_pauseScene;
-    } else if (!playing && !m_stopScene.isEmpty()) {
-        targetScene = m_stopScene;
-    }
-
+    const QString targetScene = sceneForPlayback(hasMedia, stillImage, standby);
     if (targetScene.isEmpty()) {
         return;
     }

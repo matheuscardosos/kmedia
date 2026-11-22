@@ -97,6 +97,7 @@ Window {
             asynchronous: true
             smooth: true
             visible: ApplicationController.playback.standbyImageUrl.toString().length > 0
+                     && !ApplicationController.playback.blackoutActive
             source: ApplicationController.playback.standbyImageUrl
         }
     }
