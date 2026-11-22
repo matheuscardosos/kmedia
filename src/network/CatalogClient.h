@@ -3,6 +3,7 @@
 #include <QByteArray>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QUrl>
 
 #include <functional>
@@ -41,6 +42,26 @@ struct CatalogMediaAsset
     QString pubMediaId;
     bool streamOnly{false};
     QString imageUrl;
+};
+
+/** A video of the JW.org video library, with every file it comes in. */
+struct JwVideo
+{
+    QString key;
+    QString title;
+    QString firstPublished;
+    double durationSeconds{0.0};
+    QString imageUrl;
+    std::vector<CatalogMediaAsset> files;
+};
+
+/** One category of the JW.org video library: its subcategories and the videos it lists. */
+struct JwVideoCategory
+{
+    QString key;
+    QString name;
+    QStringList subcategories;
+    std::vector<JwVideo> videos;
 };
 
 struct CatalogCongregationResult
@@ -89,6 +110,11 @@ public:
                      const QString& baseUrl =
                          QStringLiteral("https://b.jw-cdn.org/apis/mediator/v1/media-items"));
 
+    [[nodiscard]] static QUrl
+    mediatorCategoryUrl(const QString& langCode, const QString& categoryKey, bool subcategoriesOnly,
+                        const QString& baseUrl =
+                            QStringLiteral("https://b.jw-cdn.org/apis/mediator/v1/categories"));
+
     [[nodiscard]] static QString buildPubMediaKey(const QString& pubSymbol, int issueTagNumber,
                                                   qint64 docId = 0, int track = 0,
                                                   bool isVideo = true);
@@ -104,6 +130,7 @@ public:
     parsePubMediaLinksJson(const QByteArray& json, const QString& preferredLangCode = {});
     [[nodiscard]] static std::vector<CatalogMediaAsset>
     parseMediatorMediaJson(const QByteArray& json, const QString& pubMediaKey = {});
+    [[nodiscard]] static JwVideoCategory parseMediatorCategoryJson(const QByteArray& json);
     [[nodiscard]] static std::vector<CatalogCongregationResult>
     parseCongregationSearchJson(const QByteArray& json);
 
@@ -120,6 +147,9 @@ public:
      */
     void requestPubMediaLinks(const QUrl& endpoint, const QString& preferredLangCode,
                               QObject* context, AssetsCallback callback);
+
+    using CategoryCallback = std::function<void(bool ok, const kmedia::JwVideoCategory& category)>;
+    void requestMediatorCategory(const QUrl& endpoint, QObject* context, CategoryCallback callback);
 
 signals:
     void languagesLoaded(const std::vector<kmedia::CatalogLanguage>& languages, bool fromCache);

@@ -105,6 +105,8 @@ qt_add_library(kmedia_core STATIC
     src/network/PublicationMediaPicker.cpp
     src/network/DocumentMediaImporter.h
     src/network/DocumentMediaImporter.cpp
+    src/network/JwVideoCatalog.h
+    src/network/JwVideoCatalog.cpp
     src/network/PublicationStore.h
     src/network/PublicationStore.cpp
     src/parsers/CloudSyncWatcher.h
@@ -226,6 +228,7 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/SongPickerPopup.qml
     resources/qml/components/PublicTalkPickerPopup.qml
     resources/qml/components/PublicationMediaPopup.qml
+    resources/qml/components/JwVideoPickerPopup.qml
     resources/qml/components/TagEditPopup.qml
     resources/qml/components/RenamePopup.qml
     resources/qml/components/CalendarEventPopup.qml
