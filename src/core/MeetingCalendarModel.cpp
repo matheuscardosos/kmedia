@@ -1,10 +1,7 @@
 #include "core/MeetingCalendarModel.h"
 
-#include "core/SystemUtils.h"
 #include "network/MeetingCatalogService.h"
 
-#include <QDir>
-#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -15,55 +12,9 @@
 
 namespace kmedia {
 
-namespace {
-constexpr int kCalendarGridCells = 42;
-constexpr int kUpcomingWeeksCount = 4;
-} // namespace
-
 MeetingCalendarModel::MeetingCalendarModel(QObject* parent) : QObject(parent)
 {
-    const QDate today = QDate::currentDate();
-    m_visibleYear = today.year();
-    m_visibleMonth = today.month();
-    m_selectedDate = today;
-    rebuild();
-}
-
-void MeetingCalendarModel::setStorageRoot(const QString& storageRoot)
-{
-    const QString clean = storageRoot.trimmed();
-    if (m_storageRoot == clean) {
-        return;
-    }
-    m_storageRoot = clean;
-    rebuild();
-}
-
-void MeetingCalendarModel::setMediaLanguage(const QString& languageCode)
-{
-    const QString clean =
-        languageCode.trimmed().isEmpty() ? QStringLiteral("E") : languageCode.trimmed();
-    if (m_languageCode == clean) {
-        return;
-    }
-    m_languageCode = clean;
-    rebuild();
-}
-
-int MeetingCalendarModel::visibleYear() const
-{
-    return m_visibleYear;
-}
-
-int MeetingCalendarModel::visibleMonth() const
-{
-    return m_visibleMonth;
-}
-
-QString MeetingCalendarModel::monthTitle() const
-{
-    const QDate first(m_visibleYear, m_visibleMonth, 1);
-    return QLocale::c().toString(first, QStringLiteral("MMMM yyyy"));
+    m_selectedDate = QDate::currentDate();
 }
 
 QDate MeetingCalendarModel::selectedDate() const
@@ -115,16 +66,6 @@ QString MeetingCalendarModel::scheduleSummary() const
 {
     return QStringLiteral("%1 %2 | %3 %4")
         .arg(shortDayName(m_midweekDay), m_midweekTime, shortDayName(m_weekendDay), m_weekendTime);
-}
-
-QVariantList MeetingCalendarModel::calendarDays() const
-{
-    return m_calendarDays;
-}
-
-QVariantList MeetingCalendarModel::upcomingMeetings() const
-{
-    return m_upcomingMeetings;
 }
 
 QVariantList MeetingCalendarModel::specialEvents() const
@@ -354,7 +295,7 @@ void MeetingCalendarModel::loadSpecialEventsJson(const QString& json)
         }
     }
     m_specialEvents = std::move(loaded);
-    rebuild();
+    emit calendarChanged();
 }
 
 QString MeetingCalendarModel::exportTempSchedulesJson() const
@@ -401,7 +342,7 @@ void MeetingCalendarModel::loadTempSchedulesJson(const QString& json)
         }
     }
     m_tempSchedules = std::move(loaded);
-    rebuild();
+    emit calendarChanged();
 }
 
 QString MeetingCalendarModel::normalizeEventType(const QString& raw)
@@ -487,61 +428,6 @@ QString MeetingCalendarModel::normalizeClockTime(const QString& raw, const QStri
     return fallback;
 }
 
-int MeetingCalendarModel::countLocalIssueFiles(const QString& storageRoot,
-                                               const QString& languageCode,
-                                               const QString& pubSymbol, int issueTag)
-{
-    if (storageRoot.trimmed().isEmpty() || pubSymbol.trimmed().isEmpty() || issueTag <= 0) {
-        return 0;
-    }
-
-    const QString lang = SystemUtils::sanitizeFileName(
-        languageCode.trimmed().isEmpty() ? QStringLiteral("E") : languageCode.trimmed());
-    const QString pub = SystemUtils::sanitizeFileName(pubSymbol.trimmed().toLower());
-    const QString dirPath = QStringLiteral("%1/catalog/%2/%3_%4")
-                                .arg(storageRoot.trimmed(), lang, pub, QString::number(issueTag));
-    const QDir dir(dirPath);
-    if (!dir.exists()) {
-        return 0;
-    }
-
-    int count = 0;
-    const QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
-    for (const QFileInfo& info : entries) {
-        if (info.size() > 0 && !info.fileName().endsWith(QStringLiteral(".kmedia.part"))) {
-            ++count;
-        }
-    }
-    return count;
-}
-
-void MeetingCalendarModel::previousMonth()
-{
-    const QDate prev = QDate(m_visibleYear, m_visibleMonth, 1).addMonths(-1);
-    m_visibleYear = prev.year();
-    m_visibleMonth = prev.month();
-    rebuild();
-}
-
-void MeetingCalendarModel::nextMonth()
-{
-    const QDate next = QDate(m_visibleYear, m_visibleMonth, 1).addMonths(1);
-    m_visibleYear = next.year();
-    m_visibleMonth = next.month();
-    rebuild();
-}
-
-void MeetingCalendarModel::goToToday()
-{
-    const QDate today = QDate::currentDate();
-    m_visibleYear = today.year();
-    m_visibleMonth = today.month();
-    m_selectedDate = today;
-    rebuild();
-    emit daySelected(m_selectedDate, selectedMeetingKind(),
-                     selectedWeekEventType() == QStringLiteral("co_visit"));
-}
-
 void MeetingCalendarModel::selectDate(const QString& isoDate)
 {
     const QDate parsed = QDate::fromString(isoDate.trimmed(), Qt::ISODate);
@@ -549,9 +435,7 @@ void MeetingCalendarModel::selectDate(const QString& isoDate)
         return;
     }
     m_selectedDate = parsed;
-    m_visibleYear = parsed.year();
-    m_visibleMonth = parsed.month();
-    rebuild();
+    emit calendarChanged();
     emit daySelected(m_selectedDate, selectedMeetingKind(),
                      selectedWeekEventType() == QStringLiteral("co_visit"));
 }
@@ -570,9 +454,7 @@ void MeetingCalendarModel::openWeekForDate(const QString& isoDate, bool syncNow)
     const QDate parsed = QDate::fromString(isoDate.trimmed(), Qt::ISODate);
     const QDate effective = parsed.isValid() ? parsed : m_selectedDate;
     m_selectedDate = effective;
-    m_visibleYear = effective.year();
-    m_visibleMonth = effective.month();
-    rebuild();
+    emit calendarChanged();
     emit daySelected(m_selectedDate, selectedMeetingKind(),
                      selectedWeekEventType() == QStringLiteral("co_visit"));
     emit weekOpenRequested(MeetingCatalogService::weekMondayForDate(effective), syncNow);
@@ -597,7 +479,7 @@ void MeetingCalendarModel::setScheduleDays(int midweekDay, const QString& midwee
     if (changed) {
         emit scheduleChanged();
     }
-    rebuild();
+    emit calendarChanged();
 }
 
 void MeetingCalendarModel::setWeekSpecialEvent(const QString& isoDate, const QString& eventType,
@@ -633,7 +515,7 @@ void MeetingCalendarModel::setWeekSpecialEvent(const QString& isoDate, const QSt
 
     m_specialEvents.insert(mondayIso, nextEvent);
     emit specialEventsChanged();
-    rebuild();
+    emit calendarChanged();
 }
 
 void MeetingCalendarModel::clearWeekSpecialEvent(const QString& isoDate)
@@ -644,7 +526,7 @@ void MeetingCalendarModel::clearWeekSpecialEvent(const QString& isoDate)
         MeetingCatalogService::weekMondayForDate(effective).toString(Qt::ISODate);
     if (m_specialEvents.remove(mondayIso)) {
         emit specialEventsChanged();
-        rebuild();
+        emit calendarChanged();
     }
 }
 
@@ -668,7 +550,7 @@ void MeetingCalendarModel::setTempWeekSchedule(const QString& isoDate, int midwe
                          : normalizeClockTime(weekendTime, m_weekendTime);
     m_tempSchedules.insert(mondayIso, ts);
     emit tempSchedulesChanged();
-    rebuild();
+    emit calendarChanged();
 }
 
 void MeetingCalendarModel::clearTempWeekSchedule(const QString& isoDate)
@@ -679,137 +561,8 @@ void MeetingCalendarModel::clearTempWeekSchedule(const QString& isoDate)
         MeetingCatalogService::weekMondayForDate(effective).toString(Qt::ISODate);
     if (m_tempSchedules.remove(mondayIso)) {
         emit tempSchedulesChanged();
-        rebuild();
+        emit calendarChanged();
     }
-}
-
-void MeetingCalendarModel::refreshReadiness()
-{
-    rebuild();
-}
-
-void MeetingCalendarModel::rebuild()
-{
-    const QDate today = QDate::currentDate();
-    const QDate firstOfMonth(m_visibleYear, m_visibleMonth, 1);
-    const QDate gridStart = firstOfMonth.addDays(-(firstOfMonth.dayOfWeek() - 1));
-    const QDate activeWeekMonday = selectedWeekMonday();
-
-    m_calendarDays.clear();
-    m_calendarDays.reserve(kCalendarGridCells);
-
-    for (int i = 0; i < kCalendarGridCells; ++i) {
-        const QDate date = gridStart.addDays(i);
-        const int dow = date.dayOfWeek();
-        const QDate weekMonday = MeetingCatalogService::weekMondayForDate(date);
-        const QString weekMondayIso = weekMonday.toString(Qt::ISODate);
-        const SpecialWeekEvent weekEvent = m_specialEvents.value(weekMondayIso);
-        const EffectiveWeekPlan plan = effectivePlanForWeek(weekMonday);
-
-        QString meetingKind;
-        QString meetingTime;
-        int issueTag = 0;
-        int cachedCount = 0;
-
-        if (plan.isMemorial && date == plan.memorialDate) {
-            meetingKind = QStringLiteral("memorial");
-            meetingTime = plan.memorialTime;
-            const QString miSym = QStringLiteral("mi%1").arg(QString::number(date.year()).right(2));
-            cachedCount = countLocalIssueFiles(m_storageRoot, m_languageCode, miSym, 0);
-        } else if (!plan.midweekSuppressed && dow == plan.midweekDay) {
-            meetingKind = QStringLiteral("midweek");
-            meetingTime = plan.midweekTime;
-            issueTag = MeetingCatalogService::midweekIssueTagForDate(date);
-            cachedCount = countLocalIssueFiles(m_storageRoot, m_languageCode, QStringLiteral("mwb"),
-                                               issueTag);
-        } else if (!plan.weekendSuppressed && dow == plan.weekendDay) {
-            meetingKind = QStringLiteral("weekend");
-            meetingTime = plan.weekendTime;
-            issueTag = MeetingCatalogService::watchtowerIssueTagForDate(date);
-            cachedCount =
-                countLocalIssueFiles(m_storageRoot, m_languageCode, QStringLiteral("w"), issueTag);
-        }
-
-        QVariantMap cell;
-        cell.insert(QStringLiteral("dateIso"), date.toString(Qt::ISODate));
-        cell.insert(QStringLiteral("dayNumber"), date.day());
-        cell.insert(QStringLiteral("inCurrentMonth"), date.month() == m_visibleMonth);
-        cell.insert(QStringLiteral("isToday"), date == today);
-        cell.insert(QStringLiteral("isSelected"), date == m_selectedDate);
-        cell.insert(QStringLiteral("isSelectedWeek"), weekMonday == activeWeekMonday);
-        cell.insert(QStringLiteral("meetingKind"), meetingKind);
-        cell.insert(QStringLiteral("meetingTime"), meetingTime);
-        cell.insert(QStringLiteral("issueTag"), issueTag);
-        cell.insert(QStringLiteral("cachedCount"), cachedCount);
-        cell.insert(QStringLiteral("mediaReady"), cachedCount > 0);
-        cell.insert(QStringLiteral("eventType"), weekEvent.eventType);
-        cell.insert(QStringLiteral("eventLabel"), weekEvent.label);
-        cell.insert(QStringLiteral("isSpecialEvent"), !weekEvent.eventType.isEmpty());
-        cell.insert(QStringLiteral("isCircuitOverseerWeek"), plan.isCoVisit);
-        cell.insert(QStringLiteral("hasTempSchedule"), m_tempSchedules.contains(weekMondayIso));
-        m_calendarDays.append(cell);
-    }
-
-    m_upcomingMeetings.clear();
-    const QDate baseMonday = MeetingCatalogService::weekMondayForDate(m_selectedDate);
-    for (int w = 0; w < kUpcomingWeeksCount; ++w) {
-        const QDate weekMonday = baseMonday.addDays(w * 7);
-        const QString weekMondayIso = weekMonday.toString(Qt::ISODate);
-        const SpecialWeekEvent weekEvent = m_specialEvents.value(weekMondayIso);
-        const EffectiveWeekPlan plan = effectivePlanForWeek(weekMonday);
-        const bool regularSkipped = isRegularStudySkippedForEvent(weekEvent.eventType);
-        const QDate midDate = weekMonday.addDays(plan.midweekDay - 1);
-        const QDate endDate = weekMonday.addDays(plan.weekendDay - 1);
-
-        const int mwbTag = MeetingCatalogService::midweekIssueTagForDate(midDate);
-        const int wTag = MeetingCatalogService::watchtowerIssueTagForDate(endDate);
-        const int mwbFiles =
-            countLocalIssueFiles(m_storageRoot, m_languageCode, QStringLiteral("mwb"), mwbTag);
-        const int wFiles =
-            countLocalIssueFiles(m_storageRoot, m_languageCode, QStringLiteral("w"), wTag);
-
-        QVariantMap midCard;
-        midCard.insert(QStringLiteral("dateIso"), midDate.toString(Qt::ISODate));
-        midCard.insert(QStringLiteral("weekMondayIso"), weekMondayIso);
-        midCard.insert(QStringLiteral("dayBadge"), shortDayName(plan.midweekDay));
-        midCard.insert(QStringLiteral("meetingKind"), plan.isMemorial && plan.midweekSuppressed
-                                                          ? QStringLiteral("memorial")
-                                                          : QStringLiteral("midweek"));
-        midCard.insert(QStringLiteral("meetingTime"), plan.midweekTime);
-        midCard.insert(QStringLiteral("issueLabel"),
-                       regularSkipped
-                           ? weekEvent.label
-                           : (plan.isCoVisit ? QStringLiteral("MWB %1 | CO Visit").arg(mwbTag)
-                                             : QStringLiteral("MWB %1").arg(mwbTag)));
-        midCard.insert(QStringLiteral("cachedCount"), mwbFiles);
-        midCard.insert(QStringLiteral("mediaReady"), mwbFiles > 0);
-        midCard.insert(QStringLiteral("eventType"), weekEvent.eventType);
-        midCard.insert(QStringLiteral("eventLabel"), weekEvent.label);
-        midCard.insert(QStringLiteral("regularSkipped"), regularSkipped);
-        m_upcomingMeetings.append(midCard);
-
-        QVariantMap endCard;
-        endCard.insert(QStringLiteral("dateIso"), endDate.toString(Qt::ISODate));
-        endCard.insert(QStringLiteral("weekMondayIso"), weekMondayIso);
-        endCard.insert(QStringLiteral("dayBadge"), shortDayName(plan.weekendDay));
-        endCard.insert(QStringLiteral("meetingKind"), plan.isMemorial && plan.weekendSuppressed
-                                                          ? QStringLiteral("memorial")
-                                                          : QStringLiteral("weekend"));
-        endCard.insert(QStringLiteral("meetingTime"), plan.weekendTime);
-        endCard.insert(QStringLiteral("issueLabel"),
-                       regularSkipped
-                           ? weekEvent.label
-                           : (plan.isCoVisit ? QStringLiteral("W %1 | Shifted CO Talk").arg(wTag)
-                                             : QStringLiteral("W %1").arg(wTag)));
-        endCard.insert(QStringLiteral("cachedCount"), wFiles);
-        endCard.insert(QStringLiteral("mediaReady"), wFiles > 0);
-        endCard.insert(QStringLiteral("eventType"), weekEvent.eventType);
-        endCard.insert(QStringLiteral("eventLabel"), weekEvent.label);
-        endCard.insert(QStringLiteral("regularSkipped"), regularSkipped);
-        m_upcomingMeetings.append(endCard);
-    }
-
-    emit calendarChanged();
 }
 
 } // namespace kmedia

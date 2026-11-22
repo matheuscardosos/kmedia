@@ -25,6 +25,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- Choosing a day, finishing a download, or syncing a day no longer rebuilds the month grid and upcoming meetings list of the old Calendar page, which scanned about fifty folders on disk each time on the interface thread. `MeetingCalendarModel` now only keeps the meeting schedule, the selected day, special weeks, and temporary schedules.
 - Icons are drawn by an image provider that recolors each SVG once and lets Qt cache it, instead of a shader effect with its own layer per icon, so a busy meeting page uses far fewer GPU layers; icons now also show in software rendering and in `--screenshot` captures.
 
 ### Documentation
