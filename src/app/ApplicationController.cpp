@@ -25,6 +25,7 @@
 #include "network/CatalogClient.h"
 #include "network/DocumentMediaImporter.h"
 #include "network/DownloadService.h"
+#include "network/JwVideoCatalog.h"
 #include "network/MeetingCatalogService.h"
 #include "network/MeetingSyncEngine.h"
 #include "network/PublicTalkMedia.h"
@@ -93,6 +94,8 @@ ApplicationController::ApplicationController(QObject* parent)
                                                               m_documentImporter.get());
     m_publicationPicker = std::make_unique<kmedia::PublicationMediaPicker>(
         m_publicationStore.get(), m_documentImporter.get());
+    m_videoCatalog = std::make_unique<kmedia::JwVideoCatalog>(
+        m_catalogClient.get(), m_publicationStore.get(), m_documentImporter.get());
     m_playbackController->attachPdfController(m_pdfController.get());
     m_playlistModel->attachPlaybackController(m_playbackController.get());
     m_thumbnailCache->setCustomExtractor([](const QString& sourcePath, int) {
@@ -320,6 +323,11 @@ kmedia::PublicTalkMedia* ApplicationController::publicTalks() const
 kmedia::PublicationMediaPicker* ApplicationController::publicationMedia() const
 {
     return m_publicationPicker.get();
+}
+
+kmedia::JwVideoCatalog* ApplicationController::videos() const
+{
+    return m_videoCatalog.get();
 }
 
 void ApplicationController::bindPresentationMpv(MpvRendererItem* mpvItem)
@@ -975,6 +983,7 @@ void ApplicationController::applySyncSettings(bool resetWhenChanged)
     }
     m_documentImporter->setLanguages(languages);
     m_publicationPicker->setLanguages(languages);
+    m_videoCatalog->setLanguage(next.languageCode);
     if (resetWhenChanged && mediaChanged && !m_demoMode) {
         m_syncEngine->resetAll();
     }

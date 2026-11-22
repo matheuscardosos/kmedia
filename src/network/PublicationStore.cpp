@@ -249,35 +249,55 @@ void PublicationStore::tryResolveLanguage(const MediaFileRequest& request, int l
                 return;
             }
 
-            ResolvedMediaFile resolved;
-            resolved.ok = true;
-            resolved.title = best->title;
-            resolved.durationSeconds = best->durationSeconds;
             const QDir folder(publicationFolder(bySymbol ? request.keySymbol
                                                          : QString::number(request.mepsDocumentId),
                                                 language, bySymbol ? request.issueTagNumber : 0));
-
-            // The preview picture is tiny and goes first, so the row shows it while the media
-            // itself still downloads.
-            const QString imageName = QFileInfo(QUrl(best->imageUrl).path()).fileName();
-            if (!imageName.isEmpty()) {
-                resolved.thumbnailPath = folder.filePath(imageName);
-                queueFileDownload(QUrl(best->imageUrl), resolved.thumbnailPath, {},
-                                  DownloadService::Priority::High, {});
-            }
-            if (best->durationSeconds > kStreamOnlySeconds) {
-                resolved.streamUrl = best->url;
-                callback(resolved);
-                return;
-            }
-            const QString fileName = QFileInfo(QUrl(best->url).path()).fileName();
-            resolved.filePath = folder.filePath(fileName);
-            if (!fileName.isEmpty()) {
-                queueFileDownload(QUrl(best->url), resolved.filePath, best->sha256, priority,
-                                  best->title);
-            }
-            callback(resolved);
+            callback(resolveAsset(*best, folder, priority));
         });
+}
+
+void PublicationStore::resolveVideo(const JwVideo& video, DownloadService::Priority priority,
+                                    QObject* context, MediaCallback callback)
+{
+    const QPointer<QObject> guard(context);
+    const CatalogMediaAsset* best = bestAsset(video.files, QStringLiteral("MP4"), m_maxResolution);
+    if (guard.isNull()) {
+        return;
+    }
+    if (best == nullptr) {
+        callback(ResolvedMediaFile{});
+        return;
+    }
+    callback(
+        resolveAsset(*best, QDir(QDir(m_cacheRoot).filePath(QStringLiteral("Videos"))), priority));
+}
+
+ResolvedMediaFile PublicationStore::resolveAsset(const CatalogMediaAsset& asset, const QDir& folder,
+                                                 DownloadService::Priority priority)
+{
+    ResolvedMediaFile resolved;
+    resolved.ok = true;
+    resolved.title = asset.title;
+    resolved.durationSeconds = asset.durationSeconds;
+
+    // The preview picture is tiny and goes first, so the row shows it while the media itself
+    // still downloads.
+    const QString imageName = QFileInfo(QUrl(asset.imageUrl).path()).fileName();
+    if (!imageName.isEmpty()) {
+        resolved.thumbnailPath = folder.filePath(imageName);
+        queueFileDownload(QUrl(asset.imageUrl), resolved.thumbnailPath, {},
+                          DownloadService::Priority::High, {});
+    }
+    if (asset.durationSeconds > kStreamOnlySeconds) {
+        resolved.streamUrl = asset.url;
+        return resolved;
+    }
+    const QString fileName = QFileInfo(QUrl(asset.url).path()).fileName();
+    resolved.filePath = folder.filePath(fileName);
+    if (!fileName.isEmpty()) {
+        queueFileDownload(QUrl(asset.url), resolved.filePath, asset.sha256, priority, asset.title);
+    }
+    return resolved;
 }
 
 void PublicationStore::queueFileDownload(const QUrl& url, const QString& filePath,

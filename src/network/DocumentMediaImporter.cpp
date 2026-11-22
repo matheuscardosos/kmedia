@@ -145,6 +145,20 @@ void DocumentMediaImporter::addDocument(const QString& databasePath, const QStri
     }
 }
 
+// One media item already resolved elsewhere (a JW.org video), added as added media.
+bool DocumentMediaImporter::addMedia(const PlaylistEntryView& entry)
+{
+    if (m_playlist.isNull()) {
+        return false;
+    }
+    for (const QString& path : {entry.filePath, entry.thumbnailPath}) {
+        if (!path.isEmpty() && !QFileInfo::exists(path)) {
+            m_pendingFiles.append(QDir::cleanPath(path));
+        }
+    }
+    return m_playlist->appendEntry(entry);
+}
+
 void DocumentMediaImporter::onMediaFileReady(const QString& filePath)
 {
     // A linked video or its picture arrived: the open day shows it once it reloads.

@@ -77,3 +77,36 @@ TEST_CASE("CatalogClient supports Mediator, Pinyin, and hub congregations", "[ne
     REQUIRE(congs.at(0).weekendDay == 7);
     REQUIRE(congs.at(0).weekendTime == QStringLiteral("10:00"));
 }
+
+TEST_CASE("CatalogClient reads JW.org video categories", "[network][catalog][videos]")
+{
+    const QUrl tree = kmedia::CatalogClient::mediatorCategoryUrl(
+        QStringLiteral("T"), QStringLiteral("VideoOnDemand"), true);
+    REQUIRE(tree.toString().contains(QStringLiteral("v1/categories/T/VideoOnDemand")));
+    REQUIRE(tree.toString().contains(QStringLiteral("detailed=1")));
+    REQUIRE(tree.toString().contains(QStringLiteral("mediaLimit=0")));
+    REQUIRE(kmedia::CatalogClient::mediatorCategoryUrl(QStringLiteral("T"),
+                                                       QStringLiteral("LatestVideos"), false)
+                .toString()
+                .contains(QStringLiteral("detailed=0")));
+
+    const QByteArray json = QByteArrayLiteral(
+        R"({"category":{"key":"VODStudio","name":"Studio","subcategories":[{"key":"StudioFeatured"}],)"
+        R"("media":[{"naturalKey":"pub-jwbvod26_T_48_VIDEO","title":"Morning Worship",)"
+        R"("firstPublished":"2026-11-20T13:42:26.166Z","duration":629.4,)"
+        R"("images":{"sqr":{"sm":"https://cdn.example/sqr.jpg"},"lss":{"lg":"https://cdn.example/lss.jpg"}},)"
+        R"("files":[{"label":"144p","progressiveDownloadURL":"https://cdn.example/v_r144P.3gp","checksum":"aa"},)"
+        R"({"label":"720p","progressiveDownloadURL":"https://cdn.example/v_r720P.mp4","checksum":"bb","mimetype":"video/mp4"}]}]}})");
+    const kmedia::JwVideoCategory category = kmedia::CatalogClient::parseMediatorCategoryJson(json);
+    REQUIRE(category.key == QStringLiteral("VODStudio"));
+    REQUIRE(category.subcategories == QStringList{QStringLiteral("StudioFeatured")});
+    REQUIRE(category.videos.size() == 1);
+    const kmedia::JwVideo& video = category.videos.front();
+    REQUIRE(video.title == QStringLiteral("Morning Worship"));
+    REQUIRE(video.imageUrl == QStringLiteral("https://cdn.example/sqr.jpg"));
+    REQUIRE(video.files.size() == 2);
+    // The low resolution 3GP copy is kept apart from the MP4 files a projector plays.
+    REQUIRE(video.files.at(0).fileFormat == QStringLiteral("3GP"));
+    REQUIRE(video.files.at(1).fileFormat == QStringLiteral("MP4"));
+    REQUIRE(video.files.at(1).imageUrl == video.imageUrl);
+}

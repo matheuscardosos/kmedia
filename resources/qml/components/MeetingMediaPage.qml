@@ -121,6 +121,8 @@ Item {
             publicTalkPicker.openFor(target)
         } else if (sourceKind === "publication") {
             publicationPicker.openForJwOrg(target)
+        } else if (sourceKind === "video") {
+            videoPicker.openFor(target)
         } else {
             mediaFileDialog.targetSection = target
             mediaFileDialog.open()
@@ -196,6 +198,16 @@ Item {
             color: Theme.panelSurface
             border.width: 1
             border.color: Theme.borderHairline
+        }
+    }
+
+    Connections {
+        target: ApplicationController.videos
+
+        function onVideoAdded(ok) {
+            ApplicationController.showToast(ok ? qsTr("Added %1 media item(s)").arg(1)
+                                               : qsTr("This video could not be added"),
+                                            ok ? "success" : "warning")
         }
     }
 
@@ -297,6 +309,10 @@ Item {
 
     PublicationMediaPopup {
         id: publicationPicker
+    }
+
+    JwVideoPickerPopup {
+        id: videoPicker
     }
 
     SongPickerPopup {
@@ -419,6 +435,11 @@ Item {
             iconName: "music"
             text: qsTr("Song")
             onTriggered: root.addFrom("song", addMenu.targetSection)
+        }
+        StudioMenuItem {
+            iconName: "film"
+            text: qsTr("Video")
+            onTriggered: root.addFrom("video", addMenu.targetSection)
         }
         StudioMenuItem {
             iconName: "file-text"

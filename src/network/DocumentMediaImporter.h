@@ -10,6 +10,7 @@
 namespace kmedia {
 
 class PlaylistModel;
+struct PlaylistEntryView;
 class PublicationStore;
 
 /**
@@ -31,6 +32,7 @@ public:
 
     void addDocument(const QString& databasePath, const QString& folder, qint64 documentId,
                      const QString& sectionId, const QString& sectionSubtitle, DoneCallback done);
+    bool addMedia(const PlaylistEntryView& entry);
 
 private:
     void onMediaFileReady(const QString& filePath);

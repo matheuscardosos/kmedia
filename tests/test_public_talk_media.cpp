@@ -5,6 +5,7 @@
 #include "network/CatalogClient.h"
 #include "network/DocumentMediaImporter.h"
 #include "network/DownloadService.h"
+#include "network/JwVideoCatalog.h"
 #include "network/PublicTalkMedia.h"
 #include "network/PublicationMediaPicker.h"
 #include "network/PublicationStore.h"
@@ -223,4 +224,49 @@ TEST_CASE("PublicationMediaPicker opens a JW.org publication", "[.network][publi
              .arg(picker.documents().at(5).toMap().value(QStringLiteral("title")).toString())
              .toStdString());
     REQUIRE(added.at(0).at(0).toInt() > 0);
+}
+
+TEST_CASE("JwVideoCatalog lists JW.org videos and adds one", "[.network][videos]")
+{
+    const QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const QString language = qEnvironmentVariable("KMEDIA_NETWORK_LANG", QStringLiteral("E"));
+
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(dir.filePath(QStringLiteral("profile.db"))));
+    kmedia::PlaylistModel playlist;
+    playlist.attachDatabase(&db);
+    REQUIRE(playlist.openWorkspaceForDate(QStringLiteral("2026-11-20"), QStringLiteral("custom")));
+
+    kmedia::NetworkManager network;
+    kmedia::CatalogClient catalog(&network, &db);
+    kmedia::DownloadService downloads(&network, &db);
+    kmedia::PublicationStore store(&catalog, &downloads);
+    store.setCacheRoot(dir.path());
+    store.setMaxResolution(240);
+    kmedia::DocumentMediaImporter importer(&store, &playlist);
+    kmedia::JwVideoCatalog videos(&catalog, &store, &importer);
+    videos.setLanguage(language);
+
+    QSignalSpy busy(&videos, &kmedia::JwVideoCatalog::busyChanged);
+    videos.load();
+    REQUIRE(videos.isBusy());
+    while (videos.isBusy()) {
+        REQUIRE(busy.wait(5 * 60 * 1000));
+    }
+    const QVariantList list = videos.videos();
+    WARN(QStringLiteral("%1 videos, newest: %2")
+             .arg(list.size())
+             .arg(list.isEmpty() ? QString()
+                                 : list.first().toMap().value(QStringLiteral("title")).toString())
+             .toStdString());
+    REQUIRE(list.size() > 50);
+
+    QSignalSpy added(&videos, &kmedia::JwVideoCatalog::videoAdded);
+    videos.addVideo(list.first().toMap().value(QStringLiteral("key")).toString(), {});
+    if (added.isEmpty()) {
+        REQUIRE(added.wait(60 * 1000));
+    }
+    REQUIRE(added.at(0).at(0).toBool());
+    REQUIRE(playlist.count() == 1);
 }

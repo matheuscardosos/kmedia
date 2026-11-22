@@ -24,6 +24,7 @@ Q_MOC_INCLUDE("network/MeetingCatalogService.h")
 Q_MOC_INCLUDE("network/MeetingSyncEngine.h")
 Q_MOC_INCLUDE("network/PublicTalkMedia.h")
 Q_MOC_INCLUDE("network/PublicationMediaPicker.h")
+Q_MOC_INCLUDE("network/JwVideoCatalog.h")
 Q_MOC_INCLUDE("parsers/CloudSyncWatcher.h")
 
 class MpvRendererItem;
@@ -50,6 +51,7 @@ class PlaylistModel;
 class ProcessMonitor;
 class ProfileManager;
 class DocumentMediaImporter;
+class JwVideoCatalog;
 class PublicTalkMedia;
 class PublicationMediaPicker;
 class PublicationStore;
@@ -98,6 +100,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(kmedia::PublicTalkMedia* publicTalks READ publicTalks CONSTANT FINAL)
     Q_PROPERTY(
         kmedia::PublicationMediaPicker* publicationMedia READ publicationMedia CONSTANT FINAL)
+    Q_PROPERTY(kmedia::JwVideoCatalog* videos READ videos CONSTANT FINAL)
 
 public:
     static void setStartupDemoMode(bool enabled);
@@ -144,6 +147,7 @@ public:
     [[nodiscard]] kmedia::MeetingSyncEngine* syncEngine() const;
     [[nodiscard]] kmedia::PublicTalkMedia* publicTalks() const;
     [[nodiscard]] kmedia::PublicationMediaPicker* publicationMedia() const;
+    [[nodiscard]] kmedia::JwVideoCatalog* videos() const;
 
     Q_INVOKABLE void bindPresentationMpv(MpvRendererItem* mpvItem);
     Q_INVOKABLE bool setUiLanguage(const QString& languageCode);
@@ -215,4 +219,5 @@ private:
     std::unique_ptr<kmedia::DocumentMediaImporter> m_documentImporter;
     std::unique_ptr<kmedia::PublicTalkMedia> m_publicTalks;
     std::unique_ptr<kmedia::PublicationMediaPicker> m_publicationPicker;
+    std::unique_ptr<kmedia::JwVideoCatalog> m_videoCatalog;
 };

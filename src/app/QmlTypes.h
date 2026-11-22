@@ -13,6 +13,7 @@
 #include "models/MeetingDayModel.h"
 #include "models/PlaylistModel.h"
 #include "network/DownloadService.h"
+#include "network/JwVideoCatalog.h"
 #include "network/MeetingCatalogService.h"
 #include "network/MeetingSyncEngine.h"
 #include "network/PublicTalkMedia.h"
@@ -113,6 +114,14 @@ struct MeetingDayModelForeign
     Q_GADGET
     QML_FOREIGN(kmedia::MeetingDayModel)
     QML_NAMED_ELEMENT(MeetingDayModel)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct JwVideoCatalogForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::JwVideoCatalog)
+    QML_NAMED_ELEMENT(JwVideoCatalog)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

@@ -60,6 +60,35 @@ QString bestImageUrl(const QJsonObject& images)
     return {};
 }
 
+CatalogMediaAsset assetFromMediatorFile(const QJsonObject& file, const QString& title,
+                                        double mediaDuration, const QString& key,
+                                        const QString& imageUrl)
+{
+    CatalogMediaAsset asset;
+    asset.url = file.value(QStringLiteral("progressiveDownloadURL"))
+                    .toString(file.value(QStringLiteral("url")).toString())
+                    .trimmed();
+    asset.sha256 = file.value(QStringLiteral("checksum")).toString().trimmed();
+    asset.fileSize = file.value(QStringLiteral("filesize")).toInteger(0);
+    asset.mimeType = file.value(QStringLiteral("mimetype")).toString().trimmed();
+    asset.label = file.value(QStringLiteral("label")).toString().trimmed();
+    asset.title = title;
+    asset.durationSeconds = file.value(QStringLiteral("duration")).toDouble(mediaDuration);
+    asset.pubMediaId = key;
+    asset.streamOnly = asset.durationSeconds > CatalogClient::kLongMediaDurationSeconds;
+    asset.imageUrl = imageUrl;
+    if (asset.mimeType.contains(QStringLiteral("audio"), Qt::CaseInsensitive) ||
+        asset.url.endsWith(QStringLiteral(".mp3"), Qt::CaseInsensitive)) {
+        asset.fileFormat = QStringLiteral("MP3");
+    } else if (asset.url.endsWith(QStringLiteral(".mp4"), Qt::CaseInsensitive)) {
+        asset.fileFormat = QStringLiteral("MP4");
+    } else {
+        // Low resolution 3GP copies are not meant for a projector.
+        asset.fileFormat = QFileInfo(QUrl(asset.url).path()).suffix().toUpper();
+    }
+    return asset;
+}
+
 void parseAssetObject(const QJsonObject& obj, const QString& pubSymbol, int issueTag,
                       const QString& formatKey, std::vector<CatalogMediaAsset>& out)
 {
@@ -198,6 +227,26 @@ QUrl CatalogClient::mediatorMediaUrl(const QString& pubMediaKey, const QString& 
     return url;
 }
 
+QUrl CatalogClient::mediatorCategoryUrl(const QString& langCode, const QString& categoryKey,
+                                        bool subcategoriesOnly, const QString& baseUrl)
+{
+    QString cleanBase = baseUrl.trimmed();
+    while (cleanBase.endsWith(QLatin1Char('/'))) {
+        cleanBase.chop(1);
+    }
+    QUrl url(QStringLiteral("%1/%2/%3").arg(cleanBase, langCode.trimmed(), categoryKey.trimmed()));
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("clientType"), QStringLiteral("www"));
+    // The category tree is walked without media; the videos come from each leaf category.
+    query.addQueryItem(QStringLiteral("detailed"),
+                       subcategoriesOnly ? QStringLiteral("1") : QStringLiteral("0"));
+    if (subcategoriesOnly) {
+        query.addQueryItem(QStringLiteral("mediaLimit"), QStringLiteral("0"));
+    }
+    url.setQuery(query);
+    return url;
+}
+
 QString CatalogClient::buildPubMediaKey(const QString& pubSymbol, int issueTagNumber, qint64 docId,
                                         int track, bool isVideo)
 {
@@ -316,47 +365,56 @@ std::vector<CatalogMediaAsset> CatalogClient::parseMediatorMediaJson(const QByte
 
     const QJsonArray mediaArray = doc.object().value(QStringLiteral("media")).toArray();
     for (const QJsonValue& mediaVal : mediaArray) {
-        if (!mediaVal.isObject()) {
-            continue;
-        }
         const QJsonObject mediaObj = mediaVal.toObject();
         const QString title = mediaObj.value(QStringLiteral("title")).toString().trimmed();
         const double durationSec = mediaObj.value(QStringLiteral("duration")).toDouble(0.0);
         const QString mediaKey = mediaObj.value(QStringLiteral("naturalKey")).toString().trimmed();
         const QString imageUrl = bestImageUrl(mediaObj.value(QStringLiteral("images")).toObject());
-        const QJsonArray files = mediaObj.value(QStringLiteral("files")).toArray();
-        for (const QJsonValue& fileVal : files) {
-            if (!fileVal.isObject()) {
-                continue;
+        for (const QJsonValue& fileVal : mediaObj.value(QStringLiteral("files")).toArray()) {
+            CatalogMediaAsset asset =
+                assetFromMediatorFile(fileVal.toObject(), title, durationSec,
+                                      pubMediaKey.isEmpty() ? mediaKey : pubMediaKey, imageUrl);
+            if (!asset.url.isEmpty()) {
+                assets.push_back(std::move(asset));
             }
-            const QJsonObject fObj = fileVal.toObject();
-            const QString url = fObj.value(QStringLiteral("progressiveDownloadURL"))
-                                    .toString(fObj.value(QStringLiteral("url")).toString())
-                                    .trimmed();
-            if (url.isEmpty()) {
-                continue;
-            }
-            CatalogMediaAsset asset;
-            asset.url = url;
-            asset.sha256 = fObj.value(QStringLiteral("checksum")).toString().trimmed();
-            asset.fileSize = fObj.value(QStringLiteral("filesize")).toInteger(0);
-            asset.mimeType = fObj.value(QStringLiteral("mimetype")).toString().trimmed();
-            asset.label = fObj.value(QStringLiteral("label")).toString().trimmed();
-            asset.title = title;
-            asset.durationSeconds = fObj.value(QStringLiteral("duration")).toDouble(durationSec);
-            asset.pubMediaId = pubMediaKey.isEmpty() ? mediaKey : pubMediaKey;
-            asset.streamOnly = asset.durationSeconds > kLongMediaDurationSeconds;
-            asset.imageUrl = imageUrl;
-            if (asset.mimeType.contains(QStringLiteral("audio"), Qt::CaseInsensitive) ||
-                url.endsWith(QStringLiteral(".mp3"), Qt::CaseInsensitive)) {
-                asset.fileFormat = QStringLiteral("MP3");
-            } else {
-                asset.fileFormat = QStringLiteral("MP4");
-            }
-            assets.push_back(std::move(asset));
         }
     }
     return assets;
+}
+
+JwVideoCategory CatalogClient::parseMediatorCategoryJson(const QByteArray& json)
+{
+    JwVideoCategory category;
+    const QJsonObject root =
+        QJsonDocument::fromJson(json).object().value(QStringLiteral("category")).toObject();
+    category.key = root.value(QStringLiteral("key")).toString();
+    category.name = root.value(QStringLiteral("name")).toString();
+    for (const QJsonValue& sub : root.value(QStringLiteral("subcategories")).toArray()) {
+        const QString key = sub.toObject().value(QStringLiteral("key")).toString();
+        if (!key.isEmpty()) {
+            category.subcategories << key;
+        }
+    }
+    for (const QJsonValue& mediaVal : root.value(QStringLiteral("media")).toArray()) {
+        const QJsonObject mediaObj = mediaVal.toObject();
+        JwVideo video;
+        video.key = mediaObj.value(QStringLiteral("naturalKey")).toString().trimmed();
+        video.title = mediaObj.value(QStringLiteral("title")).toString().trimmed();
+        video.firstPublished = mediaObj.value(QStringLiteral("firstPublished")).toString();
+        video.durationSeconds = mediaObj.value(QStringLiteral("duration")).toDouble(0.0);
+        video.imageUrl = bestImageUrl(mediaObj.value(QStringLiteral("images")).toObject());
+        for (const QJsonValue& fileVal : mediaObj.value(QStringLiteral("files")).toArray()) {
+            CatalogMediaAsset asset = assetFromMediatorFile(
+                fileVal.toObject(), video.title, video.durationSeconds, video.key, video.imageUrl);
+            if (!asset.url.isEmpty()) {
+                video.files.push_back(std::move(asset));
+            }
+        }
+        if (!video.key.isEmpty() && !video.files.empty()) {
+            category.videos.push_back(std::move(video));
+        }
+    }
+    return category;
 }
 
 std::vector<CatalogCongregationResult>
@@ -545,6 +603,26 @@ void CatalogClient::requestPubMediaLinks(const QUrl& endpoint, const QString& pr
             callback(!body.isEmpty(), body.isEmpty()
                                           ? std::vector<CatalogMediaAsset>{}
                                           : parsePubMediaLinksJson(body, preferredLangCode));
+        },
+        [guard, callback](const QString&) {
+            if (!guard.isNull()) {
+                callback(false, {});
+            }
+        });
+}
+
+void CatalogClient::requestMediatorCategory(const QUrl& endpoint, QObject* context,
+                                            CategoryCallback callback)
+{
+    const QPointer<QObject> guard(context);
+    fetchWithEtagCache(
+        endpoint,
+        [guard, callback](const QByteArray& body, bool) {
+            if (guard.isNull()) {
+                return;
+            }
+            callback(!body.isEmpty(),
+                     body.isEmpty() ? JwVideoCategory{} : parseMediatorCategoryJson(body));
         },
         [guard, callback](const QString&) {
             if (!guard.isNull()) {

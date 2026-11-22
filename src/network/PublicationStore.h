@@ -2,6 +2,7 @@
 
 #include "network/DownloadService.h"
 
+#include <QDir>
 #include <QHash>
 #include <QObject>
 #include <QPointer>
@@ -16,6 +17,8 @@
 namespace kmedia {
 
 class CatalogClient;
+struct CatalogMediaAsset;
+struct JwVideo;
 
 /** A publication unpacked on disk: its folder (media files) and its SQLite database. */
 struct LocalPublication
@@ -84,6 +87,9 @@ public:
                           QObject* context, MediaCallback callback);
 
     /** Runs blocking work on the store's worker pool and delivers the result on this thread. */
+    /** Picks a JW.org video file at or below the preferred resolution and downloads it. */
+    void resolveVideo(const JwVideo& video, DownloadService::Priority priority, QObject* context,
+                      MediaCallback callback);
     void runInBackground(QObject* context, std::function<void()> work, std::function<void()> done);
 
     [[nodiscard]] static QString publicationKey(const QString& symbol, const QString& languageCode,
@@ -108,6 +114,8 @@ private:
     void tryResolveLanguage(const MediaFileRequest& request, int languageIndex,
                             DownloadService::Priority priority, const QPointer<QObject>& context,
                             const MediaCallback& callback);
+    [[nodiscard]] ResolvedMediaFile resolveAsset(const CatalogMediaAsset& asset, const QDir& folder,
+                                                 DownloadService::Priority priority);
     void queueFileDownload(const QUrl& url, const QString& filePath, const QString& checksum,
                            DownloadService::Priority priority, const QString& title);
     void onDownloadFinished(const QString& taskId, bool success);
