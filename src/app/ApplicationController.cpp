@@ -57,7 +57,7 @@ void ApplicationController::setStartupThemeOverride(const QString& theme)
 
 void ApplicationController::setStartupTabIndex(int tabIndex)
 {
-    s_startupTabIndex = qBound(0, tabIndex, 5);
+    s_startupTabIndex = qBound(0, tabIndex, 1);
 }
 
 ApplicationController::ApplicationController(QObject* parent)

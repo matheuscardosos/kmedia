@@ -14,7 +14,7 @@ ColumnLayout {
 
     readonly property var categories: [
         { id: "general", label: qsTr("General"), icon: "globe", keywords: "general theme dark light language congregation profile" },
-        { id: "schedule", label: qsTr("Schedule"), icon: "calendar-days", keywords: "schedule midweek weekend day time event" },
+        { id: "schedule", label: qsTr("Meetings"), icon: "calendar-days", keywords: "meetings congregation schedule midweek weekend day time language fallback footnote printed watchtower teaching study filter" },
         { id: "display", label: qsTr("Display"), icon: "monitor", keywords: "display screen projector presentation standby blackout" },
         { id: "audio", label: qsTr("Audio"), icon: "audio-lines", keywords: "audio background music fade volume duration" },
         { id: "integrations", label: qsTr("Integrations"), icon: "radio", keywords: "obs websocket zoom meeting cloud folder watch dropbox" },
@@ -308,111 +308,10 @@ ColumnLayout {
                     }
                 }
 
-                // Category 1: Congregation Meeting Schedule
-                StudioCard {
+                // Category 1: Congregation, meeting schedule, and meeting media
+                SettingsMeetingsPane {
                     visible: root.isCategoryVisible("schedule")
                     Layout.fillWidth: true
-                    implicitHeight: schedCol.implicitHeight + 28
-                    surfaceColor: Theme.panelSurface
-
-                    ColumnLayout {
-                        id: schedCol
-
-                        anchors.fill: parent
-                        anchors.margins: 14
-                        spacing: 10
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-
-                            StudioIcon {
-                                name: "calendar-days"
-                                size: 17
-                                color: Theme.accentPrimary
-                            }
-
-                            Text {
-                                text: qsTr("Congregation Schedule & Special Events")
-                                color: Theme.textPrimary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeLg
-                                font.weight: Font.DemiBold
-                                Layout.fillWidth: true
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-
-                            Text {
-                                text: qsTr("Current Schedule")
-                                color: Theme.textSecondary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
-                                Layout.fillWidth: true
-                            }
-
-                            StudioBadge {
-                                text: ApplicationController.calendar.scheduleSummary
-                                showDot: true
-                                dotColor: Theme.accentPrimary
-                                badgeColor: Theme.cardSurface
-                                textColor: Theme.textPrimary
-                                hasBorder: true
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-
-                            TextField {
-                                id: schedMidTime
-
-                                Layout.fillWidth: true
-                                placeholderText: "19:30"
-                                text: ApplicationController.calendar.midweekTime
-                                color: Theme.textPrimary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
-                                background: StudioCard {
-                                    surfaceColor: Theme.windowBase
-                                    cornerRadius: Theme.radiusSmall
-                                }
-                            }
-
-                            TextField {
-                                id: schedEndTime
-
-                                Layout.fillWidth: true
-                                placeholderText: "09:30"
-                                text: ApplicationController.calendar.weekendTime
-                                color: Theme.textPrimary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeSm
-                                background: StudioCard {
-                                    surfaceColor: Theme.windowBase
-                                    cornerRadius: Theme.radiusSmall
-                                }
-                            }
-
-                            StudioButton {
-                                variant: "primary"
-                                text: qsTr("Save Times")
-                                onClicked: {
-                                    ApplicationController.calendar.setScheduleDays(
-                                        ApplicationController.calendar.midweekDay,
-                                        schedMidTime.text,
-                                        ApplicationController.calendar.weekendDay,
-                                        schedEndTime.text
-                                    )
-                                    ApplicationController.showToast(qsTr("Meeting schedule updated"), "success")
-                                }
-                            }
-                        }
-                    }
                 }
 
                 // Category 2: Display & Standby

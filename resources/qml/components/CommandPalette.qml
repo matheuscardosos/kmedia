@@ -24,11 +24,7 @@ Popup {
         { title: qsTr("Fade Background Music"), hint: "Ctrl+M", icon: "audio-lines", actionId: "fade_bgm" },
         { title: qsTr("Toggle Dark / Light Theme"), hint: "Ctrl+D", icon: Theme.isDark ? "sun" : "moon", actionId: "theme" },
         { title: qsTr("Go to Meeting"), hint: "1", icon: "calendar", actionId: "tab_0" },
-        { title: qsTr("Go to Calendar"), hint: "2", icon: "calendar-days", actionId: "tab_1" },
-        { title: qsTr("Go to Media Library"), hint: "3", icon: "film", actionId: "tab_2" },
-        { title: qsTr("Go to Playlists"), hint: "4", icon: "layers", actionId: "tab_3" },
-        { title: qsTr("Go to Downloads"), hint: "5", icon: "download", actionId: "tab_4" },
-        { title: qsTr("Go to Settings"), hint: "6", icon: "settings", actionId: "tab_5" }
+        { title: qsTr("Go to Settings"), hint: "2", icon: "settings", actionId: "tab_1" }
     ]
 
     function filteredCommands() {

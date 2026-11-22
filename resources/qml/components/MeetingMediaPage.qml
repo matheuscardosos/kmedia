@@ -230,6 +230,10 @@ Item {
         id: checklistPopup
     }
 
+    CalendarEventPopup {
+        id: weekEventsPopup
+    }
+
     TagEditPopup {
         id: tagEditPopup
     }
@@ -408,6 +412,11 @@ Item {
                                                           sections.length > 0 ? sections[0].id : "imported-media",
                                                           "#D47B2A", ApplicationController.playlist.activeIndex)
             }
+        }
+        StudioMenuItem {
+            iconName: "users"
+            text: qsTr("Special week")
+            onTriggered: weekEventsPopup.open()
         }
         StudioMenuSeparator {}
         StudioMenuItem {

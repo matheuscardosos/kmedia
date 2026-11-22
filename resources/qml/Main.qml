@@ -26,13 +26,10 @@ ApplicationWindow {
                                              || root.activeFocusItem instanceof TextEdit
     property int currentTabIndex: ApplicationController.startupTabIndex
     property bool inspectorDrawerOpen: false
+    property bool previewDocked: true
 
     readonly property list<string> sectionTitles: [
         qsTr("Meeting Workspace"),
-        qsTr("Meeting Calendar"),
-        qsTr("Media Library"),
-        qsTr("Playlists"),
-        qsTr("Downloads"),
         qsTr("Settings")
     ]
 
@@ -136,26 +133,6 @@ ApplicationWindow {
         enabled: !root.editingTextInput && !commandPalette.opened
         onActivated: root.currentTabIndex = 1
     }
-    Shortcut {
-        sequence: "3"
-        enabled: !root.editingTextInput && !commandPalette.opened
-        onActivated: root.currentTabIndex = 2
-    }
-    Shortcut {
-        sequence: "4"
-        enabled: !root.editingTextInput && !commandPalette.opened
-        onActivated: root.currentTabIndex = 3
-    }
-    Shortcut {
-        sequence: "5"
-        enabled: !root.editingTextInput && !commandPalette.opened
-        onActivated: root.currentTabIndex = 4
-    }
-    Shortcut {
-        sequence: "6"
-        enabled: !root.editingTextInput && !commandPalette.opened
-        onActivated: root.currentTabIndex = 5
-    }
 
     DropArea {
         anchors.fill: parent
@@ -195,19 +172,23 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 activeTabIndex: root.currentTabIndex
                 compactMode: root.isCompact
-                showPreviewToggle: !root.isWide
-                previewOpen: root.inspectorDrawerOpen
+                showPreviewToggle: true
+                previewOpen: root.isWide ? root.previewDocked : root.inspectorDrawerOpen
                 sectionTitle: root.sectionTitles[root.currentTabIndex] ?? qsTr("Meeting Workspace")
-                onPreviewToggled: root.inspectorDrawerOpen = !root.inspectorDrawerOpen
+                onPreviewToggled: {
+                    if (root.isWide) {
+                        root.previewDocked = !root.previewDocked
+                    } else {
+                        root.inspectorDrawerOpen = !root.inspectorDrawerOpen
+                    }
+                }
                 onAddMediaRequested: mediaFileDialog.open()
                 onOpenCommandPalette: commandPalette.open()
-                onOpenBoothSettings: root.currentTabIndex = 5
-                onOpenDownloadsTab: root.currentTabIndex = 4
-                onOpenMeetingRequested: root.currentTabIndex = 0
+                onOpenBoothSettings: root.currentTabIndex = 1
             }
 
             InspectorPanel {
-                visible: root.isWide
+                visible: root.isWide && root.previewDocked
                 drawerMode: false
                 Layout.preferredWidth: Theme.inspectorPanelWidth
                 Layout.fillHeight: true

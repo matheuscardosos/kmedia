@@ -13,12 +13,11 @@ Rectangle {
     property bool showPreviewToggle: false
     property bool previewOpen: false
     property string sectionTitle: qsTr("Meeting Workspace")
+    property string sectionIcon: "settings"
     signal previewToggled()
     signal addMediaRequested()
     signal openCommandPalette()
     signal openBoothSettings()
-    signal openDownloadsTab()
-    signal openMeetingRequested()
 
     function openAddMediaDialog() {
         root.addMediaRequested()
@@ -31,35 +30,66 @@ Rectangle {
         anchors.margins: root.compactMode ? Theme.spacingSm : Theme.spacingMd
         spacing: Theme.spacingSm
 
-        // Compact secondary header only shown for non-Meeting views
+        // Pages other than Meeting share one header: icon, title, and congregation.
         StudioCard {
             visible: root.activeTabIndex !== 0
             Layout.fillWidth: true
-            implicitHeight: 52
+            implicitHeight: 60
             surfaceColor: Theme.panelSurface
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 14
-                anchors.rightMargin: 14
+                anchors.leftMargin: 12
+                anchors.rightMargin: 12
                 spacing: 10
 
-                Text {
-                    text: root.sectionTitle
-                    color: Theme.textPrimary
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLg
-                    font.weight: Font.Bold
-                    elide: Text.ElideRight
+                Rectangle {
+                    Layout.preferredWidth: 36
+                    Layout.preferredHeight: 36
+                    radius: Theme.radiusSmall
+                    color: Theme.accentSoft
+
+                    StudioIcon {
+                        anchors.centerIn: parent
+                        name: root.sectionIcon
+                        size: 18
+                        color: Theme.accentPrimary
+                    }
+                }
+
+                ColumnLayout {
                     Layout.fillWidth: true
+                    spacing: 0
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.sectionTitle
+                        color: Theme.textPrimary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: root.compactMode ? Theme.fontSizeLg : Theme.fontSizeTitle
+                        font.weight: Font.Bold
+                        elide: Text.ElideRight
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        visible: text.length > 0
+                        text: ApplicationController.activeProfileName
+                        color: Theme.textSecondary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeSm
+                        elide: Text.ElideRight
+                    }
                 }
 
                 StudioButton {
                     visible: root.showPreviewToggle
-                    variant: root.previewOpen ? "primary" : "secondary"
+                    variant: root.previewOpen ? "primary" : "ghost"
                     iconName: "monitor"
-                    text: root.compactMode ? "" : (root.previewOpen ? qsTr("Hide Preview") : qsTr("Preview"))
-                    implicitHeight: 32
+                    leftPadding: 0
+                    rightPadding: 0
+                    Layout.preferredWidth: 34
+                    Layout.preferredHeight: 34
                     onClicked: root.previewToggled()
                 }
             }
@@ -77,26 +107,13 @@ Rectangle {
                 onPreviewToggled: root.previewToggled()
             }
 
-            CalendarView {
-                compactMode: root.compactMode
-                onOpenMeetingRequested: root.openMeetingRequested()
-            }
+            Loader {
+                active: root.activeTabIndex === 1 || item !== null
+                asynchronous: false
 
-            MediaLibraryView {
-                compactMode: root.compactMode
-                onAddFilesRequested: root.addMediaRequested()
-            }
-
-            PlaylistsView {
-                compactMode: root.compactMode
-            }
-
-            DownloadsView {
-                compactMode: root.compactMode
-            }
-
-            SettingsView {
-                compactMode: root.compactMode
+                sourceComponent: SettingsView {
+                    compactMode: root.compactMode
+                }
             }
         }
 
@@ -107,7 +124,6 @@ Rectangle {
             compactMode: root.compactMode
             onOpenCommandPalette: root.openCommandPalette()
             onOpenBoothSettings: root.openBoothSettings()
-            onOpenDownloadsTab: root.openDownloadsTab()
         }
 
         // Docked Studio Broadcast Transport Bar inside Meeting view
