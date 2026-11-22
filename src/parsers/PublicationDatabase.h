@@ -99,6 +99,7 @@ struct PublicationDocumentEntry
 
 struct PublicationSummary
 {
+    QString title;
     QString symbol;
     int year{0};
     int versionNumber{0};

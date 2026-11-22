@@ -1,7 +1,12 @@
 #include "TestZipFixtures.h"
 #include "core/DatabaseManager.h"
+#include "core/NetworkManager.h"
 #include "models/PlaylistModel.h"
+#include "network/CatalogClient.h"
+#include "network/DocumentMediaImporter.h"
+#include "network/DownloadService.h"
 #include "network/PublicTalkMedia.h"
+#include "network/PublicationMediaPicker.h"
 #include "network/PublicationStore.h"
 
 #include <QBuffer>
@@ -80,9 +85,10 @@ TEST_CASE("PublicTalkMedia remembers the S-34mp and adds a talk's media to the p
     REQUIRE(playlist.openWorkspaceForDate(QStringLiteral("2026-11-22"), QStringLiteral("weekend")));
 
     kmedia::PublicationStore store(nullptr, nullptr);
+    kmedia::DocumentMediaImporter importer(&store, &playlist);
     const QString folder = dir.filePath(QStringLiteral("Publications/S-34"));
     {
-        kmedia::PublicTalkMedia talks(&store, &playlist);
+        kmedia::PublicTalkMedia talks(&store, &importer);
         talks.setFolder(folder);
         REQUIRE_FALSE(talks.isAvailable());
 
@@ -125,8 +131,96 @@ TEST_CASE("PublicTalkMedia remembers the S-34mp and adds a talk's media to the p
     REQUIRE(subtitleSet);
 
     // The next start finds the S-34mp already unpacked.
-    kmedia::PublicTalkMedia reopened(&store, &playlist);
+    kmedia::PublicTalkMedia reopened(&store, &importer);
     reopened.setFolder(folder);
     REQUIRE(reopened.isAvailable());
     REQUIRE(reopened.talks().size() == 2);
+}
+
+TEST_CASE("PublicationMediaPicker adds one document of a local publication",
+          "[network][publicationmedia]")
+{
+    using kmedia::PublicationMediaPicker;
+    REQUIRE(PublicationMediaPicker::issueTagFrom(QStringLiteral("2026-11")) == 202611);
+    REQUIRE(PublicationMediaPicker::issueTagFrom(QStringLiteral("20261100")) == 202611);
+    REQUIRE(PublicationMediaPicker::issueTagFrom(QStringLiteral("202611")) == 202611);
+    REQUIRE(PublicationMediaPicker::issueTagFrom({}) == 0);
+
+    const QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const QString publication = writeS34(dir);
+    REQUIRE_FALSE(publication.isEmpty());
+
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(dir.filePath(QStringLiteral("profile.db"))));
+    kmedia::PlaylistModel playlist;
+    playlist.attachDatabase(&db);
+    REQUIRE(playlist.openWorkspaceForDate(QStringLiteral("2026-11-20"), QStringLiteral("custom")));
+
+    // A .jwpub added by hand asks for the document list instead of adding every picture.
+    QSignalSpy requested(&playlist, &kmedia::PlaylistModel::publicationFileRequested);
+    REQUIRE(playlist.importUrls({QUrl::fromLocalFile(publication)}, {}) == 0);
+    REQUIRE(requested.count() == 1);
+    REQUIRE(playlist.count() == 0);
+
+    kmedia::PublicationStore store(nullptr, nullptr);
+    store.setCacheRoot(dir.path());
+    kmedia::DocumentMediaImporter importer(&store, &playlist);
+    PublicationMediaPicker picker(&store, &importer);
+    QSignalSpy loaded(&picker, &PublicationMediaPicker::documentsChanged);
+    picker.openFile(requested.at(0).at(0).toUrl());
+    REQUIRE(loaded.wait(10000));
+    REQUIRE(picker.documents().size() == 2);
+
+    QSignalSpy added(&picker, &PublicationMediaPicker::documentAdded);
+    picker.addDocument(
+        picker.documents().at(0).toMap().value(QStringLiteral("documentId")).toLongLong(), {});
+    REQUIRE(added.count() == 1);
+    REQUIRE(added.at(0).at(0).toInt() == 2);
+    REQUIRE(playlist.count() == 2);
+    REQUIRE(
+        playlist.data(playlist.index(0, 0), kmedia::PlaylistModel::SectionTitleRole).toString() ==
+        QStringLiteral("imported-media"));
+}
+
+TEST_CASE("PublicationMediaPicker opens a JW.org publication", "[.network][publicationmedia]")
+{
+    const QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const QString language = qEnvironmentVariable("KMEDIA_NETWORK_LANG", QStringLiteral("E"));
+
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(dir.filePath(QStringLiteral("profile.db"))));
+    kmedia::PlaylistModel playlist;
+    playlist.attachDatabase(&db);
+    REQUIRE(playlist.openWorkspaceForDate(QStringLiteral("2026-11-20"), QStringLiteral("custom")));
+
+    kmedia::NetworkManager network;
+    kmedia::CatalogClient catalog(&network, &db);
+    kmedia::DownloadService downloads(&network, &db);
+    kmedia::PublicationStore store(&catalog, &downloads);
+    store.setCacheRoot(dir.path());
+    kmedia::DocumentMediaImporter importer(&store, &playlist);
+    importer.setLanguages({language});
+    kmedia::PublicationMediaPicker picker(&store, &importer);
+    picker.setLanguages({language});
+
+    QSignalSpy loaded(&picker, &kmedia::PublicationMediaPicker::documentsChanged);
+    picker.openPublication(QStringLiteral("lff"), {});
+    REQUIRE(loaded.wait(5 * 60 * 1000));
+    INFO(picker.title().toStdString());
+    REQUIRE(picker.documents().size() > 10);
+
+    QSignalSpy added(&picker, &kmedia::PublicationMediaPicker::documentAdded);
+    picker.addDocument(
+        picker.documents().at(5).toMap().value(QStringLiteral("documentId")).toLongLong(), {});
+    if (added.isEmpty()) {
+        REQUIRE(added.wait(5 * 60 * 1000));
+    }
+    WARN(QStringLiteral("%1: %2 media from \"%3\"")
+             .arg(picker.title())
+             .arg(added.at(0).at(0).toInt())
+             .arg(picker.documents().at(5).toMap().value(QStringLiteral("title")).toString())
+             .toStdString());
+    REQUIRE(added.at(0).at(0).toInt() > 0);
 }

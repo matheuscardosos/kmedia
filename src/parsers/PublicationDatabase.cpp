@@ -206,6 +206,7 @@ PublicationSummary PublicationDatabase::summary() const
         const int index = record.indexOf(QLatin1StringView(column));
         return index >= 0 ? query.value(index).toString() : QString();
     };
+    result.title = text("Title");
     result.symbol = text("UndatedSymbol");
     result.year = text("Year").toInt();
     result.versionNumber = text("VersionNumber").toInt();

@@ -119,6 +119,8 @@ Item {
             songPicker.openFor(target)
         } else if (sourceKind === "publictalk") {
             publicTalkPicker.openFor(target)
+        } else if (sourceKind === "publication") {
+            publicationPicker.openForJwOrg(target)
         } else {
             mediaFileDialog.targetSection = target
             mediaFileDialog.open()
@@ -198,6 +200,31 @@ Item {
     }
 
     Connections {
+        target: ApplicationController.publicationMedia
+
+        function onDocumentAdded(count) {
+            if (count > 0) {
+                ApplicationController.showToast(qsTr("Added %1 media item(s)").arg(count), "success")
+            } else {
+                ApplicationController.showToast(qsTr("This document has no media"), "warning")
+            }
+        }
+
+        function onOpenFailed() {
+            ApplicationController.showToast(qsTr("No media found in this publication"), "warning")
+        }
+    }
+
+    Connections {
+        target: ApplicationController.playlist
+
+        // A .jwpub added from the computer opens the document list instead of adding every picture.
+        function onPublicationFileRequested(fileUrl, sectionId) {
+            publicationPicker.openForFile(fileUrl, sectionId)
+        }
+    }
+
+    Connections {
         target: ApplicationController.publicTalks
 
         function onTalkAdded(count) {
@@ -266,6 +293,10 @@ Item {
 
     PublicTalkPickerPopup {
         id: publicTalkPicker
+    }
+
+    PublicationMediaPopup {
+        id: publicationPicker
     }
 
     SongPickerPopup {
@@ -388,6 +419,11 @@ Item {
             iconName: "music"
             text: qsTr("Song")
             onTriggered: root.addFrom("song", addMenu.targetSection)
+        }
+        StudioMenuItem {
+            iconName: "file-text"
+            text: qsTr("Publication media")
+            onTriggered: root.addFrom("publication", addMenu.targetSection)
         }
         StudioMenuSeparator {}
         StudioMenuItem {
