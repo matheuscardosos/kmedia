@@ -645,7 +645,6 @@ void ApplicationController::applyProfileSettings()
         // Each congregation keeps its own S-34mp, unpacked once.
         m_publicTalks->setFolder(
             QDir(profile->storagePath).filePath(QStringLiteral("Publications/S-34")));
-        m_calendarModel->setStorageRoot(profile->storagePath);
     }
 
     const auto* settings = m_profileManager->activeSettings();
@@ -656,7 +655,6 @@ void ApplicationController::applyProfileSettings()
     const QString mediaLang = settings->mediaLanguage();
     if (!mediaLang.isEmpty()) {
         m_meetingCatalog->setSelectedLanguageCode(mediaLang);
-        m_calendarModel->setMediaLanguage(mediaLang);
     }
     const QString fallbackLang = settings->stringValue(
         QLatin1StringView(kmedia::settings_keys::kMediaFallbackLanguage), QStringLiteral("E"));
@@ -876,7 +874,6 @@ void ApplicationController::wireIntegrations()
                 if (m_playlistModel->currentDateIso() == dateIso) {
                     m_playlistModel->reloadFromDatabase();
                 }
-                m_calendarModel->refreshReadiness();
                 m_autoExport->exportDay(dateIso);
             });
     // Once the window is synced: day folders for the coming meetings, and every day exported.
@@ -1017,7 +1014,6 @@ void ApplicationController::wireIntegrations()
                     profile->mediaLanguage = m_meetingCatalog->selectedLanguageCode();
                     (void)m_profileManager->updateProfile(*profile);
                 }
-                m_calendarModel->setMediaLanguage(m_meetingCatalog->selectedLanguageCode());
             });
     connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::fallbackLanguageChanged, this,
             [this]() {
@@ -1061,13 +1057,6 @@ void ApplicationController::wireIntegrations()
     connect(m_meetingCatalog.get(), &kmedia::MeetingCatalogService::catalogError, this,
             [this](const QString& errorMessage) {
                 showToast(errorMessage, QStringLiteral("warning"));
-            });
-
-    connect(m_downloadService.get(), &kmedia::DownloadService::taskFinished, this,
-            [this](const QString&, bool success) {
-                if (success) {
-                    m_calendarModel->refreshReadiness();
-                }
             });
 
     connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::scheduleChanged, this, [this]() {
