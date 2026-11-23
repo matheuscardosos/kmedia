@@ -389,6 +389,22 @@ QVariant PlaylistModel::data(const QModelIndex& index, int role) const
         return sectionLabel(item.sectionId);
     case SourceRole:
         return item.source;
+    case ClipsRole: {
+        QVariantList clips;
+        const QJsonArray ranges = QJsonDocument::fromJson(item.markerRangesJson.toUtf8()).array();
+        for (const QJsonValue& value : ranges) {
+            const QJsonObject range = value.toObject();
+            const qint64 start = range.value(QStringLiteral("startMs")).toInteger();
+            const qint64 duration = range.value(QStringLiteral("durationMs")).toInteger();
+            if (duration > 0) {
+                clips.append(QVariantMap{
+                    {QStringLiteral("label"), range.value(QStringLiteral("label")).toString()},
+                    {QStringLiteral("startMs"), start},
+                    {QStringLiteral("endMs"), start + duration}});
+            }
+        }
+        return clips;
+    }
     case SelectedRole:
         return item.entryId > 0 && m_selectedIds.contains(item.entryId);
     default:
@@ -441,6 +457,7 @@ QHash<int, QByteArray> PlaylistModel::roleNames() const
         {SectionLabelRole, "sectionLabel"},
         {SourceRole, "source"},
         {SelectedRole, "selected"},
+        {ClipsRole, "clips"},
     };
 }
 
@@ -773,6 +790,7 @@ bool PlaylistModel::appendEntry(const PlaylistEntryView& input)
         rowRec.tagType = entry.tagType;
         rowRec.tagValue = entry.tagValue;
         rowRec.pubMediaId = entry.pubMediaId;
+        rowRec.markerRangesJson = entry.markerRangesJson;
         rowRec.streamUrl = entry.streamUrl;
         rowRec.playbackRate = entry.playbackRate;
         rowRec.isCbs = entry.isCbs;
@@ -943,6 +961,25 @@ bool PlaylistModel::activatePrevious()
     const int prevIdx =
         (m_activeIndex > 0) ? (m_activeIndex - 1) : (static_cast<int>(m_items.size()) - 1);
     return activateIndex(prevIdx);
+}
+
+bool PlaylistModel::setItemTrim(int index, qint64 startMs, qint64 endMs)
+{
+    if (index < 0 || index >= static_cast<int>(m_items.size())) {
+        return false;
+    }
+    if (index == m_activeIndex) {
+        updateActiveTrim(startMs, endMs);
+        return true;
+    }
+    const auto [cleanStart, cleanEnd] = PlaybackController::normalizeTrimRange(startMs, endMs);
+    PlaylistEntryView& item = m_items.at(static_cast<size_t>(index));
+    item.trimStartMs = cleanStart;
+    item.trimEndMs = cleanEnd;
+    persistEntryAt(index);
+    emit dataChanged(createIndex(index, 0), createIndex(index, 0),
+                     {TrimStartMsRole, TrimEndMsRole});
+    return true;
 }
 
 void PlaylistModel::updateActiveTrim(qint64 startMs, qint64 endMs)
@@ -1227,6 +1264,7 @@ void PlaylistModel::loadFromDatabase()
         view.tagType = row.tagType;
         view.tagValue = row.tagValue;
         view.pubMediaId = row.pubMediaId;
+        view.markerRangesJson = row.markerRangesJson;
         view.streamUrl = row.streamUrl;
         view.playbackRate = row.playbackRate > 0.0 ? row.playbackRate : 1.0;
         view.isCbs = row.isCbs;
@@ -1898,6 +1936,7 @@ void PlaylistModel::persistEntryAt(int index) const
     rec.tagType = view.tagType;
     rec.tagValue = view.tagValue;
     rec.pubMediaId = view.pubMediaId;
+    rec.markerRangesJson = view.markerRangesJson;
     rec.streamUrl = view.streamUrl;
     rec.playbackRate = view.playbackRate;
     rec.isCbs = view.isCbs;

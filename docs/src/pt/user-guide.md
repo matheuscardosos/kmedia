@@ -58,6 +58,7 @@ Cada item mostra uma miniatura 16:9 com a duração, o número do cântico ou do
 - **Ocultar da lista de mídias** e **Mostrar na lista de mídias**. Itens ocultos ficam fora da apresentação; a seção avisa quando há itens ocultos, e **Mostrar mídias ocultas**, no menu da página, volta a mostrá-los.
 - **Editar etiqueta** para o número do cântico ou do parágrafo, e **Renomear**.
 - **Intervalo do slide** para imagens que avançam sozinhas.
+- **Trecho** para vídeos em língua de sinais feitos de várias passagens: toque só uma delas, ou o **Vídeo inteiro** de novo.
 - **Mover para seção** e **Inserir divisor abaixo**.
 - **Excluir**, para mídias que você adicionou. Mídias sincronizadas e da pasta compartilhada só podem ser ocultadas, porque a próxima sincronização ou a pasta as trariam de volta.
 

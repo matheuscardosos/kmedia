@@ -61,6 +61,8 @@ struct PlaylistEntryView
     QString tagType;
     QString tagValue;
     QString pubMediaId;
+    // Clips of a sign language video: [{ label, startMs, durationMs }].
+    QString markerRangesJson;
     QString streamUrl;
     double playbackRate{1.0};
     bool isCbs{false};
@@ -164,6 +166,7 @@ public:
         SectionLabelRole,
         SourceRole,
         SelectedRole,
+        ClipsRole,
     };
     Q_ENUM(Roles)
 
@@ -259,6 +262,8 @@ public:
     Q_INVOKABLE bool setItemTitle(int index, const QString& title);
     Q_INVOKABLE bool setItemPlaybackRate(int index, double rate);
     Q_INVOKABLE bool setItemSlideInterval(int index, int intervalMs);
+    // Plays only part of an item (a clip); 0 and 0 play all of it.
+    Q_INVOKABLE bool setItemTrim(int index, qint64 startMs, qint64 endMs);
     Q_INVOKABLE bool pairAudioWithItem(int index, const QString& audioFilePath);
     Q_INVOKABLE bool toggleGroupExpanded(const QString& groupKey);
     Q_INVOKABLE bool setSectionRepeatable(const QString& sectionId, bool repeatable);
