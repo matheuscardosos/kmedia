@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Sign language videos with several passages show a **Clip** menu, inspired by Meeting Media Manager: pick a passage to play only that part, or the whole video again.
 - `--report-startup` prints the time to the first frame and, three seconds later, the working set and private memory, then exits, so startup can be measured before and after a change. The About page, home page, and CONTRIBUTING now state the measured figures (about 1.3 s and 135 MB private on Windows) instead of targets the Qt Quick and OpenGL stack cannot reach.
 - A PDF with several pages now shows its pages first, inspired by Meeting Media Manager (`PdfPageImporter`): tick the pages to add them as pictures rendered 1920 px wide, or add the whole document as before.
 - Study Bible media in the Add media menu, inspired by Meeting Media Manager (`StudyBibleMedia`): pick a book and a chapter of the *New World Translation* study edition (`nwtsty`) and tick its pictures and videos, which are added with a verse tag.

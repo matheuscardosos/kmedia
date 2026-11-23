@@ -265,3 +265,47 @@ TEST_CASE("PlaylistModel selects several items and acts on them together",
     REQUIRE(model.openWorkspaceForDate(QStringLiteral("2026-11-22"), QStringLiteral("weekend")));
     REQUIRE(model.selectionCount() == 0);
 }
+
+TEST_CASE("PlaylistModel lists the clips of a sign language video and plays one",
+          "[models][meeting-day][clips]")
+{
+    const QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(dir.filePath(QStringLiteral("clips.db"))));
+    PlaylistModel model;
+    model.attachDatabase(&db);
+    REQUIRE(model.openWorkspaceForDate(QStringLiteral("2026-11-18"), QStringLiteral("midweek")));
+
+    kmedia::PlaylistEntryView video;
+    video.title = QStringLiteral("signed");
+    video.filePath = writeImage(dir, QStringLiteral("signed.png"));
+    video.sectionId = QStringLiteral("tgw");
+    video.source = QStringLiteral("dynamic");
+    video.markerRangesJson =
+        QStringLiteral(R"([{"label":"Matthew 5:3","startMs":12000,"durationMs":33000},)"
+                       R"({"label":"Matthew 5:4","startMs":45000,"durationMs":20000},)"
+                       R"({"label":"empty","startMs":70000,"durationMs":0}])");
+    REQUIRE(model.appendEntry(video));
+    const int row = sourceRowOf(model, QStringLiteral("signed"));
+
+    const QVariantList clips = model.data(model.index(row, 0), PlaylistModel::ClipsRole).toList();
+    REQUIRE(clips.size() == 2);
+    REQUIRE(clips.at(1).toMap().value(QStringLiteral("label")).toString() ==
+            QStringLiteral("Matthew 5:4"));
+    REQUIRE(clips.at(1).toMap().value(QStringLiteral("endMs")).toLongLong() == 65000);
+
+    // Picking a clip trims the item to it, and the trim survives a reload.
+    REQUIRE(model.setItemTrim(row, 45000, 65000));
+    model.reloadFromDatabase();
+    const int reloaded = sourceRowOf(model, QStringLiteral("signed"));
+    REQUIRE(model.data(model.index(reloaded, 0), PlaylistModel::TrimStartMsRole).toLongLong() ==
+            45000);
+    REQUIRE(model.data(model.index(reloaded, 0), PlaylistModel::TrimEndMsRole).toLongLong() ==
+            65000);
+    REQUIRE(model.data(model.index(reloaded, 0), PlaylistModel::ClipsRole).toList().size() == 2);
+
+    // The whole video again.
+    REQUIRE(model.setItemTrim(reloaded, 0, 0));
+    REQUIRE(model.data(model.index(reloaded, 0), PlaylistModel::TrimEndMsRole).toLongLong() == 0);
+}

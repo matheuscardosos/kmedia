@@ -48,6 +48,13 @@ Item {
         return ApplicationController.sync.dayWithContent(root.dateIso, 1)
     }
     readonly property int thumbWidth: root.compactMode ? 100 : 150
+    // "1:05" for a time in milliseconds.
+    function clockText(ms) {
+        const seconds = Math.round(ms / 1000)
+        const rest = seconds % 60
+        return Math.floor(seconds / 60) + ":" + (rest < 10 ? "0" : "") + rest
+    }
+
     // Where a Shift+click range starts: the last item clicked without Shift.
     property int selectionAnchor: -1
     readonly property bool multiSelect: ApplicationController.playlist.selectionCount > 1
@@ -1066,6 +1073,7 @@ Item {
                         required property int groupItemCount
                         required property bool groupExpanded
                         required property bool selected
+                        required property var clips
 
                         readonly property bool isDivider: mediaRow.itemKind === "divider"
                         readonly property bool inSelection: mediaRow.selected && root.multiSelect
@@ -1533,6 +1541,38 @@ Item {
                                     checkable: true
                                     checked: mediaRow.slideIntervalMs === 60000
                                     onTriggered: ApplicationController.playlist.setItemSlideInterval(mediaRow.sourceRow, 60000)
+                                }
+                            }
+                            StudioMenu {
+                                id: clipMenu
+
+                                title: qsTr("Clip")
+                                enabled: mediaRow.clips.length > 0 && !mediaRow.inSelection
+
+                                StudioMenuItem {
+                                    text: qsTr("Whole video")
+                                    checkable: true
+                                    checked: mediaRow.trimStart <= 0 && mediaRow.trimEnd <= 0
+                                    onTriggered: ApplicationController.playlist.setItemTrim(mediaRow.sourceRow, 0, 0)
+                                }
+
+                                Instantiator {
+                                    model: mediaRow.clips
+
+                                    delegate: StudioMenuItem {
+                                        required property var modelData
+
+                                        text: modelData.label + "  " + root.clockText(modelData.startMs)
+                                              + "-" + root.clockText(modelData.endMs)
+                                        checkable: true
+                                        checked: mediaRow.trimStart === modelData.startMs
+                                                 && mediaRow.trimEnd === modelData.endMs
+                                        onTriggered: ApplicationController.playlist.setItemTrim(
+                                            mediaRow.sourceRow, modelData.startMs, modelData.endMs)
+                                    }
+
+                                    onObjectAdded: (index, object) => clipMenu.insertItem(index + 1, object)
+                                    onObjectRemoved: (index, object) => clipMenu.removeItem(object)
                                 }
                             }
                             StudioMenuSeparator {}
