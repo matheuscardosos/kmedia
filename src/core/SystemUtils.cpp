@@ -73,6 +73,21 @@ qint64 SystemUtils::availableDiskBytes(const QString& path)
     return storage.bytesAvailable();
 }
 
+qint64 SystemUtils::processPrivateMemoryBytes()
+{
+#if defined(Q_OS_WIN)
+    PROCESS_MEMORY_COUNTERS_EX counters{};
+    if (GetProcessMemoryInfo(GetCurrentProcess(),
+                             reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&counters),
+                             sizeof(counters)) != FALSE) {
+        return static_cast<qint64>(counters.PrivateUsage);
+    }
+    return 0;
+#else
+    return processMemoryRssBytes();
+#endif
+}
+
 qint64 SystemUtils::processMemoryRssBytes()
 {
 #if defined(Q_OS_WIN)

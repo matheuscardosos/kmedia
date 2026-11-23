@@ -1,11 +1,13 @@
 #include "app/ApplicationController.h"
 #include "core/BoothSecurity.h"
+#include "core/SystemUtils.h"
 #include "media/IconImageProvider.h"
 #include "media/PdfViewerController.h"
 
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QFont>
 #include <QFontDatabase>
@@ -17,9 +19,11 @@
 #include <QQuickWindow>
 #include <QSGRendererInterface>
 #include <QSurfaceFormat>
+#include <QTextStream>
 #include <QTimer>
 
 #include <clocale>
+#include <memory>
 
 namespace {
 
@@ -45,6 +49,9 @@ bool parseWindowSize(const QString& raw, int& outWidth, int& outHeight)
 
 int main(int argc, char* argv[])
 {
+    QElapsedTimer startupClock;
+    startupClock.start();
+
     // QQuickFramebufferObject with mpv_render_context requires an OpenGL RHI backend.
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 
@@ -112,9 +119,7 @@ int main(int argc, char* argv[])
         QStringLiteral("Force UI color theme at startup (dark or light)."), QStringLiteral("mode"));
     const QCommandLineOption tabOption(
         QStringList{QStringLiteral("tab")},
-        QStringLiteral("Select initial workspace tab (meeting, calendar, media, playlists, "
-                       "downloads, settings)."),
-        QStringLiteral("name"));
+        QStringLiteral("Select the initial page (meeting or settings)."), QStringLiteral("name"));
 
     parser.addOption(demoOption);
     parser.addOption(screenshotOption);
@@ -122,6 +127,11 @@ int main(int argc, char* argv[])
     parser.addOption(delayOption);
     parser.addOption(themeOption);
     parser.addOption(tabOption);
+    const QCommandLineOption reportStartupOption(
+        QStringList{QStringLiteral("report-startup")},
+        QStringLiteral("Print the time to the first frame and the memory in use 3 seconds later, "
+                       "then exit."));
+    parser.addOption(reportStartupOption);
     parser.process(app);
 
     if (parser.isSet(demoOption)) {
@@ -160,6 +170,26 @@ int main(int argc, char* argv[])
         if (parser.isSet(windowSizeOption) &&
             parseWindowSize(parser.value(windowSizeOption), customWidth, customHeight)) {
             mainWindow->resize(customWidth, customHeight);
+        }
+
+        if (parser.isSet(reportStartupOption)) {
+            auto firstFrameMs = std::make_shared<qint64>(-1);
+            QObject::connect(mainWindow, &QQuickWindow::frameSwapped, mainWindow,
+                             [mainWindow, firstFrameMs, &startupClock]() {
+                                 if (*firstFrameMs >= 0) {
+                                     return;
+                                 }
+                                 *firstFrameMs = startupClock.elapsed();
+                                 QTimer::singleShot(3000, mainWindow, [firstFrameMs]() {
+                                     QTextStream(stdout)
+                                         << "first_frame_ms=" << *firstFrameMs << " memory_bytes="
+                                         << kmedia::SystemUtils::processMemoryRssBytes()
+                                         << " private_bytes="
+                                         << kmedia::SystemUtils::processPrivateMemoryBytes()
+                                         << '\n';
+                                     QCoreApplication::exit(0);
+                                 });
+                             });
         }
 
         if (parser.isSet(screenshotOption)) {

@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `--report-startup` prints the time to the first frame and, three seconds later, the working set and private memory, then exits, so startup can be measured before and after a change. The About page, home page, and CONTRIBUTING now state the measured figures (about 1.3 s and 135 MB private on Windows) instead of targets the Qt Quick and OpenGL stack cannot reach.
 - Study Bible media in the Add media menu, inspired by Meeting Media Manager (`StudyBibleMedia`): pick a book and a chapter of the *New World Translation* study edition (`nwtsty`) and tick its pictures and videos, which are added with a verse tag.
 - Audio Bible in the Add media menu (*Sign Language Bible* for sign languages), inspired by Meeting Media Manager (`BibleMediaCatalog`): pick a book, a chapter, and verses, and the chapter recording is added trimmed to those verses with a verse tag, using the verse markers JW.org publishes.
 - Several media items can be selected at once on the *Meeting* page, inspired by the Meeting Media Manager media list: `Ctrl`+click and `Shift`+click select, and hiding, moving to a section, deleting (synced media is hidden instead), and dragging act on the whole selection, which keeps its order. `Esc` clears the selection.

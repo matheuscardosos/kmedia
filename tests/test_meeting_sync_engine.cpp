@@ -262,22 +262,27 @@ TEST_CASE("MeetingSyncEngine syncs this week's meetings from JW.org", "[.network
     settings.languageCode = language;
     settings.meteredConnection = true;
     engine.setSettings(settings);
+    // A metered connection only syncs today, so today is the meeting day, whatever day it is.
+    const QDate today = QDate::currentDate();
+    const bool weekend = today.dayOfWeek() >= 6;
+    const QString todayIso = today.toString(Qt::ISODate);
+    const QString songSection = weekend ? QStringLiteral("pt") : QStringLiteral("lac");
     engine.setScheduleProviders(
-        [](const QDate& date) {
-            if (date.dayOfWeek() == 3) {
-                return QStringLiteral("midweek");
+        [today, weekend](const QDate& date) {
+            if (date != today) {
+                return QStringLiteral("custom");
             }
-            return date.dayOfWeek() == 7 ? QStringLiteral("weekend") : QStringLiteral("custom");
+            return weekend ? QStringLiteral("weekend") : QStringLiteral("midweek");
         },
         [](const QDate&) { return false; });
 
     QSignalSpy idle(&engine, &MeetingSyncEngine::syncIdle);
     engine.refresh();
-    REQUIRE(idle.wait(10 * 60 * 1000));
+    REQUIRE((!idle.isEmpty() || idle.wait(10 * 60 * 1000)));
 
-    // The public talk song is added by number, like the operator does before the meeting.
+    // A song is added by number, like the operator does before the meeting.
     QSignalSpy songs(&engine, &MeetingSyncEngine::songAdded);
-    engine.addSong(QStringLiteral("2026-11-22"), 151, QStringLiteral("pt"));
+    engine.addSong(todayIso, 151, songSection);
     REQUIRE(songs.wait(60 * 1000));
     QSignalSpy counts(&downloads, &kmedia::DownloadService::countsChanged);
     while (downloads.activeCount() + downloads.queuedCount() > 0) {
@@ -314,12 +319,13 @@ TEST_CASE("MeetingSyncEngine syncs this week's meetings from JW.org", "[.network
                  .arg(lines.join(QLatin1Char('\n')))
                  .toStdString());
         CHECK(playlist.syncStatus == QStringLiteral("complete"));
-        if (playlist.meetingDate == QStringLiteral("2026-11-22")) {
-            const bool hasSong = std::any_of(rows.cbegin(), rows.cend(), [](const auto& row) {
-                return row.entry.sectionId == QStringLiteral("pt") &&
-                       row.entry.tagValue == QStringLiteral("151") &&
-                       row.entry.source == QStringLiteral("additional");
-            });
+        if (playlist.meetingDate == todayIso) {
+            const bool hasSong =
+                std::any_of(rows.cbegin(), rows.cend(), [&songSection](const auto& row) {
+                    return row.entry.sectionId == songSection &&
+                           row.entry.tagValue == QStringLiteral("151") &&
+                           row.entry.source == QStringLiteral("additional");
+                });
             CHECK(hasSong);
         }
         CHECK(missing == 0);

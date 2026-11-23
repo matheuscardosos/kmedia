@@ -23,8 +23,7 @@ kmedia/
 
 Review the domain behavioral contracts in [docs/architecture/business-rules.md](docs/architecture/business-rules.md) before modifying core services, media playback, dual-screen presentation, or integrations.
 
-- **Memory footprint target:** Under 45 MB RAM at idle and under 75 MB RAM during 1080p playback.
-- **Startup target:** Under 400 ms cold startup backed by SQLite WAL persistence and disk-backed thumbnail caching.
+- **Startup and memory:** measure with `kmedia --report-startup` (add `--demo` for an isolated profile), which prints the time to the first frame and, three seconds later, the working set and private memory. On a Windows laptop with Qt 6.8 and OpenGL a warm start reaches the first frame in about 1.3 s with about 190 MB working set and 135 MB private; most of it is the Qt Quick scene and the graphics driver, and the presentation window adds about 8 MB. Measure before and after a change that touches startup, and do not let these numbers grow.
 - **CPU and thermal efficiency:** Zero polling loops in steady state; use event-driven OS APIs and `hwdec=auto-safe` via `libmpv`.
 - **Clean separation:** Keep all persistence, parsing, networking, and process monitoring inside `kmedia_core` without coupling to QML.
 

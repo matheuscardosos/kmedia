@@ -6,9 +6,9 @@
 
 Apresentadores baseados em navegadores embarcados consomem centenas de megabytes de RAM, abrem múltiplos processos em segundo plano e provocam aquecimento e ruído de ventoinha em notebooks mais antigos do Salão do Reino. Construí o KMedia do zero para entregar gestão completa de mídia com consumo mínimo de recursos:
 
-- **Baixo Uso de Memória:** Meta abaixo de 45 MB de RAM em repouso e abaixo de 75 MB durante reprodução de vídeo 1080p.
+- **Baixo Uso de Memória:** Cerca de 135 MB de memória privada depois de aberto no Windows, num único processo e sem navegador embutido.
 - **Hardware Frio e Silencioso:** Decodificação por hardware na GPU (`hwdec=auto-safe` via `libmpv`) e arquitetura orientada a eventos sem loops de polling.
-- **Inicialização Instantânea:** Persistência SQLite3 em modo WAL e cache em disco de miniaturas para abertura e troca de perfis quase instantâneas.
+- **Inicialização Rápida:** A janela fica pronta em cerca de 1,3 segundo numa abertura a quente, com SQLite3 em modo WAL e cache em disco de miniaturas.
 - **Tema Studio Carbon & Broadcast Orange:** Projetado para baixo cansaço visual e zero reflexo em auditórios pouco iluminados.
 
 ## Recursos Principais

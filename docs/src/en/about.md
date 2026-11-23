@@ -6,9 +6,9 @@
 
 Browser-wrapped desktop presenters consume hundreds of megabytes of RAM, spawn multiple helper processes, and drive high CPU and fan noise on older Kingdom Hall laptops. I engineered KMedia from scratch to deliver full meeting media management with minimal resource usage:
 
-- **Low Memory Footprint:** Targets under 45 MB RAM at idle and under 75 MB RAM during 1080p video playback.
+- **Low Memory Footprint:** About 135 MB of private memory once started on Windows, with a single process and no bundled browser.
 - **Cold & Quiet Hardware:** Uses `libmpv` GPU hardware decoding (`hwdec=auto-safe`) and event-driven OS notifications instead of polling loops.
-- **Instant Startup:** Uses SQLite3 in WAL mode and disk-backed thumbnail caching for near-instant startup and profile switching.
+- **Fast Startup:** The window is ready in about 1.3 seconds on a warm start, with SQLite3 in WAL mode and disk-backed thumbnail caching.
 - **Studio Carbon & Broadcast Orange UI:** Tuned for low eye strain and zero glare in dimly lit auditoriums.
 
 ## Core Capabilities
