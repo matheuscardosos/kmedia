@@ -87,6 +87,30 @@ int MeetingDayModel::rowForSourceRow(int sourceRow) const
                : -1;
 }
 
+QList<int> MeetingDayModel::sourceRowsBetween(int fromSourceRow, int toSourceRow) const
+{
+    const int first = rowForSourceRow(fromSourceRow);
+    const int last = rowForSourceRow(toSourceRow);
+    if (first < 0 || last < 0 || m_source.isNull()) {
+        return {};
+    }
+    QList<int> sourceRows;
+    for (int row = std::min(first, last); row <= std::max(first, last); ++row) {
+        const Row& entry = m_rows.at(static_cast<size_t>(row));
+        if (entry.type != MediaRow) {
+            continue;
+        }
+        const QModelIndex source = m_source->index(entry.sourceRow, 0);
+        if (m_source->data(source, PlaylistModel::HiddenRole).toBool() ||
+            m_source->data(source, PlaylistModel::ItemKindRole).toString() ==
+                QStringLiteral("divider")) {
+            continue;
+        }
+        sourceRows.append(entry.sourceRow);
+    }
+    return sourceRows;
+}
+
 int MeetingDayModel::headerRowOfSection(const QString& sectionId) const
 {
     for (size_t i = 0; i < m_rows.size(); ++i) {

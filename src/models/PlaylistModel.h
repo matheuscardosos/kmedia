@@ -118,6 +118,7 @@ class PlaylistModel : public QAbstractListModel
     Q_PROPERTY(
         QString searchQuery READ searchQuery WRITE setSearchQuery NOTIFY searchQueryChanged FINAL)
     Q_PROPERTY(int hiddenCount READ hiddenCount NOTIFY countChanged FINAL)
+    Q_PROPERTY(int selectionCount READ selectionCount NOTIFY selectionChanged FINAL)
 
 public:
     enum Roles {
@@ -162,6 +163,7 @@ public:
         RowVisibleRole,
         SectionLabelRole,
         SourceRole,
+        SelectedRole,
     };
     Q_ENUM(Roles)
 
@@ -261,6 +263,21 @@ public:
     Q_INVOKABLE bool toggleSectionCollapsed(const QString& sectionId);
     Q_INVOKABLE bool resetSortOrder();
 
+    // Several items can be selected at once. The selection follows the items by entry, so it
+    // survives moves and reloads, and dividers are never part of it.
+    [[nodiscard]] int selectionCount() const;
+    [[nodiscard]] Q_INVOKABLE bool isRowSelected(int index) const;
+    [[nodiscard]] QList<int> selectedRows() const;
+    Q_INVOKABLE void toggleRowSelected(int index);
+    Q_INVOKABLE void selectRows(const QList<int>& indexes);
+    Q_INVOKABLE void clearSelection();
+    Q_INVOKABLE int setSelectedHidden(bool hidden);
+    Q_INVOKABLE int assignSelectedToSection(const QString& sectionId);
+    // Deletes added media and hides synced and shared folder media, like the Delete key.
+    Q_INVOKABLE int removeSelected();
+    // Moves the selection as one block, in its order, next to the item at `targetIndex`.
+    Q_INVOKABLE bool moveSelectedTo(int targetIndex);
+
     [[nodiscard]] static QString defaultColorForSection(const QString& sectionId);
     [[nodiscard]] static QString normalizeHexColor(const QString& raw, const QString& fallback);
 
@@ -276,6 +293,7 @@ signals:
     void publicationFileRequested(const QUrl& fileUrl, const QString& sectionId);
     void workspaceDateChanged();
     void showHiddenChanged();
+    void selectionChanged();
     void searchQueryChanged();
     void groupStateChanged();
     void activeItemEdited();
@@ -286,6 +304,9 @@ private:
     void refreshAvailablePlaylists();
     void loadFromDatabase();
     void persistReorder();
+    void setSelectedIds(const QSet<qint64>& ids);
+    void pruneSelection();
+    [[nodiscard]] int rowOfEntry(qint64 entryId) const;
     void persistEntryAt(int index) const;
     void loadSectionsForPlaylist();
     void saveSectionsForPlaylist() const;
@@ -313,6 +334,7 @@ private:
     QString m_currentMeetingKind{QStringLiteral("midweek")};
     bool m_currentIsCoWeek{false};
     bool m_showHidden{false};
+    QSet<qint64> m_selectedIds;
     QString m_searchQuery;
     QSet<QString> m_collapsedGroups;
     std::vector<qint64> m_playlistIds;

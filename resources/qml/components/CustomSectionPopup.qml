@@ -55,6 +55,11 @@ Popup {
         popupRoot.open()
     }
 
+    // Moves every selected item instead of a single one.
+    function openAssignSelection(currentSectionId) {
+        popupRoot.openAssign(-1, currentSectionId)
+    }
+
     function openAssign(rowIndex, currentSectionId) {
         popupRoot.mode = "assign"
         popupRoot.assignItemIndex = rowIndex
@@ -130,8 +135,12 @@ Popup {
                              ? "primary" : "secondary"
                     text: assignSecBtn.modelData.name
                     onClicked: {
-                        ApplicationController.playlist.assignItemToSection(
-                            popupRoot.assignItemIndex, assignSecBtn.modelData.id)
+                        if (popupRoot.assignItemIndex < 0) {
+                            ApplicationController.playlist.assignSelectedToSection(assignSecBtn.modelData.id)
+                        } else {
+                            ApplicationController.playlist.assignItemToSection(
+                                popupRoot.assignItemIndex, assignSecBtn.modelData.id)
+                        }
                         popupRoot.close()
                     }
                 }

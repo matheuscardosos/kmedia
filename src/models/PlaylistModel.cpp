@@ -26,6 +26,7 @@
 #include <QVariantMap>
 
 #include <algorithm>
+#include <functional>
 #include <utility>
 
 namespace kmedia {
@@ -387,6 +388,8 @@ QVariant PlaylistModel::data(const QModelIndex& index, int role) const
         return sectionLabel(item.sectionId);
     case SourceRole:
         return item.source;
+    case SelectedRole:
+        return item.entryId > 0 && m_selectedIds.contains(item.entryId);
     default:
         return {};
     }
@@ -436,6 +439,7 @@ QHash<int, QByteArray> PlaylistModel::roleNames() const
         {RowVisibleRole, "rowVisible"},
         {SectionLabelRole, "sectionLabel"},
         {SourceRole, "source"},
+        {SelectedRole, "selected"},
     };
 }
 
@@ -833,6 +837,9 @@ bool PlaylistModel::removeAt(int index)
     beginRemoveRows(QModelIndex(), index, index);
     m_items.erase(m_items.begin() + index);
     endRemoveRows();
+    if (m_selectedIds.remove(removedEntryId)) {
+        emit selectionChanged();
+    }
 
     if (removedEntryId > 0 && m_database != nullptr && m_database->isOpen() && m_playlistId > 0) {
         (void)m_database->deletePlaylistEntry(removedEntryId, m_playlistId);
@@ -862,6 +869,7 @@ void PlaylistModel::clear()
     m_sections.clear();
     m_activeIndex = -1;
     endResetModel();
+    pruneSelection();
     emit countChanged();
     emit activeIndexChanged();
     emit sectionsChanged();
@@ -1968,6 +1976,7 @@ void PlaylistModel::reloadFromDatabase()
             : 0;
     loadFromDatabase();
     ensureFixedMeetingSections(m_currentMeetingKind, m_currentIsCoWeek);
+    pruneSelection();
     if (activeEntryId <= 0) {
         return;
     }
@@ -1991,6 +2000,9 @@ bool PlaylistModel::openWorkspaceForDate(const QString& dateIso, const QString& 
     const QString cleanKind = meetingKind.trimmed().isEmpty() ? QStringLiteral("custom")
                                                               : meetingKind.trimmed().toLower();
 
+    if (cleanDate != m_currentDateIso) {
+        clearSelection();
+    }
     m_currentDateIso = cleanDate;
     m_currentMeetingKind = cleanKind;
     m_currentIsCoWeek = isCoVisit;
@@ -2321,6 +2333,243 @@ QString PlaylistModel::kindLabelForMediaKind(int kind)
         return QStringLiteral("FILE");
     }
     return QStringLiteral("FILE");
+}
+
+int PlaylistModel::selectionCount() const
+{
+    return static_cast<int>(m_selectedIds.size());
+}
+
+bool PlaylistModel::isRowSelected(int index) const
+{
+    if (index < 0 || index >= static_cast<int>(m_items.size())) {
+        return false;
+    }
+    const qint64 entryId = m_items.at(static_cast<size_t>(index)).entryId;
+    return entryId > 0 && m_selectedIds.contains(entryId);
+}
+
+QList<int> PlaylistModel::selectedRows() const
+{
+    QList<int> rows;
+    for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
+        if (isRowSelected(i)) {
+            rows.append(i);
+        }
+    }
+    return rows;
+}
+
+int PlaylistModel::rowOfEntry(qint64 entryId) const
+{
+    for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
+        if (m_items.at(static_cast<size_t>(i)).entryId == entryId) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void PlaylistModel::setSelectedIds(const QSet<qint64>& ids)
+{
+    if (ids == m_selectedIds) {
+        return;
+    }
+    QSet<qint64> changed = ids;
+    changed.unite(m_selectedIds);
+    changed.subtract(QSet<qint64>(ids).intersect(m_selectedIds));
+    m_selectedIds = ids;
+    for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
+        if (changed.contains(m_items.at(static_cast<size_t>(i)).entryId)) {
+            const QModelIndex changedIndex = createIndex(i, 0);
+            emit dataChanged(changedIndex, changedIndex, {SelectedRole});
+        }
+    }
+    emit selectionChanged();
+}
+
+void PlaylistModel::pruneSelection()
+{
+    if (m_selectedIds.isEmpty()) {
+        return;
+    }
+    QSet<qint64> present;
+    for (const PlaylistEntryView& item : m_items) {
+        if (m_selectedIds.contains(item.entryId)) {
+            present.insert(item.entryId);
+        }
+    }
+    if (present.size() != m_selectedIds.size()) {
+        m_selectedIds = present;
+        emit selectionChanged();
+    }
+}
+
+void PlaylistModel::toggleRowSelected(int index)
+{
+    if (index < 0 || index >= static_cast<int>(m_items.size())) {
+        return;
+    }
+    const PlaylistEntryView& item = m_items.at(static_cast<size_t>(index));
+    if (item.entryId <= 0 || item.itemKind == QStringLiteral("divider")) {
+        return;
+    }
+    QSet<qint64> next = m_selectedIds;
+    if (!next.remove(item.entryId)) {
+        next.insert(item.entryId);
+    }
+    setSelectedIds(next);
+}
+
+void PlaylistModel::selectRows(const QList<int>& indexes)
+{
+    QSet<qint64> next;
+    for (const int index : indexes) {
+        if (index < 0 || index >= static_cast<int>(m_items.size())) {
+            continue;
+        }
+        const PlaylistEntryView& item = m_items.at(static_cast<size_t>(index));
+        if (item.entryId > 0 && item.itemKind != QStringLiteral("divider")) {
+            next.insert(item.entryId);
+        }
+    }
+    setSelectedIds(next);
+}
+
+void PlaylistModel::clearSelection()
+{
+    setSelectedIds({});
+}
+
+int PlaylistModel::setSelectedHidden(bool hidden)
+{
+    int changed = 0;
+    for (const int row : selectedRows()) {
+        if (m_items.at(static_cast<size_t>(row)).hidden != hidden && setItemHidden(row, hidden)) {
+            ++changed;
+        }
+    }
+    // Hidden items leave the list, so they leave the selection too.
+    if (hidden) {
+        clearSelection();
+    }
+    return changed;
+}
+
+int PlaylistModel::assignSelectedToSection(const QString& sectionId)
+{
+    QList<qint64> ids;
+    for (const int row : selectedRows()) {
+        ids.append(m_items.at(static_cast<size_t>(row)).entryId);
+    }
+    // One at a time in list order: each lands after the previous one in the section.
+    int moved = 0;
+    for (const qint64 entryId : ids) {
+        const int row = rowOfEntry(entryId);
+        if (row >= 0 && assignItemToSection(row, sectionId)) {
+            ++moved;
+        }
+    }
+    return moved;
+}
+
+int PlaylistModel::removeSelected()
+{
+    QList<int> rows = selectedRows();
+    std::sort(rows.begin(), rows.end(), std::greater<>());
+    int done = 0;
+    for (const int row : rows) {
+        const bool added =
+            m_items.at(static_cast<size_t>(row)).source == QStringLiteral("additional");
+        if (added ? removeAt(row) : setItemHidden(row, true)) {
+            ++done;
+        }
+    }
+    clearSelection();
+    return done;
+}
+
+bool PlaylistModel::moveSelectedTo(int targetIndex)
+{
+    const int size = static_cast<int>(m_items.size());
+    const QList<int> rows = selectedRows();
+    if (rows.isEmpty() || targetIndex < 0 || targetIndex >= size || rows.contains(targetIndex)) {
+        return false;
+    }
+    if (rows.size() == 1) {
+        return moveItem(rows.first(), targetIndex);
+    }
+
+    // The final order: everything else in place, the block after the target when dragged
+    // down and before it when dragged up.
+    const bool downward = targetIndex > rows.first();
+    std::vector<int> order;
+    order.reserve(static_cast<size_t>(size));
+    for (int i = 0; i < size; ++i) {
+        if (rows.contains(i)) {
+            continue;
+        }
+        if (i == targetIndex && !downward) {
+            order.insert(order.end(), rows.begin(), rows.end());
+        }
+        order.push_back(i);
+        if (i == targetIndex && downward) {
+            order.insert(order.end(), rows.begin(), rows.end());
+        }
+    }
+
+    // Single-row moves, so views keep their delegates (and a drag in progress keeps going).
+    std::vector<int> current(static_cast<size_t>(size));
+    for (int i = 0; i < size; ++i) {
+        current[static_cast<size_t>(i)] = i;
+    }
+    for (int pos = 0; pos < size; ++pos) {
+        const int wanted = order[static_cast<size_t>(pos)];
+        if (current[static_cast<size_t>(pos)] == wanted) {
+            continue;
+        }
+        const auto found = std::find(current.begin() + pos, current.end(), wanted);
+        const int from = static_cast<int>(found - current.begin());
+        beginMoveRows(QModelIndex(), from, from, QModelIndex(), pos);
+        PlaylistEntryView moved = m_items.at(static_cast<size_t>(from));
+        m_items.erase(m_items.begin() + from);
+        m_items.insert(m_items.begin() + pos, moved);
+        endMoveRows();
+        current.erase(current.begin() + from);
+        current.insert(current.begin() + pos, wanted);
+    }
+
+    // The block joins the target's section.
+    const QString targetSection =
+        m_items
+            .at(static_cast<size_t>(std::find(current.begin(), current.end(), targetIndex) -
+                                    current.begin()))
+            .sectionId;
+    bool sectionChanged = false;
+    for (int i = 0; i < size; ++i) {
+        PlaylistEntryView& item = m_items[static_cast<size_t>(i)];
+        if (!isRowSelected(i) || targetSection.isEmpty() || item.sectionId == targetSection) {
+            continue;
+        }
+        item.sectionId = targetSection;
+        sectionChanged = true;
+        const QModelIndex changedIndex = createIndex(i, 0);
+        emit dataChanged(changedIndex, changedIndex, {SectionTitleRole});
+        if (m_database != nullptr && m_database->isOpen() && m_playlistId > 0 && item.entryId > 0) {
+            (void)m_database->updatePlaylistEntrySection(item.entryId, m_playlistId, targetSection);
+        }
+    }
+    if (sectionChanged) {
+        syncSectionsFromItems();
+    }
+
+    if (m_activeIndex >= 0) {
+        m_activeIndex = static_cast<int>(std::find(current.begin(), current.end(), m_activeIndex) -
+                                         current.begin());
+        emit activeIndexChanged();
+    }
+    persistReorder();
+    return true;
 }
 
 } // namespace kmedia

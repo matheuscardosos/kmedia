@@ -100,8 +100,16 @@ ApplicationWindow {
     Shortcut {
         sequence: "Escape"
         enabled: !root.editingTextInput && !commandPalette.opened
-                 && ApplicationController.playback.mediaKind !== PlaybackController.None
-        onActivated: ApplicationController.playback.stop()
+                 && (ApplicationController.playback.mediaKind !== PlaybackController.None
+                     || ApplicationController.playlist.selectionCount > 1)
+        // A selection of several items is cleared first; Escape stops playback otherwise.
+        onActivated: {
+            if (ApplicationController.playlist.selectionCount > 1) {
+                ApplicationController.playlist.clearSelection()
+            } else {
+                ApplicationController.playback.stop()
+            }
+        }
     }
     Shortcut {
         sequence: "Delete"
@@ -110,7 +118,9 @@ ApplicationWindow {
                  && ApplicationController.playlist.activeIndex >= 0
         // Synced media is only hidden: the next sync would bring a deleted item back.
         onActivated: {
-            if (ApplicationController.playlist.activeIsSynced) {
+            if (ApplicationController.playlist.selectionCount > 1) {
+                ApplicationController.playlist.removeSelected()
+            } else if (ApplicationController.playlist.activeIsSynced) {
                 ApplicationController.playlist.setItemHidden(ApplicationController.playlist.activeIndex, true)
             } else {
                 ApplicationController.playlist.removeAt(ApplicationController.playlist.activeIndex)

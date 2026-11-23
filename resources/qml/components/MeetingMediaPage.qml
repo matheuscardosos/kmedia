@@ -48,6 +48,9 @@ Item {
         return ApplicationController.sync.dayWithContent(root.dateIso, 1)
     }
     readonly property int thumbWidth: root.compactMode ? 100 : 150
+    // Where a Shift+click range starts: the last item clicked without Shift.
+    property int selectionAnchor: -1
+    readonly property bool multiSelect: ApplicationController.playlist.selectionCount > 1
     readonly property int thumbHeight: root.compactMode ? 56 : 84
 
     readonly property var sectionGlyphs: ({
@@ -1031,8 +1034,10 @@ Item {
                         required property bool isGroupStart
                         required property int groupItemCount
                         required property bool groupExpanded
+                        required property bool selected
 
                         readonly property bool isDivider: mediaRow.itemKind === "divider"
+                        readonly property bool inSelection: mediaRow.selected && root.multiSelect
                         readonly property bool isPicture: mediaRow.mediaKind === PlaybackController.Image
                         readonly property bool missingFile: !mediaRow.fileExists && mediaRow.streamUrl.length === 0
                         readonly property bool groupHeader: mediaRow.isGroupStart && mediaRow.groupItemCount > 1
@@ -1068,8 +1073,9 @@ Item {
                             radius: Theme.radiusMedium
                             visible: !mediaRow.isDivider
                             color: mediaRow.isActive ? Theme.rowSelected
-                                 : (rowMouse.containsMouse ? Theme.cardHover : "transparent")
-                            border.width: mediaRow.isActive ? 1 : 0
+                                 : (mediaRow.inSelection ? Theme.accentSoft
+                                    : (rowMouse.containsMouse ? Theme.cardHover : "transparent"))
+                            border.width: mediaRow.isActive || mediaRow.inSelection ? 1 : 0
                             border.color: Theme.accentBorder
                         }
 
@@ -1126,9 +1132,25 @@ Item {
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
                             cursorShape: Qt.PointingHandCursor
                             onClicked: (mouse) => {
-                                ApplicationController.playlist.activateIndex(mediaRow.sourceRow)
+                                const playlist = ApplicationController.playlist
                                 if (mouse.button === Qt.RightButton) {
+                                    // The menu acts on the selection when the item is part of it.
+                                    if (!mediaRow.inSelection) {
+                                        playlist.selectRows([mediaRow.sourceRow])
+                                        root.selectionAnchor = mediaRow.sourceRow
+                                        playlist.activateIndex(mediaRow.sourceRow)
+                                    }
                                     rowMenu.popup()
+                                } else if (mouse.modifiers & Qt.ControlModifier) {
+                                    playlist.toggleRowSelected(mediaRow.sourceRow)
+                                    root.selectionAnchor = mediaRow.sourceRow
+                                } else if ((mouse.modifiers & Qt.ShiftModifier) && root.selectionAnchor >= 0) {
+                                    playlist.selectRows(ApplicationController.meetingDay.sourceRowsBetween(
+                                        root.selectionAnchor, mediaRow.sourceRow))
+                                } else {
+                                    playlist.selectRows([mediaRow.sourceRow])
+                                    root.selectionAnchor = mediaRow.sourceRow
+                                    playlist.activateIndex(mediaRow.sourceRow)
                                 }
                             }
                             onDoubleClicked: {
@@ -1211,7 +1233,11 @@ Item {
                                             const targetRow = dayList.indexAt(point.x, point.y)
                                             const targetSource = ApplicationController.meetingDay.sourceRowAt(targetRow)
                                             if (targetSource >= 0 && targetSource !== mediaRow.sourceRow) {
-                                                ApplicationController.playlist.moveItem(mediaRow.sourceRow, targetSource)
+                                                if (mediaRow.inSelection) {
+                                                    ApplicationController.playlist.moveSelectedTo(targetSource)
+                                                } else {
+                                                    ApplicationController.playlist.moveItem(mediaRow.sourceRow, targetSource)
+                                                }
                                             }
                                         }
                                     }
@@ -1422,23 +1448,36 @@ Item {
                             id: rowMenu
 
                             StudioMenuItem {
-                                iconName: mediaRow.hidden ? "eye" : "eye-off"
-                                text: mediaRow.hidden ? qsTr("Show in media list") : qsTr("Hide from media list")
-                                onTriggered: ApplicationController.playlist.toggleItemHidden(mediaRow.sourceRow)
+                                caption: true
+                                visible: mediaRow.inSelection
+                                text: qsTr("%n items selected", "", ApplicationController.playlist.selectionCount)
                             }
                             StudioMenuItem {
+                                iconName: mediaRow.hidden ? "eye" : "eye-off"
+                                text: mediaRow.hidden ? qsTr("Show in media list") : qsTr("Hide from media list")
+                                onTriggered: {
+                                    if (mediaRow.inSelection) {
+                                        ApplicationController.playlist.setSelectedHidden(!mediaRow.hidden)
+                                    } else {
+                                        ApplicationController.playlist.toggleItemHidden(mediaRow.sourceRow)
+                                    }
+                                }
+                            }
+                            StudioMenuItem {
+                                visible: !mediaRow.inSelection
                                 iconName: "pilcrow"
                                 text: qsTr("Edit tag")
                                 onTriggered: tagEditPopup.openFor(mediaRow.sourceRow, mediaRow.tagType, mediaRow.tagValue)
                             }
                             StudioMenuItem {
+                                visible: !mediaRow.inSelection
                                 iconName: "sliders-horizontal"
                                 text: qsTr("Rename")
                                 onTriggered: renamePopup.openFor(mediaRow.sourceRow, mediaRow.title)
                             }
                             StudioMenu {
                                 title: qsTr("Slide interval")
-                                enabled: mediaRow.isPicture
+                                enabled: mediaRow.isPicture && !mediaRow.inSelection
 
                                 StudioMenuItem {
                                     text: qsTr("Manual")
@@ -1469,25 +1508,39 @@ Item {
                             StudioMenuItem {
                                 iconName: "layers"
                                 text: qsTr("Move to section")
-                                onTriggered: sectionPopup.openAssign(mediaRow.sourceRow, mediaRow.rowSectionId)
+                                onTriggered: {
+                                    if (mediaRow.inSelection) {
+                                        sectionPopup.openAssignSelection(mediaRow.rowSectionId)
+                                    } else {
+                                        sectionPopup.openAssign(mediaRow.sourceRow, mediaRow.rowSectionId)
+                                    }
+                                }
                             }
                             StudioMenuItem {
+                                visible: !mediaRow.inSelection
                                 iconName: "minus"
                                 text: qsTr("Insert divider below")
                                 onTriggered: ApplicationController.playlist.addDivider(
                                     qsTr("Section Break"), mediaRow.rowSectionId, "#D47B2A", mediaRow.sourceRow)
                             }
                             StudioMenuSeparator {
-                                visible: mediaRow.source === "additional"
+                                visible: mediaRow.source === "additional" || mediaRow.inSelection
                             }
                             StudioMenuItem {
                                 // Synced and shared folder media can only be hidden; the next sync
-                                // or the folder would bring it back.
-                                visible: mediaRow.source === "additional"
+                                // or the folder would bring it back. A selection deletes what it can
+                                // and hides the rest, like the Delete key.
+                                visible: mediaRow.source === "additional" || mediaRow.inSelection
                                 iconName: "trash"
                                 destructive: true
                                 text: qsTr("Delete")
-                                onTriggered: ApplicationController.playlist.removeAt(mediaRow.sourceRow)
+                                onTriggered: {
+                                    if (mediaRow.inSelection) {
+                                        ApplicationController.playlist.removeSelected()
+                                    } else {
+                                        ApplicationController.playlist.removeAt(mediaRow.sourceRow)
+                                    }
+                                }
                             }
                         }
                     }
