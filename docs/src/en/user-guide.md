@@ -58,6 +58,7 @@ Every item shows a 16:9 thumbnail with its duration, its song or paragraph numbe
 - **Hide from media list** and **Show in media list**. Hidden items stay out of the presentation; the section says when items are hidden, and **Show hidden media** in the page menu brings them back into view.
 - **Edit tag** for the song or paragraph number, and **Rename**.
 - **Slide interval** for pictures that advance on their own.
+- **Speed** for videos and audio, from 0.5x to 2x, kept for that item.
 - **Clip** for sign language videos made of several passages: play only one of them, or the **Whole video** again.
 - **Move to section** and **Insert divider below**.
 - **Delete**, for media you added. Synced media and shared folder media can only be hidden, because the next sync or the folder would bring them back.
