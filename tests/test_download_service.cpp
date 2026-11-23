@@ -326,3 +326,60 @@ TEST_CASE("DownloadService streams files, validates ETags, checks checksums, ret
         QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
     }
 }
+
+namespace {
+
+QStringList g_closedReadWarnings;
+
+void collectClosedReadWarnings(QtMsgType type, const QMessageLogContext&, const QString& message)
+{
+    if (type == QtWarningMsg && message.contains(QStringLiteral("device not open"))) {
+        g_closedReadWarnings.append(message);
+    }
+}
+
+} // namespace
+
+TEST_CASE("Failed requests are not read after they close", "[network][downloads]")
+{
+    const QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(tempDir.filePath(QStringLiteral("profile.db"))));
+
+    // A server that accepts the connection and never answers: the transfer timeout aborts it.
+    QTcpServer silent;
+    REQUIRE(silent.listen(QHostAddress::LocalHost, 0));
+    const QString base = QStringLiteral("http://127.0.0.1:%1").arg(silent.serverPort());
+
+    g_closedReadWarnings.clear();
+    const QtMessageHandler previous = qInstallMessageHandler(collectClosedReadWarnings);
+
+    kmedia::NetworkManager network;
+    network.setTransferTimeoutMs(300);
+    kmedia::CatalogClient catalog(&network, &db);
+    QObject context;
+    bool answered = false;
+    catalog.requestPubMediaLinks(
+        QUrl(base + QStringLiteral("/apis/pub-media")), QStringLiteral("E"), &context,
+        [&answered](bool, const std::vector<kmedia::CatalogMediaAsset>&) { answered = true; });
+
+    kmedia::DownloadService downloads(&network, &db);
+    downloads.setRetryBaseDelayMs(10);
+    QSignalSpy finished(&downloads, &kmedia::DownloadService::taskFinished);
+    downloads.enqueue(QUrl(base + QStringLiteral("/file.mp4")),
+                      tempDir.filePath(QStringLiteral("file.mp4")));
+
+    const bool done = finished.wait(20000);
+    QElapsedTimer clock;
+    clock.start();
+    while (!answered && clock.elapsed() < 10000) {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    }
+    qInstallMessageHandler(previous);
+
+    REQUIRE(done);
+    REQUIRE(answered);
+    REQUIRE_FALSE(finished.first().at(1).toBool());
+    REQUIRE(g_closedReadWarnings.isEmpty());
+}

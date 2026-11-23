@@ -43,6 +43,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- A request that failed or timed out was still read after Qt had closed it, which logged `device not open` warnings at startup; catalog requests and downloads now read a reply only while it is open.
 - The playback speed saved for an item now reaches the player: it applies when the item plays, and the item menu has a **Speed** submenu (0.5x to 2x).
 - Windows builds no longer fail at random when the app and the tests link at the same time: both copied `libmpv-2.dll` into the same folder at once, and one copy hit a permission error. One shared copy step now runs before either.
 - *Settings* now has every field the OBS Studio, Zoom, audio, and display features use: the OBS WebSocket password (OBS Studio turns authentication on by default, so KMedia could not connect to a default setup); a stage, a media, and an optional image scene picked from the scenes OBS returns, inspired by the Meeting Media Manager OBS settings, in place of play, pause, stop, and standby scenes that nothing could set; the Zoom passcode and name; the audio output of media and background music; and a standby picture, with **Blackout** staying black. The settings search now works in the interface language and ignores accents.

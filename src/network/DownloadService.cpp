@@ -628,7 +628,8 @@ void DownloadService::finalizeReply(const std::shared_ptr<InternalTask>& task)
     }
 
     // Drain any buffered final bytes cleanly before closing the temporary file.
-    if (reply != nullptr && task->partFile != nullptr && task->partFile->isOpen()) {
+    if (reply != nullptr && reply->isOpen() && task->partFile != nullptr &&
+        task->partFile->isOpen()) {
         const QByteArray tail = reply->readAll();
         if (!tail.isEmpty()) {
             if (task->partFile->write(tail) == tail.size() && !task->resumedFromPartial) {
