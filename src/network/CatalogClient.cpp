@@ -640,7 +640,8 @@ void CatalogClient::fetchWithEtagCache(const QUrl& endpoint, Callback&& onResult
             [this, reply, endpoint, cachedBodyPath, handler = std::forward<Callback>(onResult),
              onError]() {
                 const HttpCacheHeaders headers = NetworkManager::extractCacheHeaders(reply);
-                const QByteArray body = reply->readAll();
+                // A failed or aborted reply is already closed and has nothing to read.
+                const QByteArray body = reply->isOpen() ? reply->readAll() : QByteArray();
                 const QNetworkReply::NetworkError netErr = reply->error();
                 const QString errText = reply->errorString();
                 reply->deleteLater();
