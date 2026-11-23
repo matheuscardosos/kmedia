@@ -5,7 +5,9 @@
 #include "network/DownloadService.h"
 #include "network/PublicationStore.h"
 #include "network/StudyBibleMedia.h"
+#include "network/YeartextProvider.h"
 
+#include <QDate>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
@@ -109,4 +111,25 @@ TEST_CASE("StudyBibleMedia opens the Study Bible from JW.org", "[.network][bible
                 .value(QStringLiteral("verse"))
                 .toString()
                 .startsWith(QStringLiteral("4:")));
+}
+
+TEST_CASE("YeartextProvider fetches this year's yeartext from JW.org", "[.network][yeartext]")
+{
+    const QTemporaryDir root;
+    REQUIRE(root.isValid());
+    const QString language = qEnvironmentVariable("KMEDIA_NETWORK_LANG", QStringLiteral("E"));
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(root.filePath(QStringLiteral("profile.db"))));
+    kmedia::NetworkManager network;
+    kmedia::CatalogClient catalog(&network, &db);
+    kmedia::YeartextProvider yeartext(&catalog);
+
+    QSignalSpy changed(&yeartext, &kmedia::YeartextProvider::textChanged);
+    yeartext.setLanguages({language}, false, QDate::currentDate().year());
+    REQUIRE(changed.wait(60 * 1000));
+    REQUIRE(yeartext.text().contains(QLatin1Char('\n')));
+
+    // Sign languages show none.
+    yeartext.setLanguages({language}, true, QDate::currentDate().year());
+    REQUIRE(yeartext.text().isEmpty());
 }

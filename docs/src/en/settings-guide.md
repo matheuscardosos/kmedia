@@ -47,7 +47,7 @@ Turn it on and pick a folder. Every day with media is copied into a date folder 
 - **Auto:** presents on the second display automatically, which is the default.
 - **Presentation Output Active:** shows or hides the presentation window. `Ctrl+P` does the same.
 - **Screen list:** click a screen to present on it instead. If that screen is disconnected, KMedia goes back to presenting automatically.
-- **Standby picture:** the picture shown on the presentation display during standby and while nothing is presented, such as the yeartext. Without one, standby is a black screen. **Blackout** in the preview panel always shows black.
+- **Standby picture:** the picture shown on the presentation display during standby and while nothing is presented, such as the yeartext. Without one, the yeartext of the current year shows, in the media language. **Blackout** in the preview panel always shows black.
 
 ## Audio
 

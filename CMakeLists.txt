@@ -117,6 +117,8 @@ qt_add_library(kmedia_core STATIC
     src/network/PublicationMediaPicker.cpp
     src/network/DocumentMediaImporter.h
     src/network/DocumentMediaImporter.cpp
+    src/network/YeartextProvider.h
+    src/network/YeartextProvider.cpp
     src/network/StudyBibleMedia.h
     src/network/StudyBibleMedia.cpp
     src/network/BibleMediaCatalog.h

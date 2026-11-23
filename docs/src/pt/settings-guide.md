@@ -47,7 +47,7 @@ Ative e escolha uma pasta. Cada dia com mídias é copiado para uma pasta com a 
 - **Auto:** apresenta na segunda tela automaticamente, que é o padrão.
 - **Saída de Apresentação Ativa:** mostra ou esconde a janela de apresentação. `Ctrl+P` faz o mesmo.
 - **Lista de telas:** clique numa tela para apresentar nela. Se essa tela for desconectada, o KMedia volta a apresentar automaticamente.
-- **Imagem de espera:** a imagem mostrada na tela de apresentação durante a espera e enquanto nada é apresentado, como o texto do ano. Sem ela, a espera é uma tela preta. **Blackout**, no painel de prévia, sempre mostra preto.
+- **Imagem de espera:** a imagem mostrada na tela de apresentação durante a espera e enquanto nada é apresentado, como o texto do ano. Sem ela, aparece o texto do ano atual, no idioma das mídias. **Blackout**, no painel de prévia, sempre mostra preto.
 
 ## Áudio
 

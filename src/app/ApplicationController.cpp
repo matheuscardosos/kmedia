@@ -38,6 +38,7 @@
 #include "network/PublicationStore.h"
 #include "network/StudyBibleMedia.h"
 #include "network/WatchedFolderMedia.h"
+#include "network/YeartextProvider.h"
 #include "parsers/CloudSyncWatcher.h"
 
 #include <QCoreApplication>
@@ -102,6 +103,7 @@ ApplicationController::ApplicationController(QObject* parent)
     m_publicationPicker = std::make_unique<kmedia::PublicationMediaPicker>(
         m_publicationStore.get(), m_documentImporter.get());
     m_pdfPages = std::make_unique<kmedia::PdfPageImporter>(m_playlistModel.get());
+    m_yeartext = std::make_unique<kmedia::YeartextProvider>(m_catalogClient.get());
     m_studyBible = std::make_unique<kmedia::StudyBibleMedia>(m_publicationStore.get(),
                                                              m_documentImporter.get());
     m_bibleCatalog = std::make_unique<kmedia::BibleMediaCatalog>(
@@ -384,6 +386,11 @@ kmedia::BibleMediaCatalog* ApplicationController::bible() const
 kmedia::StudyBibleMedia* ApplicationController::studyBible() const
 {
     return m_studyBible.get();
+}
+
+kmedia::YeartextProvider* ApplicationController::yeartext() const
+{
+    return m_yeartext.get();
 }
 
 kmedia::PdfPageImporter* ApplicationController::pdfPages() const
@@ -1189,6 +1196,8 @@ void ApplicationController::applySyncSettings(bool resetWhenChanged)
     m_documentImporter->setLanguages(languages);
     m_publicationPicker->setLanguages(languages);
     m_studyBible->setLanguages(languages);
+    m_yeartext->setLanguages(m_demoMode ? QStringList{} : languages, next.signLanguage,
+                             QDate::currentDate().year());
     m_videoCatalog->setLanguage(next.languageCode);
     m_bibleCatalog->setLanguage(next.languageCode, next.signLanguage);
     m_musicLibrary->setLanguage(next.languageCode, next.signLanguage);
