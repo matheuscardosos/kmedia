@@ -64,7 +64,7 @@ Release Please writes each new version above `## [Unreleased]`. Before merging a
 
 - **CMake** 3.25 or newer and **Ninja**
 - **C++20 compiler:** MSVC 2022+, MinGW-w64 GCC 13+, Clang 16+, or Apple Clang
-- **Qt 6.8+** with modules: `Core`, `Gui`, `LinguistTools`, `Network`, `OpenGL`, `Pdf`, `Quick`, `QuickControls2`, `Sql`, `Svg`, `Test`, and `WebSockets`
+- **Qt 6.8+** with modules: `Core`, `Gui`, `LinguistTools`, `Multimedia`, `Network`, `OpenGL`, `Pdf`, `Quick`, `QuickControls2`, `Sql`, `Svg`, `Test`, and `WebSockets`
 - **libmpv** development headers and library (`MPV_ROOT` on Windows, `libmpv-dev` on Debian/Ubuntu, or `mpv` via Homebrew on macOS)
 - **vcpkg** with `VCPKG_ROOT` set in your environment (`catch2` and `minizip-ng` are managed in manifest mode via `vcpkg.json`)
 

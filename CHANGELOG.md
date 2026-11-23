@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Sign language congregations can show a camera as the background of the presentation screen, inspired by Meeting Media Manager: pick it in the **Display** pill and it replaces the standby picture or the yeartext while nothing is presented. Qt Multimedia is now a dependency, loaded only when a camera is used.
 - The preview panel shows a playing video live (about four frames a second, taken from the presentation player while the panel is on screen), where it used to stay black.
 - Videos from JW.org that have subtitles now download them next to the video, inspired by Meeting Media Manager, so the subtitles button can show them.
 - The presentation screen shows this year's yeartext while nothing is presented and during standby, inspired by Meeting Media Manager (`YeartextProvider`), unless a standby picture is set; it comes in the media language and stays available offline.

@@ -18,6 +18,8 @@ Window {
         : 0)
 
     readonly property int activeKind: ApplicationController.playback.mediaKind
+    readonly property bool cameraShown: ApplicationController.camera.active
+                                        && !ApplicationController.playback.blackoutActive
 
     Item {
         id: mediaViewport
@@ -102,6 +104,16 @@ Window {
             }
         }
 
+        // The chosen camera replaces the standby picture and the yeartext (inspired by Meeting
+        // Media Manager).
+        Loader {
+            anchors.fill: parent
+            active: ApplicationController.camera.cameraId.length > 0 && presentationRoot.visible
+            visible: presentationRoot.cameraShown
+            // By URL, so Qt Multimedia only loads with the camera.
+            source: active ? Qt.resolvedUrl("components/CameraLayer.qml") : ""
+        }
+
         Image {
             anchors.fill: parent
             fillMode: Image.PreserveAspectFit
@@ -109,6 +121,7 @@ Window {
             smooth: true
             visible: ApplicationController.playback.standbyImageUrl.toString().length > 0
                      && !ApplicationController.playback.blackoutActive
+                     && !presentationRoot.cameraShown
             source: ApplicationController.playback.standbyImageUrl
         }
 
@@ -118,6 +131,7 @@ Window {
             width: parent.width * 0.8
             visible: ApplicationController.playback.standbyImageUrl.toString().length === 0
                      && !ApplicationController.playback.blackoutActive
+                     && !presentationRoot.cameraShown
                      && ApplicationController.yeartext.text.length > 0
             text: ApplicationController.yeartext.text
             color: "#FFFFFF"

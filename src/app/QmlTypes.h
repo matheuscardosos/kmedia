@@ -8,6 +8,7 @@
 #include "integrations/ZoomBridge.h"
 #include "media/BackgroundMusicEngine.h"
 #include "media/BackgroundMusicService.h"
+#include "media/CameraController.h"
 #include "media/MediaAutoExport.h"
 #include "media/MpvRendererItem.h"
 #include "media/PdfPageImporter.h"
@@ -41,6 +42,14 @@ struct PlaybackControllerForeign
     Q_GADGET
     QML_FOREIGN(kmedia::PlaybackController)
     QML_NAMED_ELEMENT(PlaybackController)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct CameraControllerForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::CameraController)
+    QML_NAMED_ELEMENT(CameraController)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

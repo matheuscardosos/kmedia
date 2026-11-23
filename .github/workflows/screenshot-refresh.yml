@@ -21,7 +21,7 @@ jobs:
         with:
           version: '6.8.3'
           arch: linux_gcc_64
-          modules: 'qtshadertools qtwebsockets qtimageformats qtpdf'
+          modules: 'qtshadertools qtwebsockets qtimageformats qtpdf qtmultimedia'
           cache: true
 
       - name: Install Linux and Xvfb dependencies

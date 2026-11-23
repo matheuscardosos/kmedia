@@ -19,6 +19,7 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS
     Core
     Gui
     LinguistTools
+    Multimedia
     Network
     OpenGL
     Pdf
@@ -85,6 +86,8 @@ qt_add_library(kmedia_core STATIC
     src/media/PdfViewerController.cpp
     src/media/PdfPageImporter.h
     src/media/PdfPageImporter.cpp
+    src/media/CameraController.h
+    src/media/CameraController.cpp
     src/media/PlaybackController.h
     src/media/PlaybackController.cpp
     src/media/PlaylistExporter.h
@@ -171,6 +174,7 @@ target_link_libraries(kmedia_core
     PUBLIC
         Qt6::Core
         Qt6::Gui
+        Qt6::Multimedia
         Qt6::Network
         Qt6::OpenGL
         Qt6::Pdf
@@ -209,6 +213,11 @@ qt_add_executable(kmedia
 
 kmedia_set_compiler_warnings(kmedia)
 
+# macOS asks before the presentation camera starts, with this reason.
+set_target_properties(kmedia PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Info.plist.in"
+)
+
 set_source_files_properties(resources/qml/Theme.qml PROPERTIES
     QT_QML_SINGLETON_TYPE TRUE
     QT_RESOURCE_ALIAS Theme.qml
@@ -231,6 +240,7 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/controls/StudioMenuSeparator.qml
     resources/qml/components/NavRailButton.qml
     resources/qml/components/StatusRow.qml
+    resources/qml/components/CameraLayer.qml
     resources/qml/components/LeftNavRail.qml
     resources/qml/components/CompactBottomNav.qml
     resources/qml/components/ToastBanner.qml

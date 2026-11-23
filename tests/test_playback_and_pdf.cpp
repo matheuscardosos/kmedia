@@ -1,3 +1,4 @@
+#include "media/CameraController.h"
 #include "media/MpvRendererItem.h"
 #include "media/PdfViewerController.h"
 #include "media/PlaybackController.h"
@@ -12,6 +13,8 @@
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QVideoFrame>
+#include <QVideoSink>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -129,6 +132,63 @@ TEST_CASE("PlaybackController detects kinds, normalizes trims, and preserves sta
     REQUIRE(controller.zoomScale() == Catch::Approx(1.0));
     REQUIRE(controller.panX() == Catch::Approx(0.0));
     REQUIRE(controller.panY() == Catch::Approx(0.0));
+}
+
+TEST_CASE("The presentation camera is offered to sign languages and reports a missing camera",
+          "[media]")
+{
+    kmedia::CameraController camera;
+    QSignalSpy offeredSpy(&camera, &kmedia::CameraController::offeredChanged);
+    REQUIRE_FALSE(camera.isOffered());
+
+    camera.setSignLanguage(true);
+    REQUIRE(camera.isOffered());
+    REQUIRE(offeredSpy.count() == 1);
+
+    // A chosen camera stays offered after the language changes.
+    camera.setCameraId(QStringLiteral("kmedia-missing-camera"));
+    camera.setSignLanguage(false);
+    REQUIRE(camera.isOffered());
+    REQUIRE(offeredSpy.count() == 1);
+
+    // Nothing starts until the presentation screen hands over its video output.
+    REQUIRE(camera.problem() == kmedia::CameraController::Problem::None);
+    REQUIRE_FALSE(camera.isActive());
+
+#ifndef Q_OS_MACOS
+    QObject videoOutput;
+    camera.bindVideoOutput(&videoOutput);
+    REQUIRE(camera.problem() == kmedia::CameraController::Problem::NotConnected);
+    REQUIRE_FALSE(camera.isActive());
+    camera.bindVideoOutput(nullptr);
+#endif
+
+    camera.setCameraId({});
+    REQUIRE(camera.problem() == kmedia::CameraController::Problem::None);
+    REQUIRE_FALSE(camera.isOffered());
+    REQUIRE(offeredSpy.count() == 2);
+}
+
+// Needs a connected camera, so it is hidden: run it by its tag.
+TEST_CASE("The presentation camera shows the frames of a connected camera", "[.camera][media]")
+{
+    kmedia::CameraController camera;
+    camera.refreshCameras();
+    if (camera.cameras().isEmpty()) {
+        SKIP("No camera is connected");
+    }
+    QVideoSink sink;
+    QSignalSpy frameSpy(&sink, &QVideoSink::videoFrameChanged);
+    camera.setCameraId(camera.cameras().first().toMap().value(QStringLiteral("id")).toString());
+    camera.bindVideoOutput(&sink);
+
+    REQUIRE(frameSpy.wait(10000));
+    REQUIRE(camera.isActive());
+    REQUIRE(camera.problem() == kmedia::CameraController::Problem::None);
+    REQUIRE(sink.videoFrame().isValid());
+
+    camera.setCameraId({});
+    REQUIRE_FALSE(camera.isActive());
 }
 
 TEST_CASE("PdfViewerController navigates multi-page PDFs and provides crisp page images",
