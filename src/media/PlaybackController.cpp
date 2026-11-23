@@ -8,7 +8,60 @@
 
 namespace kmedia {
 
-PlaybackController::PlaybackController(QObject* parent) : QObject(parent) {}
+PlaybackController::PlaybackController(QObject* parent) : QObject(parent)
+{
+    // About four preview frames a second: enough to follow a video, cheap to grab.
+    m_previewTimer.setInterval(250);
+    connect(&m_previewTimer, &QTimer::timeout, this, &PlaybackController::grabPreviewFrame);
+}
+
+int PlaybackController::previewSerial() const
+{
+    return m_previewSerial;
+}
+
+QImage PlaybackController::previewFrame() const
+{
+    const QMutexLocker lock(&m_previewMutex);
+    return m_previewFrame;
+}
+
+bool PlaybackController::isPreviewActive() const
+{
+    return m_previewActive;
+}
+
+void PlaybackController::setPreviewActive(bool active)
+{
+    if (m_previewActive == active) {
+        return;
+    }
+    m_previewActive = active;
+    if (active) {
+        m_previewTimer.start();
+    } else {
+        m_previewTimer.stop();
+    }
+    emit previewActiveChanged();
+}
+
+void PlaybackController::grabPreviewFrame()
+{
+    if (m_mpvItem.isNull() || m_mediaKind != MediaKind::Video) {
+        return;
+    }
+    m_mpvItem->requestVideoFrame(480);
+}
+
+void PlaybackController::storePreviewFrame(const QImage& frame)
+{
+    {
+        const QMutexLocker lock(&m_previewMutex);
+        m_previewFrame = frame;
+    }
+    ++m_previewSerial;
+    emit previewFrameChanged();
+}
 
 void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
 {
@@ -63,6 +116,8 @@ void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
         emit tracksChanged();
     });
 
+    connect(m_mpvItem.data(), &MpvRendererItem::videoFrameReady, this,
+            &PlaybackController::storePreviewFrame);
     connect(m_mpvItem.data(), &MpvRendererItem::audioDevicesChanged, this,
             &PlaybackController::audioChanged);
     connect(m_mpvItem.data(), &MpvRendererItem::playbackFinished, this,

@@ -20,7 +20,7 @@ Baixe o KMedia para Windows, macOS ou Linux na [página de download](./download.
 
 - **Navegação:** *Reunião* e *Configurações*, a troca de congregação e o estado do OBS Studio, da segunda tela, do Zoom e do espaço livre em disco.
 - **Página Reunião:** as mídias do dia escolhido, seção por seção.
-- **Painel de prévia:** o que o público vê, detalhes do arquivo, cortes e zoom. O botão de monitor no cabeçalho da página mostra ou esconde o painel.
+- **Painel de prévia:** o que o público vê (um vídeo tocando aparece ao vivo), detalhes do arquivo, cortes e zoom. O botão de monitor no cabeçalho da página mostra ou esconde o painel.
 - **Barra em pílula:** atalhos para a tela de apresentação, espera, legendas, música ambiente, cronômetro da reunião, OBS Studio, Zoom, downloads e paleta de comandos.
 - **Barra de reprodução:** reproduzir, pausar, anterior, próximo e silenciar o item ativo, e a chave da música ambiente.
 

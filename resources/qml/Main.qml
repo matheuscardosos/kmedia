@@ -240,4 +240,11 @@ ApplicationWindow {
     }
 
     PresentationWindow {}
+
+    // Live video frames are grabbed only while a preview panel is on screen.
+    Binding {
+        target: ApplicationController.playback
+        property: "previewActive"
+        value: (root.isWide && root.previewDocked) || root.inspectorDrawerOpen
+    }
 }

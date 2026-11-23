@@ -3,10 +3,15 @@
 #include "media/PlaybackController.h"
 
 #include <QColor>
+#include <QElapsedTimer>
+#include <QFile>
 #include <QPainter>
 #include <QPdfWriter>
+#include <QQuickWindow>
+#include <QSGRendererInterface>
 #include <QSignalSpy>
 #include <QTemporaryDir>
+#include <QTest>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -173,4 +178,47 @@ TEST_CASE("PdfViewerController navigates multi-page PDFs and provides crisp page
     playback.stop();
     REQUIRE_FALSE(pdf.isLoaded());
     REQUIRE(pdf.pageCount() == 0);
+}
+
+TEST_CASE("The presentation player hands out its current video frame for the preview",
+          "[.gui][media]")
+{
+    const QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    // Two seconds of a red 64x36 raw video.
+    const QString clip = dir.filePath(QStringLiteral("clip.y4m"));
+    QFile video(clip);
+    REQUIRE(video.open(QIODevice::WriteOnly));
+    video.write(QByteArrayLiteral("YUV4MPEG2 W64 H36 F10:1 Ip A1:1 C420jpeg\n"));
+    for (int frame = 0; frame < 20; ++frame) {
+        video.write(QByteArrayLiteral("FRAME\n"));
+        video.write(QByteArray(64 * 36, static_cast<char>(81)));
+        video.write(QByteArray(32 * 18, static_cast<char>(90)));
+        video.write(QByteArray(32 * 18, static_cast<char>(240)));
+    }
+    video.close();
+
+    // mpv renders through OpenGL, like the app sets up in main().
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+    QQuickWindow window;
+    window.resize(320, 180);
+    auto* player = new MpvRendererItem(window.contentItem());
+    player->setSize(QSizeF(320, 180));
+    QSignalSpy drawn(&window, &QQuickWindow::frameSwapped);
+    window.show();
+    // Like the presentation window, the player renders before anything is loaded.
+    REQUIRE((!drawn.isEmpty() || drawn.wait(5000)));
+    QSignalSpy frames(player, &MpvRendererItem::videoFrameReady);
+    player->loadFile(QUrl::fromLocalFile(clip));
+    QElapsedTimer clock;
+    clock.start();
+    while (frames.isEmpty() && clock.elapsed() < 10000) {
+        player->requestVideoFrame(48);
+        QTest::qWait(100);
+    }
+    REQUIRE_FALSE(frames.isEmpty());
+    const QImage frame = frames.first().first().value<QImage>();
+    REQUIRE_FALSE(frame.isNull());
+    REQUIRE(frame.width() == 48);
+    REQUIRE(QColor(frame.pixel(24, 13)).red() > 150);
 }

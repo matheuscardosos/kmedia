@@ -6,7 +6,9 @@
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLFramebufferObjectFormat>
 #include <QPointer>
+#include <QQuickItemGrabResult>
 #include <QQuickOpenGLUtils>
+#include <QQuickWindow>
 #include <QVariantMap>
 #include <QtGlobal>
 
@@ -318,6 +320,29 @@ void MpvRendererItem::setSpeed(double speed)
         double value = m_speed;
         mpv_set_property_async(m_mpv.get(), 0, "speed", MPV_FORMAT_DOUBLE, &value);
     }
+}
+
+void MpvRendererItem::requestVideoFrame(int maxWidth)
+{
+    if (m_frameRequested || !m_mediaLoaded || !isVisible() || window() == nullptr ||
+        !window()->isExposed() || width() <= 0 || height() <= 0) {
+        return;
+    }
+    const int targetWidth = qMin(maxWidth, static_cast<int>(width()));
+    const QSize target(targetWidth, qMax(1, static_cast<int>(height() * targetWidth / width())));
+    // The latest grab lives here until the next one, so the connection below owns nothing.
+    m_frameGrab = grabToImage(target);
+    if (m_frameGrab.isNull()) {
+        return;
+    }
+    m_frameRequested = true;
+    QQuickItemGrabResult* grab = m_frameGrab.data();
+    connect(grab, &QQuickItemGrabResult::ready, this, [this, grab]() {
+        m_frameRequested = false;
+        if (!grab->image().isNull()) {
+            emit videoFrameReady(grab->image());
+        }
+    });
 }
 
 bool MpvRendererItem::isMuted() const

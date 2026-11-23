@@ -1,8 +1,11 @@
 #pragma once
 
+#include <QImage>
+#include <QMutex>
 #include <QObject>
 #include <QPointer>
 #include <QString>
+#include <QTimer>
 #include <QUrl>
 #include <QVariantList>
 
@@ -37,6 +40,10 @@ class PlaybackController : public QObject
     Q_PROPERTY(double panY READ panY WRITE setPanY NOTIFY viewportChanged FINAL)
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY audioChanged FINAL)
     Q_PROPERTY(double speed READ speed WRITE setSpeed NOTIFY speedChanged FINAL)
+    // Counts the live preview frames of a playing video, for the preview panel to reload.
+    Q_PROPERTY(int previewSerial READ previewSerial NOTIFY previewFrameChanged FINAL)
+    Q_PROPERTY(bool previewActive READ isPreviewActive WRITE setPreviewActive NOTIFY
+                   previewActiveChanged FINAL)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY audioChanged FINAL)
     Q_PROPERTY(QString audioDevice READ audioDevice WRITE setAudioDevice NOTIFY audioChanged FINAL)
     // The outputs mpv offers ({name, description}) and the description of the one in use.
@@ -96,6 +103,11 @@ public:
     [[nodiscard]] int volume() const;
     void setVolume(int volume);
     [[nodiscard]] double speed() const;
+    [[nodiscard]] int previewSerial() const;
+    [[nodiscard]] QImage previewFrame() const;
+    [[nodiscard]] bool isPreviewActive() const;
+    // Frames are grabbed only while a video plays and someone shows the preview.
+    void setPreviewActive(bool active);
     void setSpeed(double speed);
     [[nodiscard]] bool isMuted() const;
     void setMuted(bool muted);
@@ -139,6 +151,8 @@ signals:
     void standbyChanged();
     void transportChanged();
     void speedChanged();
+    void previewFrameChanged();
+    void previewActiveChanged();
     void positionChanged();
     void durationChanged();
     void trimChanged();
@@ -171,6 +185,13 @@ private:
     double m_panY{0.0};
     int m_volume{100};
     double m_speed{1.0};
+    void grabPreviewFrame();
+    void storePreviewFrame(const QImage& frame);
+    QTimer m_previewTimer;
+    mutable QMutex m_previewMutex;
+    QImage m_previewFrame;
+    int m_previewSerial{0};
+    bool m_previewActive{false};
     bool m_muted{false};
     QString m_audioDevice{QStringLiteral("auto")};
     bool m_subtitlesVisible{true};

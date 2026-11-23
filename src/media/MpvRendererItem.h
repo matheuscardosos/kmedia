@@ -1,6 +1,8 @@
 #pragma once
 
+#include <QImage>
 #include <QQuickFramebufferObject>
+#include <QSharedPointer>
 #include <QString>
 #include <QUrl>
 #include <QVariantList>
@@ -8,6 +10,8 @@
 #include <memory>
 
 struct mpv_handle;
+
+class QQuickItemGrabResult;
 
 class MpvRendererItem : public QQuickFramebufferObject
 {
@@ -62,6 +66,9 @@ public:
     void setVolume(int volume);
     // Playback speed, 1.0 for normal.
     void setSpeed(double speed);
+    // Asks for the frame on screen, rendered at most `maxWidth` wide; it arrives through
+    // videoFrameReady. Asynchronous, and only while the item is on screen.
+    void requestVideoFrame(int maxWidth);
 
     [[nodiscard]] bool isMuted() const;
     void setMuted(bool muted);
@@ -106,6 +113,7 @@ signals:
     void sourceChanged();
     void pausedChanged();
     void mediaLoadedChanged();
+    void videoFrameReady(const QImage& frame);
     void hardwareDecoderChanged();
     void positionChanged();
     void durationChanged();
@@ -132,6 +140,8 @@ private:
     QUrl m_source;
     bool m_paused{true};
     bool m_mediaLoaded{false};
+    bool m_frameRequested{false};
+    QSharedPointer<QQuickItemGrabResult> m_frameGrab;
     QString m_hardwareDecoder{QStringLiteral("auto-safe")};
     qint64 m_positionMs{0};
     qint64 m_durationMs{0};
