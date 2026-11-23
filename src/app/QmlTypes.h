@@ -10,6 +10,7 @@
 #include "media/BackgroundMusicService.h"
 #include "media/MediaAutoExport.h"
 #include "media/MpvRendererItem.h"
+#include "media/PdfPageImporter.h"
 #include "media/PdfViewerController.h"
 #include "media/PlaybackController.h"
 #include "models/MeetingDayModel.h"
@@ -143,6 +144,14 @@ struct MediaAutoExportForeign
     Q_GADGET
     QML_FOREIGN(kmedia::MediaAutoExport)
     QML_NAMED_ELEMENT(MediaAutoExport)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct PdfPageImporterForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::PdfPageImporter)
+    QML_NAMED_ELEMENT(PdfPageImporter)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

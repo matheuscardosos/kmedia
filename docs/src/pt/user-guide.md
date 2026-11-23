@@ -77,7 +77,7 @@ Para trabalhar com vários itens de uma vez, use `Ctrl`+clique em cada um, ou cl
 - **Bíblia de Estudo:** as imagens e os vídeos da edição de estudo da *Tradução do Novo Mundo*. Escolha um livro e um capítulo e marque as mídias que precisa; cada uma recebe uma etiqueta de versículo como `4:5`. A edição de estudo (cerca de 120 MB) é baixada na primeira vez.
 - **Mídias de publicação:** digite a sigla da publicação (por exemplo `lff`) e, para revistas e apostilas, a edição (`2026-11`); depois escolha o documento cujas mídias você precisa.
 - **Mídias do discurso público:** escolha uma vez o arquivo S-34mp da sua congregação e depois procure os discursos por número ou tema. As mídias do discurso vão para o *Discurso Público*, e o tema vira o subtítulo da seção.
-- **Arquivos:** vídeos, áudios, imagens, documentos PDF, publicações `.jwpub` (depois você escolhe um documento) e listas `.jwlplaylist` do JW Library. Também dá para arrastar arquivos para a janela.
+- **Arquivos:** vídeos, áudios, imagens, documentos PDF, publicações `.jwpub` (depois você escolhe um documento) e listas `.jwlplaylist` do JW Library. Também dá para arrastar arquivos para a janela. Um PDF com várias páginas mostra as páginas antes: marque as que precisa para adicioná-las como imagens (cada página passa a funcionar como qualquer imagem, com zoom e intervalo do slide) ou adicione o documento inteiro como um item só.
 
 ## Apresentar
 

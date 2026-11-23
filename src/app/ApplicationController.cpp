@@ -18,6 +18,7 @@
 #include "media/BackgroundMusicService.h"
 #include "media/MediaAutoExport.h"
 #include "media/MpvRendererItem.h"
+#include "media/PdfPageImporter.h"
 #include "media/PdfViewerController.h"
 #include "media/PlaybackController.h"
 #include "media/ThumbnailCache.h"
@@ -100,6 +101,7 @@ ApplicationController::ApplicationController(QObject* parent)
                                                               m_documentImporter.get());
     m_publicationPicker = std::make_unique<kmedia::PublicationMediaPicker>(
         m_publicationStore.get(), m_documentImporter.get());
+    m_pdfPages = std::make_unique<kmedia::PdfPageImporter>(m_playlistModel.get());
     m_studyBible = std::make_unique<kmedia::StudyBibleMedia>(m_publicationStore.get(),
                                                              m_documentImporter.get());
     m_bibleCatalog = std::make_unique<kmedia::BibleMediaCatalog>(
@@ -384,6 +386,11 @@ kmedia::StudyBibleMedia* ApplicationController::studyBible() const
     return m_studyBible.get();
 }
 
+kmedia::PdfPageImporter* ApplicationController::pdfPages() const
+{
+    return m_pdfPages.get();
+}
+
 kmedia::WatchedFolderMedia* ApplicationController::watchedFolder() const
 {
     return m_watchedFolder.get();
@@ -658,6 +665,7 @@ void ApplicationController::applyProfileSettings()
             QDir(profile->storagePath).filePath(QStringLiteral("packages")));
         m_publicationStore->setCacheRoot(profile->storagePath);
         m_musicLibrary->setCacheRoot(profile->storagePath);
+        m_pdfPages->setCacheRoot(profile->storagePath);
         // Each congregation keeps its own S-34mp, unpacked once.
         m_publicTalks->setFolder(
             QDir(profile->storagePath).filePath(QStringLiteral("Publications/S-34")));

@@ -77,7 +77,7 @@ To work on several items at once, `Ctrl`+click each one, or click one and `Shift
 - **Study Bible:** the pictures and videos of the *New World Translation* study edition. Pick a book and a chapter, then tick the media you need; each one gets a verse tag such as `4:5`. The study edition (about 120 MB) is downloaded the first time.
 - **Publication media:** type a publication symbol (for example `lff`) and, for magazines and workbooks, the issue (`2026-11`), then pick the document whose media you need.
 - **Public talk media:** pick your congregation's S-34mp file once, then search the talks by number or title. The talk's media goes to *Public Talk*, and the talk title becomes the section subtitle.
-- **Files:** videos, audio, pictures, PDF documents, `.jwpub` publications (you then pick a document), and `.jwlplaylist` playlists from JW Library. You can also drop files on the window.
+- **Files:** videos, audio, pictures, PDF documents, `.jwpub` publications (you then pick a document), and `.jwlplaylist` playlists from JW Library. You can also drop files on the window. A PDF with several pages first shows its pages: tick the ones you need to add them as pictures (each page then works like any picture, with zoom and a slide interval), or add the whole document as one item.
 
 ## Presenting
 

@@ -83,6 +83,8 @@ qt_add_library(kmedia_core STATIC
     src/media/MpvRendererItem.cpp
     src/media/PdfViewerController.h
     src/media/PdfViewerController.cpp
+    src/media/PdfPageImporter.h
+    src/media/PdfPageImporter.cpp
     src/media/PlaybackController.h
     src/media/PlaybackController.cpp
     src/media/PlaylistExporter.h
@@ -247,6 +249,7 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/PublicationMediaPopup.qml
     resources/qml/components/BiblePickerPopup.qml
     resources/qml/components/StudyBiblePickerPopup.qml
+    resources/qml/components/PdfPagesPopup.qml
     resources/qml/components/JwVideoPickerPopup.qml
     resources/qml/components/FolderPathField.qml
     resources/qml/components/SharedFolderCard.qml
@@ -320,11 +323,14 @@ target_link_libraries(kmedia PRIVATE
 )
 
 if(WIN32 AND DEFINED LibMPV_RUNTIME_DLL AND EXISTS "${LibMPV_RUNTIME_DLL}")
-    add_custom_command(TARGET kmedia POST_BUILD
+    # One copy step for every executable next to it: two post-build copies of the same DLL
+    # into the same folder raced when the app and the tests linked in parallel.
+    add_custom_target(kmedia_mpv_runtime
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${LibMPV_RUNTIME_DLL}"
             "$<TARGET_FILE_DIR:kmedia>"
     )
+    add_dependencies(kmedia kmedia_mpv_runtime)
 endif()
 
 if(KMEDIA_BUILD_TESTS)

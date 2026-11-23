@@ -15,6 +15,7 @@ qt_add_executable(kmedia_tests
     test_background_music.cpp
     test_songbook_music.cpp
     test_bible_media.cpp
+    test_pdf_pages.cpp
     test_display_manager.cpp
     test_jwpub_and_s34.cpp
     test_jwlplaylist_parser.cpp
@@ -47,12 +48,9 @@ target_link_libraries(kmedia_tests PRIVATE
     LibMPV::LibMPV
 )
 
-if(WIN32 AND DEFINED LibMPV_RUNTIME_DLL AND EXISTS "${LibMPV_RUNTIME_DLL}")
-    add_custom_command(TARGET kmedia_tests POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${LibMPV_RUNTIME_DLL}"
-            "$<TARGET_FILE_DIR:kmedia_tests>"
-    )
+# The tests run next to the app, from the libmpv copy the app target makes.
+if(TARGET kmedia_mpv_runtime)
+    add_dependencies(kmedia_tests kmedia_mpv_runtime)
 endif()
 
 include(Catch)
