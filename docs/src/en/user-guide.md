@@ -85,6 +85,7 @@ To work on several items at once, `Ctrl`+click each one, or click one and `Shift
 
 - Click the play button of an item, or double click the item. The active item is highlighted and shown in the preview panel.
 - **Standby** (`B`) covers the presentation display with the standby picture set in *Settings > Display*, or with this year's yeartext when there is none (the yeartext also shows while nothing is presented). **Blackout** in the preview panel always shows black and also pauses the media. Press **Standby** again to bring the media back where you left it.
+- **Subtitles** (pill bar) show or hide the subtitles of a video. Videos from JW.org that have subtitles in the media language download them along with the video.
 - **Trims** set a start and an end for a video or audio without changing the file. **Zoom and pan** work on pictures, videos, and PDF pages, and PDF documents can be paged.
 - With a second display or projector connected, KMedia presents on it full screen and keeps the controls on the main screen. *Settings > Display* picks another screen, and *Settings > Audio* picks where the sound plays.
 

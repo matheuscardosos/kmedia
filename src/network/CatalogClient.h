@@ -50,6 +50,9 @@ struct CatalogMediaAsset
     QString pubMediaId;
     bool streamOnly{false};
     QString imageUrl;
+    // The subtitles JW.org publishes for a video (VTT), when it has some.
+    QString subtitleUrl;
+    QString subtitleChecksum;
     std::vector<BibleVerseMarker> verseMarkers;
 };
 
@@ -133,6 +136,9 @@ public:
                             QStringLiteral("https://b.jw-cdn.org/apis/mediator/v1/categories"));
 
     // The yeartext of a year in a language, from the Watchtower Online Library.
+    // Where a video's subtitles are kept: next to it, with its name, so the player loads them.
+    [[nodiscard]] static QString subtitlePathFor(const QString& videoPath);
+
     [[nodiscard]] static QUrl yeartextUrl(const QString& langCode, int year);
     // Plain text, one line per paragraph of the yeartext.
     [[nodiscard]] static QString parseYeartextJson(const QByteArray& json);

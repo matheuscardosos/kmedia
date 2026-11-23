@@ -312,6 +312,12 @@ ResolvedMediaFile PublicationStore::resolveAsset(const CatalogMediaAsset& asset,
     resolved.filePath = folder.filePath(fileName);
     if (!fileName.isEmpty()) {
         queueFileDownload(QUrl(asset.url), resolved.filePath, asset.sha256, priority, asset.title);
+        // Subtitles sit next to the video with its name, where the player picks them up.
+        if (!asset.subtitleUrl.isEmpty()) {
+            queueFileDownload(QUrl(asset.subtitleUrl),
+                              CatalogClient::subtitlePathFor(resolved.filePath),
+                              asset.subtitleChecksum, DownloadService::Priority::Low, {});
+        }
     }
     return resolved;
 }

@@ -615,6 +615,8 @@ void MpvRendererItem::initializeMpv()
     mpv_set_option_string(rawHandle, "vo", "libmpv");
     mpv_set_option_string(rawHandle, "hwdec", "auto-safe");
     mpv_set_option_string(rawHandle, "keep-open", "yes");
+    // Subtitles saved next to a video with its name are loaded with it.
+    mpv_set_option_string(rawHandle, "sub-auto", "exact");
     mpv_set_option_string(rawHandle, "idle", "yes");
     mpv_set_option_string(rawHandle, "pause", "yes");
     mpv_set_option_string(rawHandle, "terminal", "no");
