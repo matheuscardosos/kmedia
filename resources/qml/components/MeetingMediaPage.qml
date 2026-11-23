@@ -1074,6 +1074,7 @@ Item {
                         required property bool groupExpanded
                         required property bool selected
                         required property var clips
+                        required property real playbackRate
 
                         readonly property bool isDivider: mediaRow.itemKind === "divider"
                         readonly property bool inSelection: mediaRow.selected && root.multiSelect
@@ -1573,6 +1574,31 @@ Item {
 
                                     onObjectAdded: (index, object) => clipMenu.insertItem(index + 1, object)
                                     onObjectRemoved: (index, object) => clipMenu.removeItem(object)
+                                }
+                            }
+                            StudioMenu {
+                                id: speedMenu
+
+                                title: qsTr("Speed")
+                                enabled: (mediaRow.mediaKind === PlaybackController.Video
+                                          || mediaRow.mediaKind === PlaybackController.Audio)
+                                         && !mediaRow.inSelection
+
+                                Instantiator {
+                                    model: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
+
+                                    delegate: StudioMenuItem {
+                                        required property real modelData
+
+                                        text: modelData + "x"
+                                        checkable: true
+                                        checked: Math.abs(mediaRow.playbackRate - modelData) < 0.01
+                                        onTriggered: ApplicationController.playlist.setItemPlaybackRate(
+                                            mediaRow.sourceRow, modelData)
+                                    }
+
+                                    onObjectAdded: (index, object) => speedMenu.insertItem(index, object)
+                                    onObjectRemoved: (index, object) => speedMenu.removeItem(object)
                                 }
                             }
                             StudioMenuSeparator {}

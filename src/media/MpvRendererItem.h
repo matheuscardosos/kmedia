@@ -60,6 +60,8 @@ public:
 
     [[nodiscard]] int volume() const;
     void setVolume(int volume);
+    // Playback speed, 1.0 for normal.
+    void setSpeed(double speed);
 
     [[nodiscard]] bool isMuted() const;
     void setMuted(bool muted);
@@ -134,6 +136,7 @@ private:
     qint64 m_positionMs{0};
     qint64 m_durationMs{0};
     int m_volume{100};
+    double m_speed{1.0};
     bool m_muted{false};
     QString m_audioDevice{QStringLiteral("auto")};
     QVariantList m_audioDevices;

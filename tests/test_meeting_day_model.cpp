@@ -1,4 +1,5 @@
 #include "core/DatabaseManager.h"
+#include "media/PlaybackController.h"
 #include "models/MeetingDayModel.h"
 #include "models/PlaylistModel.h"
 
@@ -308,4 +309,36 @@ TEST_CASE("PlaylistModel lists the clips of a sign language video and plays one"
     // The whole video again.
     REQUIRE(model.setItemTrim(reloaded, 0, 0));
     REQUIRE(model.data(model.index(reloaded, 0), PlaylistModel::TrimEndMsRole).toLongLong() == 0);
+}
+
+TEST_CASE("PlaylistModel plays each item at its saved speed", "[models][meeting-day][speed]")
+{
+    const QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(dir.filePath(QStringLiteral("speed.db"))));
+    PlaylistModel model;
+    model.attachDatabase(&db);
+    kmedia::PlaybackController playback;
+    model.attachPlaybackController(&playback);
+    REQUIRE(model.openWorkspaceForDate(QStringLiteral("2026-11-18"), QStringLiteral("midweek")));
+    REQUIRE(model.importLocalFile(writeImage(dir, QStringLiteral("a.png")), QStringLiteral("lac")));
+    REQUIRE(model.importLocalFile(writeImage(dir, QStringLiteral("b.png")), QStringLiteral("lac")));
+    const int a = sourceRowOf(model, QStringLiteral("a"));
+    const int b = sourceRowOf(model, QStringLiteral("b"));
+
+    REQUIRE(model.setItemPlaybackRate(a, 1.5));
+    REQUIRE(model.activateIndex(a));
+    REQUIRE(playback.speed() == 1.5);
+    REQUIRE(model.activateIndex(b));
+    REQUIRE(playback.speed() == 1.0);
+
+    // Changing the active item's speed applies at once, within the allowed range.
+    REQUIRE(model.setItemPlaybackRate(b, 40.0));
+    REQUIRE(playback.speed() == 15.0);
+    model.reloadFromDatabase();
+    REQUIRE(model
+                .data(model.index(sourceRowOf(model, QStringLiteral("a")), 0),
+                      PlaylistModel::PlaybackRateRole)
+                .toDouble() == 1.5);
 }

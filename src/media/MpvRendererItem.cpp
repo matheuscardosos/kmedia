@@ -311,6 +311,15 @@ void MpvRendererItem::setVolume(int volume)
     emit volumeChanged();
 }
 
+void MpvRendererItem::setSpeed(double speed)
+{
+    m_speed = qBound(0.25, speed, 16.0);
+    if (m_mpv != nullptr) {
+        double value = m_speed;
+        mpv_set_property_async(m_mpv.get(), 0, "speed", MPV_FORMAT_DOUBLE, &value);
+    }
+}
+
 bool MpvRendererItem::isMuted() const
 {
     return m_muted;
@@ -628,6 +637,8 @@ void MpvRendererItem::initializeMpv()
     mpv_observe_property(m_mpv.get(), 0, "time-pos", MPV_FORMAT_DOUBLE);
     mpv_observe_property(m_mpv.get(), 0, "duration", MPV_FORMAT_DOUBLE);
     mpv_observe_property(m_mpv.get(), 0, "volume", MPV_FORMAT_DOUBLE);
+    double speed = m_speed;
+    mpv_set_property(m_mpv.get(), "speed", MPV_FORMAT_DOUBLE, &speed);
     mpv_observe_property(m_mpv.get(), 0, "mute", MPV_FORMAT_FLAG);
     mpv_observe_property(m_mpv.get(), 0, "aid", MPV_FORMAT_INT64);
     mpv_observe_property(m_mpv.get(), 0, "sid", MPV_FORMAT_INT64);

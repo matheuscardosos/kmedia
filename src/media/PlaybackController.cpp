@@ -71,6 +71,7 @@ void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
             &PlaybackController::playbackError);
 
     m_mpvItem->setVolume(m_volume);
+    m_mpvItem->setSpeed(m_speed);
     m_mpvItem->setMuted(m_muted);
     m_mpvItem->setAudioDevice(m_audioDevice);
     m_mpvItem->setSubtitlesVisible(m_subtitlesVisible);
@@ -240,6 +241,24 @@ void PlaybackController::setPanY(double panY)
 int PlaybackController::volume() const
 {
     return m_volume;
+}
+
+double PlaybackController::speed() const
+{
+    return m_speed;
+}
+
+void PlaybackController::setSpeed(double speed)
+{
+    const double clamped = qBound(0.5, speed, 15.0);
+    if (qFuzzyCompare(m_speed, clamped)) {
+        return;
+    }
+    m_speed = clamped;
+    if (!m_mpvItem.isNull()) {
+        m_mpvItem->setSpeed(clamped);
+    }
+    emit speedChanged();
 }
 
 void PlaybackController::setVolume(int volume)
