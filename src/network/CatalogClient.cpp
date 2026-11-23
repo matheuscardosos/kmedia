@@ -78,6 +78,9 @@ CatalogMediaAsset assetFromMediatorFile(const QJsonObject& file, const QString& 
     asset.pubMediaId = key;
     asset.streamOnly = asset.durationSeconds > CatalogClient::kLongMediaDurationSeconds;
     asset.imageUrl = imageUrl;
+    const QJsonObject subtitles = file.value(QStringLiteral("subtitles")).toObject();
+    asset.subtitleUrl = subtitles.value(QStringLiteral("url")).toString().trimmed();
+    asset.subtitleChecksum = subtitles.value(QStringLiteral("checksum")).toString().trimmed();
     if (asset.mimeType.contains(QStringLiteral("audio"), Qt::CaseInsensitive) ||
         asset.url.endsWith(QStringLiteral(".mp3"), Qt::CaseInsensitive)) {
         asset.fileFormat = QStringLiteral("MP3");
@@ -129,6 +132,9 @@ void parseAssetObject(const QJsonObject& obj, const QString& pubSymbol, int issu
                          .value(QStringLiteral("url"))
                          .toString()
                          .trimmed();
+    const QJsonObject subtitles = obj.value(QStringLiteral("subtitles")).toObject();
+    asset.subtitleUrl = subtitles.value(QStringLiteral("url")).toString().trimmed();
+    asset.subtitleChecksum = subtitles.value(QStringLiteral("checksum")).toString().trimmed();
     const QJsonArray markers =
         obj.value(QStringLiteral("markers")).toObject().value(QStringLiteral("markers")).toArray();
     for (const QJsonValue& markerValue : markers) {
@@ -232,6 +238,12 @@ QUrl CatalogClient::pubMediaLinksUrl(const QString& pubSymbol, const QString& la
     query.addQueryItem(QStringLiteral("output"), QStringLiteral("json"));
     url.setQuery(query);
     return url;
+}
+
+QString CatalogClient::subtitlePathFor(const QString& videoPath)
+{
+    const QFileInfo video(videoPath);
+    return video.dir().filePath(video.completeBaseName() + QStringLiteral(".vtt"));
 }
 
 QUrl CatalogClient::yeartextUrl(const QString& langCode, int year)

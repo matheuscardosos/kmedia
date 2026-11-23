@@ -85,6 +85,7 @@ Para trabalhar com vários itens de uma vez, use `Ctrl`+clique em cada um, ou cl
 
 - Clique no botão de reprodução de um item ou dê um duplo clique nele. O item ativo fica destacado e aparece no painel de prévia.
 - **Espera** (`B`) cobre a tela de apresentação com a imagem de espera definida em *Configurações > Tela*, ou com o texto do ano quando não há uma (o texto do ano também aparece enquanto nada é apresentado). **Blackout**, no painel de prévia, sempre mostra preto e também pausa a mídia. Clique em **Espera** de novo para voltar à mídia de onde parou.
+- **Legendas** (barra em pílula) mostram ou escondem as legendas de um vídeo. Os vídeos do JW.org que têm legendas no idioma das mídias baixam as legendas junto com o vídeo.
 - **Cortes** definem início e fim de um vídeo ou áudio sem mudar o arquivo. **Zoom e posição** funcionam em imagens, vídeos e páginas de PDF, e documentos PDF podem ser folheados.
 - Com uma segunda tela ou projetor conectado, o KMedia apresenta nela em tela cheia e deixa os controles na tela principal. *Configurações > Tela* escolhe outra tela, e *Configurações > Áudio* escolhe onde o som toca.
 

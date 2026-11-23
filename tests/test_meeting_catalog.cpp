@@ -124,3 +124,31 @@ TEST_CASE("CatalogClient reads the yeartext as plain lines", "[catalog][yeartext
             QStringLiteral("Happy are those conscious\nof their spiritual need.\nMatthew 5:3"));
     REQUIRE(kmedia::CatalogClient::parseYeartextJson("{}").isEmpty());
 }
+
+TEST_CASE("CatalogClient keeps the subtitles JW.org publishes for a video", "[catalog][subtitles]")
+{
+    const QByteArray pubMedia = R"({"pub": "jwbvod26", "files": {"T": {"MP4": [
+        {"title": "Video", "track": 48, "label": "240p", "filesize": 1000,
+         "file": {"url": "https://cdn.example/jwbvod26_T_48_r240P.mp4", "checksum": "abc"},
+         "subtitles": {"url": "https://cdn.example/jwbvod26_T_48.vtt", "checksum": "def"}},
+        {"title": "Other", "track": 49, "label": "240p",
+         "file": {"url": "https://cdn.example/jwbvod26_T_49_r240P.mp4"}}]}}})";
+    const auto assets =
+        kmedia::CatalogClient::parsePubMediaLinksJson(pubMedia, QStringLiteral("T"));
+    REQUIRE(assets.size() == 2);
+    REQUIRE(assets[0].subtitleUrl == QStringLiteral("https://cdn.example/jwbvod26_T_48.vtt"));
+    REQUIRE(assets[0].subtitleChecksum == QStringLiteral("def"));
+    REQUIRE(assets[1].subtitleUrl.isEmpty());
+
+    const QByteArray mediator = R"({"media": [{"title": "Video", "duration": 60, "files": [
+        {"label": "240p", "progressiveDownloadURL": "https://cdn.example/v_r240P.mp4",
+         "checksum": "abc", "filesize": 10,
+         "subtitles": {"url": "https://cdn.example/v.vtt", "checksum": "ghi"}}]}]})";
+    const auto mediatorAssets = kmedia::CatalogClient::parseMediatorMediaJson(mediator);
+    REQUIRE(mediatorAssets.size() == 1);
+    REQUIRE(mediatorAssets[0].subtitleUrl == QStringLiteral("https://cdn.example/v.vtt"));
+
+    // Saved next to the video with its name, so the player loads them with it.
+    REQUIRE(kmedia::CatalogClient::subtitlePathFor(QStringLiteral("C:/cache/Videos/v_r240P.mp4")) ==
+            QStringLiteral("C:/cache/Videos/v_r240P.vtt"));
+}

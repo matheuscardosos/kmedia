@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Videos from JW.org that have subtitles now download them next to the video, inspired by Meeting Media Manager, so the subtitles button can show them.
 - The presentation screen shows this year's yeartext while nothing is presented and during standby, inspired by Meeting Media Manager (`YeartextProvider`), unless a standby picture is set; it comes in the media language and stays available offline.
 - The presentation screen fades (0.3 s) into and out of standby and when media starts or stops, instead of cutting, inspired by Meeting Media Manager.
 - Sign language videos with several passages show a **Clip** menu, inspired by Meeting Media Manager: pick a passage to play only that part, or the whole video again.
