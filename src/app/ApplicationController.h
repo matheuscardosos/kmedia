@@ -33,6 +33,7 @@ Q_MOC_INCLUDE("network/WatchedFolderMedia.h")
 Q_MOC_INCLUDE("network/JwVideoCatalog.h")
 Q_MOC_INCLUDE("network/BibleMediaCatalog.h")
 Q_MOC_INCLUDE("network/StudyBibleMedia.h")
+Q_MOC_INCLUDE("network/YeartextProvider.h")
 Q_MOC_INCLUDE("parsers/CloudSyncWatcher.h")
 
 class MpvRendererItem;
@@ -65,6 +66,7 @@ class DocumentMediaImporter;
 class JwVideoCatalog;
 class BibleMediaCatalog;
 class StudyBibleMedia;
+class YeartextProvider;
 class PdfPageImporter;
 class MediaAutoExport;
 class WatchedFolderMedia;
@@ -120,6 +122,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(kmedia::JwVideoCatalog* videos READ videos CONSTANT FINAL)
     Q_PROPERTY(kmedia::BibleMediaCatalog* bible READ bible CONSTANT FINAL)
     Q_PROPERTY(kmedia::StudyBibleMedia* studyBible READ studyBible CONSTANT FINAL)
+    Q_PROPERTY(kmedia::YeartextProvider* yeartext READ yeartext CONSTANT FINAL)
     Q_PROPERTY(kmedia::PdfPageImporter* pdfPages READ pdfPages CONSTANT FINAL)
     Q_PROPERTY(kmedia::WatchedFolderMedia* watchedFolder READ watchedFolder CONSTANT FINAL)
     Q_PROPERTY(kmedia::MediaAutoExport* autoExport READ autoExport CONSTANT FINAL)
@@ -173,6 +176,7 @@ public:
     [[nodiscard]] kmedia::JwVideoCatalog* videos() const;
     [[nodiscard]] kmedia::BibleMediaCatalog* bible() const;
     [[nodiscard]] kmedia::StudyBibleMedia* studyBible() const;
+    [[nodiscard]] kmedia::YeartextProvider* yeartext() const;
     [[nodiscard]] kmedia::PdfPageImporter* pdfPages() const;
     [[nodiscard]] kmedia::WatchedFolderMedia* watchedFolder() const;
     [[nodiscard]] kmedia::MediaAutoExport* autoExport() const;
@@ -256,6 +260,7 @@ private:
     std::unique_ptr<kmedia::JwVideoCatalog> m_videoCatalog;
     std::unique_ptr<kmedia::BibleMediaCatalog> m_bibleCatalog;
     std::unique_ptr<kmedia::StudyBibleMedia> m_studyBible;
+    std::unique_ptr<kmedia::YeartextProvider> m_yeartext;
     std::unique_ptr<kmedia::PdfPageImporter> m_pdfPages;
     std::unique_ptr<kmedia::BackgroundMusicLibrary> m_musicLibrary;
     std::unique_ptr<kmedia::BackgroundMusicService> m_musicService;

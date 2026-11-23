@@ -14,6 +14,7 @@
 #include <QNetworkReply>
 #include <QPointer>
 #include <QSaveFile>
+#include <QTextDocumentFragment>
 #include <QUrlQuery>
 
 #include <utility>
@@ -231,6 +232,57 @@ QUrl CatalogClient::pubMediaLinksUrl(const QString& pubSymbol, const QString& la
     query.addQueryItem(QStringLiteral("output"), QStringLiteral("json"));
     url.setQuery(query);
     return url;
+}
+
+QUrl CatalogClient::yeartextUrl(const QString& langCode, int year)
+{
+    QUrl url(QStringLiteral("https://wol.jw.org/wol/finder"));
+    QUrlQuery query;
+    query.addQueryItem(
+        QStringLiteral("docid"), // %18 would read as a placeholder, so the parts are joined.
+        QStringLiteral("110") + QString::number(year) + QStringLiteral("800"));
+    query.addQueryItem(QStringLiteral("wtlocale"), langCode);
+    query.addQueryItem(QStringLiteral("format"), QStringLiteral("json"));
+    query.addQueryItem(QStringLiteral("snip"), QStringLiteral("yes"));
+    url.setQuery(query);
+    return url;
+}
+
+QString CatalogClient::parseYeartextJson(const QByteArray& json)
+{
+    const QString html =
+        QJsonDocument::fromJson(json).object().value(QStringLiteral("content")).toString();
+    if (html.isEmpty()) {
+        return {};
+    }
+    QStringList lines;
+    const QStringList paragraphs = html.split(QStringLiteral("</p>"), Qt::SkipEmptyParts);
+    for (const QString& paragraph : paragraphs) {
+        const QString line = QTextDocumentFragment::fromHtml(paragraph).toPlainText().simplified();
+        if (!line.isEmpty()) {
+            lines.append(line);
+        }
+    }
+    return lines.join(QLatin1Char('\n'));
+}
+
+void CatalogClient::requestYeartext(const QString& langCode, int year, QObject* context,
+                                    TextCallback callback)
+{
+    const QPointer<QObject> guard(context);
+    fetchWithEtagCache(
+        yeartextUrl(langCode, year),
+        [guard, callback](const QByteArray& body, bool) {
+            if (!guard.isNull()) {
+                const QString text = parseYeartextJson(body);
+                callback(!text.isEmpty(), text);
+            }
+        },
+        [guard, callback](const QString&) {
+            if (!guard.isNull()) {
+                callback(false, {});
+            }
+        });
 }
 
 QUrl CatalogClient::bibleBookUrl(const QString& langCode, int bookNumber, const QString& fileFormat)

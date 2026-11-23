@@ -132,6 +132,14 @@ public:
                         const QString& baseUrl =
                             QStringLiteral("https://b.jw-cdn.org/apis/mediator/v1/categories"));
 
+    // The yeartext of a year in a language, from the Watchtower Online Library.
+    [[nodiscard]] static QUrl yeartextUrl(const QString& langCode, int year);
+    // Plain text, one line per paragraph of the yeartext.
+    [[nodiscard]] static QString parseYeartextJson(const QByteArray& json);
+    using TextCallback = std::function<void(bool ok, const QString& text)>;
+    void requestYeartext(const QString& langCode, int year, QObject* context,
+                         TextCallback callback);
+
     // The recording of one Bible book (`nwt`): MP3, or MP4 for sign languages.
     [[nodiscard]] static QUrl bibleBookUrl(const QString& langCode, int bookNumber,
                                            const QString& fileFormat);

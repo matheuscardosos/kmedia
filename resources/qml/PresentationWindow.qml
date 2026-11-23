@@ -100,5 +100,22 @@ Window {
                      && !ApplicationController.playback.blackoutActive
             source: ApplicationController.playback.standbyImageUrl
         }
+
+        // Without a standby picture, the yeartext (inspired by Meeting Media Manager).
+        Text {
+            anchors.centerIn: parent
+            width: parent.width * 0.8
+            visible: ApplicationController.playback.standbyImageUrl.toString().length === 0
+                     && !ApplicationController.playback.blackoutActive
+                     && ApplicationController.yeartext.text.length > 0
+            text: ApplicationController.yeartext.text
+            color: "#FFFFFF"
+            font.family: Theme.fontFamily
+            font.pixelSize: Math.max(18, parent.height / 16)
+            font.weight: Font.DemiBold
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            lineHeight: 1.15
+        }
     }
 }

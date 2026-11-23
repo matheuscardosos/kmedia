@@ -24,6 +24,7 @@
 #include "network/PublicationMediaPicker.h"
 #include "network/StudyBibleMedia.h"
 #include "network/WatchedFolderMedia.h"
+#include "network/YeartextProvider.h"
 #include "parsers/CloudSyncWatcher.h"
 
 #include <QtQmlIntegration/qqmlintegration.h>
@@ -152,6 +153,14 @@ struct PdfPageImporterForeign
     Q_GADGET
     QML_FOREIGN(kmedia::PdfPageImporter)
     QML_NAMED_ELEMENT(PdfPageImporter)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct YeartextProviderForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::YeartextProvider)
+    QML_NAMED_ELEMENT(YeartextProvider)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

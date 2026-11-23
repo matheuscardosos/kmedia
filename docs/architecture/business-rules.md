@@ -23,7 +23,7 @@ This document defines the behavioral contracts and architectural invariants that
 - When a secondary monitor is detected, the presentation output targets that display in borderless fullscreen unless a manual screen override is active.
 - The external output window carries a consistent title (`"KMedia - Presentation"`) and composited backing so OBS Window Capture and Zoom Window Share capture cleanly without black frames.
 - **Standby / Blackout Priority:** Activating Standby or Blackout takes immediate visual precedence over video, audio artwork, images, and PDF output without tearing down the active playback queue.
-- Standby, and the presentation display while nothing is presented, show the standby picture picked in *Settings > Display* (`presentation/standby_image`, a local path), or black when none is set. Blackout is a standby that always shows black and pauses the media; leaving standby ends a blackout.
+- Standby, and the presentation display while nothing is presented, show the standby picture picked in *Settings > Display* (`presentation/standby_image`, a local path), or else the yeartext of the current year (`YeartextProvider`, inspired by Meeting Media Manager: `wol.jw.org/wol/finder?docid=110<year>800`, in the media language, then the fallback language, then English, kept by the catalog cache for offline use, none for sign languages or in `--demo`). Blackout is a standby that always shows black and pauses the media; leaving standby ends a blackout.
 
 ## 4. Non-Destructive Trim and Viewport Synchronization
 

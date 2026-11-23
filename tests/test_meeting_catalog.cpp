@@ -110,3 +110,17 @@ TEST_CASE("CatalogClient reads JW.org video categories", "[network][catalog][vid
     REQUIRE(video.files.at(1).fileFormat == QStringLiteral("MP4"));
     REQUIRE(video.files.at(1).imageUrl == video.imageUrl);
 }
+
+TEST_CASE("CatalogClient reads the yeartext as plain lines", "[catalog][yeartext]")
+{
+    const QUrl url = kmedia::CatalogClient::yeartextUrl(QStringLiteral("T"), 2026);
+    REQUIRE(url.host() == QStringLiteral("wol.jw.org"));
+    REQUIRE(url.query().contains(QStringLiteral("docid=1102026800")));
+    REQUIRE(url.query().contains(QStringLiteral("wtlocale=T")));
+
+    const QByteArray json =
+        R"({"content": "<p id=\"p1\" class=\"themeScrp\"><span class=\"pageNum\"></span><strong>Happy are those conscious</strong></p> <p id=\"p2\"><strong>of their spiritual need.</strong></p> <p id=\"p3\"><strong>Matthew&nbsp;5:3</strong></p>"})";
+    REQUIRE(kmedia::CatalogClient::parseYeartextJson(json) ==
+            QStringLiteral("Happy are those conscious\nof their spiritual need.\nMatthew 5:3"));
+    REQUIRE(kmedia::CatalogClient::parseYeartextJson("{}").isEmpty());
+}
