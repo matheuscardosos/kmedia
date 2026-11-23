@@ -24,7 +24,7 @@ Window {
 
         anchors.fill: parent
         clip: true
-        visible: !ApplicationController.playback.standbyActive
+        // Stays visible under the standby layer, which fades over it.
 
         MpvRendererItem {
             id: presentationMpv
@@ -86,10 +86,21 @@ Window {
         id: standbyOverlay
 
         anchors.fill: parent
+        // Standby and the screen without media fade in and out (inspired by Meeting Media Manager).
+        readonly property bool shown: ApplicationController.playback.standbyActive ||
+            presentationRoot.activeKind === PlaybackController.None
+
         z: 100
         color: "#000000"
-        visible: ApplicationController.playback.standbyActive ||
-            presentationRoot.activeKind === PlaybackController.None
+        opacity: standbyOverlay.shown ? 1.0 : 0.0
+        visible: standbyOverlay.opacity > 0.0
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.InOutQuad
+            }
+        }
 
         Image {
             anchors.fill: parent
