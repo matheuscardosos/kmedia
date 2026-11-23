@@ -1,11 +1,14 @@
 #pragma once
 
+#include "parsers/PublicationDatabase.h"
+
 #include <QObject>
 #include <QPointer>
 #include <QString>
 #include <QStringList>
 
 #include <functional>
+#include <vector>
 
 namespace kmedia {
 
@@ -30,6 +33,11 @@ public:
 
     void setLanguages(const QStringList& languages);
 
+    // Adds publication media rows already read, resolving the files they only link to; each
+    // row's `targetParagraphNumberLabel` becomes a tag of `tagType`.
+    void addRows(std::vector<PublicationMediaRow> rows, const QString& folder,
+                 const QString& sectionId, const QString& sectionSubtitle, const QString& tagType,
+                 DoneCallback done);
     void addDocument(const QString& databasePath, const QString& folder, qint64 documentId,
                      const QString& sectionId, const QString& sectionSubtitle, DoneCallback done);
     bool addMedia(const PlaylistEntryView& entry);

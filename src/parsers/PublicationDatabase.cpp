@@ -1,6 +1,7 @@
 #include "parsers/PublicationDatabase.h"
 
 #include <QHash>
+#include <QRegularExpression>
 #include <QSet>
 #include <QSqlQuery>
 #include <QSqlRecord>
@@ -692,6 +693,87 @@ std::vector<PublicationMediaRow> PublicationDatabase::memorialMedia() const
         while (query.next()) {
             rows.push_back(readMediaRow(query));
         }
+    }
+    return rows;
+}
+
+namespace {
+
+// Media of Bible verses, without the covers, maps, and other pictures that only decorate.
+const char* const kVerseMediaFrom =
+    "FROM VerseMultimediaMap vmm "
+    "INNER JOIN BibleChapter bc ON vmm.BibleVerseId BETWEEN bc.FirstVerseId AND bc.LastVerseId "
+    "INNER JOIN Multimedia m ON vmm.MultimediaId = m.MultimediaId "
+    "WHERE m.CategoryType NOT IN (9, 10, 17)";
+
+} // namespace
+
+std::vector<PublicationDatabase::BibleBookMedia> PublicationDatabase::bibleBooksWithMedia() const
+{
+    std::vector<BibleBookMedia> books;
+    if (!m_db.isOpen() || !m_db.tableExists(QStringLiteral("VerseMultimediaMap"))) {
+        return books;
+    }
+    QHash<int, QString> names;
+    QSqlQuery nameQuery(m_db.database());
+    if (nameQuery.exec(QStringLiteral("SELECT BibleBookId, BookDisplayTitle FROM BibleBook"))) {
+        while (nameQuery.next()) {
+            names.insert(nameQuery.value(0).toInt(), nameQuery.value(1).toString().trimmed());
+        }
+    }
+    QSqlQuery query(m_db.database());
+    if (!query.exec(QStringLiteral("SELECT DISTINCT bc.BookNumber, bc.ChapterNumber ") +
+                    QLatin1StringView(kVerseMediaFrom) +
+                    QStringLiteral(" ORDER BY bc.BookNumber, bc.ChapterNumber"))) {
+        return books;
+    }
+    while (query.next()) {
+        const int book = query.value(0).toInt();
+        if (books.empty() || books.back().book != book) {
+            books.push_back(BibleBookMedia{book, names.value(book, QString::number(book)), {}});
+        }
+        books.back().chapters.append(query.value(1).toInt());
+    }
+    return books;
+}
+
+std::vector<PublicationMediaRow> PublicationDatabase::verseMultimedia(int book, int chapter) const
+{
+    std::vector<PublicationMediaRow> rows;
+    if (!m_db.isOpen() || !m_db.tableExists(QStringLiteral("VerseMultimediaMap"))) {
+        return rows;
+    }
+    QSqlQuery query(m_db.database());
+    query.prepare(
+        QStringLiteral("SELECT m.MultimediaId, m.MepsDocumentId, m.KeySymbol, m.Track, "
+                       "m.IssueTagNumber, m.MepsLanguageIndex, m.MimeType, m.CategoryType, "
+                       "m.Label, m.Caption, m.FilePath, m.LinkMultimediaId, "
+                       "cover.FilePath AS LinkedPreviewFilePath, "
+                       // SQLite takes the bare columns from the row holding the MIN().
+                       "MIN(vmm.BibleVerseId) AS FirstVerseId, bv.Label AS VerseLabel "
+                       "FROM VerseMultimediaMap vmm "
+                       "INNER JOIN BibleChapter bc ON vmm.BibleVerseId BETWEEN bc.FirstVerseId "
+                       "AND bc.LastVerseId "
+                       "INNER JOIN BibleVerse bv ON bv.BibleVerseId = vmm.BibleVerseId "
+                       "INNER JOIN Multimedia m ON vmm.MultimediaId = m.MultimediaId "
+                       "LEFT JOIN Multimedia cover ON cover.MultimediaId = m.LinkMultimediaId "
+                       "AND m.CategoryType = -1 "
+                       "WHERE m.CategoryType NOT IN (9, 10, 17) AND bc.BookNumber = ? "
+                       "AND bc.ChapterNumber = ? GROUP BY m.MultimediaId ORDER BY FirstVerseId"));
+    query.addBindValue(book);
+    query.addBindValue(chapter);
+    if (!query.exec()) {
+        return rows;
+    }
+    static const QRegularExpression markup(QStringLiteral("<[^>]*>"));
+    while (query.next()) {
+        PublicationMediaRow row = readMediaRow(query);
+        const QString verse =
+            query.record().value(QStringLiteral("VerseLabel")).toString().remove(markup).trimmed();
+        row.targetParagraphNumberLabel = verse.isEmpty()
+                                             ? QString::number(chapter)
+                                             : QStringLiteral("%1:%2").arg(chapter).arg(verse);
+        rows.push_back(row);
     }
     return rows;
 }

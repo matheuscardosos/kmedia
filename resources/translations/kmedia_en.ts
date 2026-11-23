@@ -57,22 +57,22 @@
 <context>
     <name>ApplicationController</name>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="124"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="127"/>
         <source>The songbook could not be loaded. Check the internet connection.</source>
         <translation>The songbook could not be loaded. Check the internet connection.</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="130"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="133"/>
         <source>Song</source>
         <translation>Song</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="902"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="910"/>
         <source>The shared folder and the export folder must be different</source>
         <translation>The shared folder and the export folder must be different</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../src/app/ApplicationController.cpp" line="909"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="917"/>
         <source>%n file(s) could not be converted to MP4</source>
         <translation>
             <numerusform>%n file could not be converted to MP4</numerusform>
@@ -80,12 +80,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="983"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="991"/>
         <source>Zoom screen share ready (%1): %2</source>
         <translation>Zoom screen share ready (%1): %2</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1063"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1071"/>
         <source>Applied congregation schedule: %1</source>
         <translation>Applied congregation schedule: %1</translation>
     </message>
@@ -797,265 +797,270 @@
         <translation>Memorial</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="170"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="172"/>
         <source>All media items for this section are hidden.</source>
         <translation>All media items for this section are hidden.</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="173"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="175"/>
         <source>Some media items have been hidden.</source>
         <translation>Some media items have been hidden.</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="177"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="179"/>
         <source>Don&apos;t forget to add any missing songs or media.</source>
         <translation>Don&apos;t forget to add any missing songs or media.</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="178"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1588"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="180"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1599"/>
         <source>There are no media items for the selected date.</source>
         <translation>There are no media items for the selected date.</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="182"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="184"/>
         <source>There are no media items for this meeting section.</source>
         <translation>There are no media items for this meeting section.</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="184"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="186"/>
         <source>There are no media items in this section.</source>
         <translation>There are no media items in this section.</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="264"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="266"/>
         <source>Song %1 added</source>
         <translation>Song %1 added</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="268"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="270"/>
         <source>Song %1 could not be found</source>
         <translation>Song %1 could not be found</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="277"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="658"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1603"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="279"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="669"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1614"/>
         <source>Add media</source>
         <translation>Add media</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="280"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="282"/>
         <source>Supported Media (*.mp4 *.mkv *.webm *.mov *.mp3 *.aac *.flac *.ogg *.png *.jpg *.jpeg *.webp *.pdf *.jwpub *.jwlplaylist)</source>
         <translation>Supported Media (*.mp4 *.mkv *.webm *.mov *.mp3 *.aac *.flac *.ogg *.png *.jpg *.jpeg *.webp *.pdf *.jwpub *.jwlplaylist)</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="281"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="283"/>
         <source>All Files (*)</source>
         <translation>All Files (*)</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="213"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="224"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="249"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="286"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="215"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="226"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="251"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="288"/>
         <source>Added %1 media item(s)</source>
         <translation>Added %1 media item(s)</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="214"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="216"/>
         <source>This video could not be added</source>
         <translation>This video could not be added</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="226"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="228"/>
         <source>This document has no media</source>
         <translation>This document has no media</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="231"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="233"/>
         <source>No media found in this publication</source>
         <translation>No media found in this publication</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="251"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="253"/>
         <source>This talk has no media</source>
         <translation>This talk has no media</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="256"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="258"/>
         <source>This file has no public talks</source>
         <translation>This file has no public talks</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="373"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="379"/>
         <source>Add to section</source>
         <translation>Add to section</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="441"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="447"/>
         <source>From JW.org</source>
         <translation>From JW.org</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="445"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="821"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="451"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="832"/>
         <source>Song</source>
         <translation>Song</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="450"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="456"/>
         <source>Video</source>
         <translation>Video</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="455"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="461"/>
         <source>Sign Language Bible</source>
         <translation>Sign Language Bible</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="455"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="461"/>
         <source>Audio Bible</source>
         <translation>Audio Bible</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="460"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="466"/>
+        <source>Study Bible</source>
+        <translation>Study Bible</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="471"/>
         <source>Publication media</source>
         <translation>Publication media</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="466"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="477"/>
         <source>From this computer</source>
         <translation>From this computer</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="470"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="481"/>
         <source>Public talk media</source>
         <translation>Public talk media</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="475"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="486"/>
         <source>Files</source>
         <translation>Files</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="486"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="497"/>
         <source>Sync this day again</source>
         <translation>Sync this day again</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="492"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="503"/>
         <source>Conceal hidden media</source>
         <translation>Conceal hidden media</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="493"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="504"/>
         <source>Show hidden media (%1)</source>
         <translation>Show hidden media (%1)</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="499"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="510"/>
         <source>Reset order</source>
         <translation>Reset order</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="505"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="516"/>
         <source>New section</source>
         <translation>New section</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="510"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="521"/>
         <source>Add divider</source>
         <translation>Add divider</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="513"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="524"/>
         <source>Part Transition</source>
         <translation>Part Transition</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="520"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="531"/>
         <source>Special week</source>
         <translation>Special week</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="526"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="537"/>
         <source>Checklist</source>
         <translation>Checklist</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="597"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="608"/>
         <source>Previous day with media</source>
         <translation>Previous day with media</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="637"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1611"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="648"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1622"/>
         <source>Next day with media</source>
         <translation>Next day with media</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="650"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="661"/>
         <source>Preview</source>
         <translation>Preview</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="703"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="714"/>
         <source>Some media for this day could not be downloaded.</source>
         <translation>Some media for this day could not be downloaded.</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="712"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="723"/>
         <source>Try again</source>
         <translation>Try again</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="840"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="851"/>
         <source>Add media to this section</source>
         <translation>Add media to this section</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="866"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="877"/>
         <source>Expand</source>
         <translation>Expand</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="866"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="877"/>
         <source>Collapse</source>
         <translation>Collapse</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="878"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="889"/>
         <source>Repeat section</source>
         <translation>Repeat section</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="885"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="896"/>
         <source>Edit section</source>
         <translation>Edit section</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="891"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="902"/>
         <source>Move up</source>
         <translation>Move up</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="897"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="908"/>
         <source>Move down</source>
         <translation>Move down</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="907"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="918"/>
         <source>Delete section</source>
         <translation>Delete section</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1008"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1019"/>
         <source>Show</source>
         <translation>Show</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1464"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1475"/>
         <source>%n items selected</source>
         <translation>
             <numerusform>%n item selected</numerusform>
@@ -1063,67 +1068,67 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1468"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1479"/>
         <source>Show in media list</source>
         <translation>Show in media list</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1468"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1479"/>
         <source>Hide from media list</source>
         <translation>Hide from media list</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1480"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1491"/>
         <source>Edit tag</source>
         <translation>Edit tag</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1486"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1497"/>
         <source>Rename</source>
         <translation>Rename</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1490"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1501"/>
         <source>Slide interval</source>
         <translation>Slide interval</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1494"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1505"/>
         <source>Manual</source>
         <translation>Manual</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1500"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1511"/>
         <source>10 seconds</source>
         <translation>10 seconds</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1506"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1517"/>
         <source>30 seconds</source>
         <translation>30 seconds</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1512"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1523"/>
         <source>1 minute</source>
         <translation>1 minute</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1521"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1532"/>
         <source>Move to section</source>
         <translation>Move to section</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1533"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1544"/>
         <source>Insert divider below</source>
         <translation>Insert divider below</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1535"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1546"/>
         <source>Section Break</source>
         <translation>Section Break</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1547"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1558"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
@@ -2046,6 +2051,37 @@
         <location filename="../qml/components/SongPickerPopup.qml" line="105"/>
         <source>Add</source>
         <translation>Add</translation>
+    </message>
+</context>
+<context>
+    <name>StudyBiblePickerPopup</name>
+    <message>
+        <location filename="../qml/components/StudyBiblePickerPopup.qml" line="71"/>
+        <source>This media could not be added</source>
+        <translation>This media could not be added</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/StudyBiblePickerPopup.qml" line="76"/>
+        <source>The Study Bible could not be downloaded</source>
+        <translation>The Study Bible could not be downloaded</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/StudyBiblePickerPopup.qml" line="114"/>
+        <source>Study Bible</source>
+        <translation>Study Bible</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/StudyBiblePickerPopup.qml" line="136"/>
+        <source>Downloading the Study Bible...</source>
+        <translation>Downloading the Study Bible...</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/components/StudyBiblePickerPopup.qml" line="287"/>
+        <source>Add %n</source>
+        <translation>
+            <numerusform>Add %n</numerusform>
+            <numerusform>Add %n</numerusform>
+        </translation>
     </message>
 </context>
 <context>

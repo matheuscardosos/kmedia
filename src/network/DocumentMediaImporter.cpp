@@ -56,16 +56,29 @@ void DocumentMediaImporter::addDocument(const QString& databasePath, const QStri
     }
     PublicationDatabase::MediaSelector selector;
     selector.documentId = documentId;
-    auto rows = std::make_shared<std::vector<PublicationMediaRow>>(
-        PublicationDatabase::dedupeLinkedMultimedia(db.documentMultimedia(selector, false)));
+    std::vector<PublicationMediaRow> documentRows =
+        PublicationDatabase::dedupeLinkedMultimedia(db.documentMultimedia(selector, false));
     db.close();
+    addRows(std::move(documentRows), folder, sectionId, sectionSubtitle, QStringLiteral("para"),
+            std::move(done));
+}
+
+void DocumentMediaImporter::addRows(std::vector<PublicationMediaRow> rowList, const QString& folder,
+                                    const QString& sectionId, const QString& sectionSubtitle,
+                                    const QString& tagType, DoneCallback done)
+{
+    if (m_playlist.isNull()) {
+        done(0);
+        return;
+    }
+    auto rows = std::make_shared<std::vector<PublicationMediaRow>>(std::move(rowList));
     for (PublicationMediaRow& row : *rows) {
         row.filePath = inFolder(folder, row.filePath);
         row.linkedPreviewFilePath = inFolder(folder, row.linkedPreviewFilePath);
     }
 
     // Everything is added in document order once every linked file is known.
-    const auto finish = [this, rows, sectionId, sectionSubtitle, done]() {
+    const auto finish = [this, rows, sectionId, sectionSubtitle, tagType, done]() {
         if (m_playlist.isNull()) {
             done(0);
             return;
@@ -85,7 +98,7 @@ void DocumentMediaImporter::addDocument(const QString& databasePath, const QStri
             entry.thumbnailPath = row.linkedPreviewFilePath;
             entry.durationMs = static_cast<qint64>(row.durationSeconds * 1000.0);
             if (!row.targetParagraphNumberLabel.isEmpty()) {
-                entry.tagType = QStringLiteral("para");
+                entry.tagType = tagType;
                 entry.tagValue = row.targetParagraphNumberLabel;
             }
             entry.sourceKind = QStringLiteral("jwpub");

@@ -128,6 +128,8 @@ Item {
             videoPicker.openFor(target)
         } else if (sourceKind === "bible") {
             biblePicker.openFor(target)
+        } else if (sourceKind === "studybible") {
+            studyBiblePicker.openFor(target)
         } else {
             mediaFileDialog.targetSection = target
             mediaFileDialog.open()
@@ -324,6 +326,10 @@ Item {
         id: biblePicker
     }
 
+    StudyBiblePickerPopup {
+        id: studyBiblePicker
+    }
+
     SongPickerPopup {
         id: songPicker
 
@@ -454,6 +460,11 @@ Item {
             iconName: "audio-lines"
             text: ApplicationController.bible.signLanguage ? qsTr("Sign Language Bible") : qsTr("Audio Bible")
             onTriggered: root.addFrom("bible", addMenu.targetSection)
+        }
+        StudioMenuItem {
+            iconName: "image"
+            text: qsTr("Study Bible")
+            onTriggered: root.addFrom("studybible", addMenu.targetSection)
         }
         StudioMenuItem {
             iconName: "file-text"

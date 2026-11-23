@@ -146,6 +146,19 @@ public:
     [[nodiscard]] std::vector<PublicationVideoMarker> videoMarkers(qint64 multimediaId) const;
     [[nodiscard]] std::vector<PublicationLanguageRow> mediaLanguages() const;
     [[nodiscard]] std::vector<PublicationMediaRow> memorialMedia() const;
+
+    /** A Bible book of the Study Bible that has media, with its chapters that have some. */
+    struct BibleBookMedia
+    {
+        int book{0};
+        QString name;
+        QList<int> chapters;
+    };
+    // Books and chapters of the Study Bible (`nwtsty`) whose verses have pictures or videos.
+    [[nodiscard]] std::vector<BibleBookMedia> bibleBooksWithMedia() const;
+    // The media of a Study Bible chapter, once each, in the order of the first verse it belongs
+    // to; `targetParagraphNumberLabel` reads "chapter:verse" and videos carry their cover.
+    [[nodiscard]] std::vector<PublicationMediaRow> verseMultimedia(int book, int chapter) const;
     [[nodiscard]] std::vector<PublicationDocumentEntry> documentsWithMedia() const;
     [[nodiscard]] PublicationSummary summary() const;
 
