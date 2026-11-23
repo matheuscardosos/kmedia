@@ -14,6 +14,7 @@
 #include "media/PlaybackController.h"
 #include "models/MeetingDayModel.h"
 #include "models/PlaylistModel.h"
+#include "network/BibleMediaCatalog.h"
 #include "network/DownloadService.h"
 #include "network/JwVideoCatalog.h"
 #include "network/MeetingCatalogService.h"
@@ -141,6 +142,14 @@ struct MediaAutoExportForeign
     Q_GADGET
     QML_FOREIGN(kmedia::MediaAutoExport)
     QML_NAMED_ELEMENT(MediaAutoExport)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct BibleMediaCatalogForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::BibleMediaCatalog)
+    QML_NAMED_ELEMENT(BibleMediaCatalog)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

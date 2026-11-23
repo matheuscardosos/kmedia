@@ -25,6 +25,7 @@
 #include "models/MeetingDayModel.h"
 #include "models/PlaylistModel.h"
 #include "network/BackgroundMusicLibrary.h"
+#include "network/BibleMediaCatalog.h"
 #include "network/CatalogClient.h"
 #include "network/DocumentMediaImporter.h"
 #include "network/DownloadService.h"
@@ -98,6 +99,8 @@ ApplicationController::ApplicationController(QObject* parent)
                                                               m_documentImporter.get());
     m_publicationPicker = std::make_unique<kmedia::PublicationMediaPicker>(
         m_publicationStore.get(), m_documentImporter.get());
+    m_bibleCatalog = std::make_unique<kmedia::BibleMediaCatalog>(
+        m_catalogClient.get(), m_publicationStore.get(), m_documentImporter.get());
     m_videoCatalog = std::make_unique<kmedia::JwVideoCatalog>(
         m_catalogClient.get(), m_publicationStore.get(), m_documentImporter.get());
     m_musicLibrary = std::make_unique<kmedia::BackgroundMusicLibrary>(m_catalogClient.get(),
@@ -366,6 +369,11 @@ kmedia::PublicationMediaPicker* ApplicationController::publicationMedia() const
 kmedia::JwVideoCatalog* ApplicationController::videos() const
 {
     return m_videoCatalog.get();
+}
+
+kmedia::BibleMediaCatalog* ApplicationController::bible() const
+{
+    return m_bibleCatalog.get();
 }
 
 kmedia::WatchedFolderMedia* ApplicationController::watchedFolder() const
@@ -1165,6 +1173,7 @@ void ApplicationController::applySyncSettings(bool resetWhenChanged)
     m_documentImporter->setLanguages(languages);
     m_publicationPicker->setLanguages(languages);
     m_videoCatalog->setLanguage(next.languageCode);
+    m_bibleCatalog->setLanguage(next.languageCode, next.signLanguage);
     m_musicLibrary->setLanguage(next.languageCode, next.signLanguage);
     if (resetWhenChanged && mediaChanged && !m_demoMode) {
         m_syncEngine->resetAll();

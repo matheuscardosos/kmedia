@@ -115,6 +115,8 @@ qt_add_library(kmedia_core STATIC
     src/network/PublicationMediaPicker.cpp
     src/network/DocumentMediaImporter.h
     src/network/DocumentMediaImporter.cpp
+    src/network/BibleMediaCatalog.h
+    src/network/BibleMediaCatalog.cpp
     src/network/JwVideoCatalog.h
     src/network/JwVideoCatalog.cpp
     src/network/WatchedFolderMedia.h
@@ -241,6 +243,7 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/SongPickerPopup.qml
     resources/qml/components/PublicTalkPickerPopup.qml
     resources/qml/components/PublicationMediaPopup.qml
+    resources/qml/components/BiblePickerPopup.qml
     resources/qml/components/JwVideoPickerPopup.qml
     resources/qml/components/FolderPathField.qml
     resources/qml/components/SharedFolderCard.qml

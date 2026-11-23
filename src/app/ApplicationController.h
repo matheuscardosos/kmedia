@@ -30,6 +30,7 @@ Q_MOC_INCLUDE("network/PublicTalkMedia.h")
 Q_MOC_INCLUDE("network/PublicationMediaPicker.h")
 Q_MOC_INCLUDE("network/WatchedFolderMedia.h")
 Q_MOC_INCLUDE("network/JwVideoCatalog.h")
+Q_MOC_INCLUDE("network/BibleMediaCatalog.h")
 Q_MOC_INCLUDE("parsers/CloudSyncWatcher.h")
 
 class MpvRendererItem;
@@ -60,6 +61,7 @@ class ProcessMonitor;
 class ProfileManager;
 class DocumentMediaImporter;
 class JwVideoCatalog;
+class BibleMediaCatalog;
 class MediaAutoExport;
 class WatchedFolderMedia;
 class PublicTalkMedia;
@@ -112,6 +114,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(
         kmedia::PublicationMediaPicker* publicationMedia READ publicationMedia CONSTANT FINAL)
     Q_PROPERTY(kmedia::JwVideoCatalog* videos READ videos CONSTANT FINAL)
+    Q_PROPERTY(kmedia::BibleMediaCatalog* bible READ bible CONSTANT FINAL)
     Q_PROPERTY(kmedia::WatchedFolderMedia* watchedFolder READ watchedFolder CONSTANT FINAL)
     Q_PROPERTY(kmedia::MediaAutoExport* autoExport READ autoExport CONSTANT FINAL)
 
@@ -162,6 +165,7 @@ public:
     [[nodiscard]] kmedia::PublicTalkMedia* publicTalks() const;
     [[nodiscard]] kmedia::PublicationMediaPicker* publicationMedia() const;
     [[nodiscard]] kmedia::JwVideoCatalog* videos() const;
+    [[nodiscard]] kmedia::BibleMediaCatalog* bible() const;
     [[nodiscard]] kmedia::WatchedFolderMedia* watchedFolder() const;
     [[nodiscard]] kmedia::MediaAutoExport* autoExport() const;
 
@@ -242,6 +246,7 @@ private:
     std::unique_ptr<kmedia::PublicTalkMedia> m_publicTalks;
     std::unique_ptr<kmedia::PublicationMediaPicker> m_publicationPicker;
     std::unique_ptr<kmedia::JwVideoCatalog> m_videoCatalog;
+    std::unique_ptr<kmedia::BibleMediaCatalog> m_bibleCatalog;
     std::unique_ptr<kmedia::BackgroundMusicLibrary> m_musicLibrary;
     std::unique_ptr<kmedia::BackgroundMusicService> m_musicService;
     std::unique_ptr<kmedia::WatchedFolderMedia> m_watchedFolder;
