@@ -208,6 +208,8 @@ public:
 
     Q_INVOKABLE int importUrls(const QList<QUrl>& urls, const QString& sectionId = {});
     Q_INVOKABLE bool importLocalFile(const QString& filePath, const QString& sectionId = {});
+    // Adds a PDF as one document even when it has several pages.
+    Q_INVOKABLE bool importPdfDocument(const QString& filePath, const QString& sectionId = {});
     Q_INVOKABLE bool appendEntry(const PlaylistEntryView& entry);
     Q_INVOKABLE bool moveItem(int fromIndex, int toIndex);
     Q_INVOKABLE bool removeAt(int index);
@@ -291,6 +293,8 @@ signals:
     void availablePlaylistsChanged();
     void sectionsChanged();
     void publicationFileRequested(const QUrl& fileUrl, const QString& sectionId);
+    // A PDF with several pages asks which pages to add before anything is added.
+    void pdfPagesRequested(const QUrl& fileUrl, const QString& sectionId);
     void workspaceDateChanged();
     void showHiddenChanged();
     void selectionChanged();
@@ -334,6 +338,7 @@ private:
     QString m_currentMeetingKind{QStringLiteral("midweek")};
     bool m_currentIsCoWeek{false};
     bool m_showHidden{false};
+    bool m_acceptPdfDocument{false};
     QSet<qint64> m_selectedIds;
     QString m_searchQuery;
     QSet<QString> m_collapsedGroups;

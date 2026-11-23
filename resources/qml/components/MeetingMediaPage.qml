@@ -241,6 +241,11 @@ Item {
         function onPublicationFileRequested(fileUrl, sectionId) {
             publicationPicker.openForFile(fileUrl, sectionId)
         }
+
+        // A PDF with several pages asks which pages to add.
+        function onPdfPagesRequested(fileUrl, sectionId) {
+            pdfPagesPopup.openFor(fileUrl, sectionId)
+        }
     }
 
     Connections {
@@ -328,6 +333,10 @@ Item {
 
     StudyBiblePickerPopup {
         id: studyBiblePicker
+    }
+
+    PdfPagesPopup {
+        id: pdfPagesPopup
     }
 
     SongPickerPopup {

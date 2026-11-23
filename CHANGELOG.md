@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Added
 
 - `--report-startup` prints the time to the first frame and, three seconds later, the working set and private memory, then exits, so startup can be measured before and after a change. The About page, home page, and CONTRIBUTING now state the measured figures (about 1.3 s and 135 MB private on Windows) instead of targets the Qt Quick and OpenGL stack cannot reach.
+- A PDF with several pages now shows its pages first, inspired by Meeting Media Manager (`PdfPageImporter`): tick the pages to add them as pictures rendered 1920 px wide, or add the whole document as before.
 - Study Bible media in the Add media menu, inspired by Meeting Media Manager (`StudyBibleMedia`): pick a book and a chapter of the *New World Translation* study edition (`nwtsty`) and tick its pictures and videos, which are added with a verse tag.
 - Audio Bible in the Add media menu (*Sign Language Bible* for sign languages), inspired by Meeting Media Manager (`BibleMediaCatalog`): pick a book, a chapter, and verses, and the chapter recording is added trimmed to those verses with a verse tag, using the verse markers JW.org publishes.
 - Several media items can be selected at once on the *Meeting* page, inspired by the Meeting Media Manager media list: `Ctrl`+click and `Shift`+click select, and hiding, moving to a section, deleting (synced media is hidden instead), and dragging act on the whole selection, which keeps its order. `Esc` clears the selection.
@@ -38,6 +39,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- Windows builds no longer fail at random when the app and the tests link at the same time: both copied `libmpv-2.dll` into the same folder at once, and one copy hit a permission error. One shared copy step now runs before either.
 - *Settings* now has every field the OBS Studio, Zoom, audio, and display features use: the OBS WebSocket password (OBS Studio turns authentication on by default, so KMedia could not connect to a default setup); a stage, a media, and an optional image scene picked from the scenes OBS returns, inspired by the Meeting Media Manager OBS settings, in place of play, pause, stop, and standby scenes that nothing could set; the Zoom passcode and name; the audio output of media and background music; and a standby picture, with **Blackout** staying black. The settings search now works in the interface language and ignores accents.
 - Media from the watched cloud folder no longer lands in whatever day is open: it now goes to the day of its date folder.
 - Removed the old weekly sync that `MeetingSyncEngine` replaced: `MeetingCatalogService` now only keeps the congregation lookup, the language catalog, and the media filters, and a `.jwpub` added by hand no longer guesses meeting sections from English or Portuguese words in its titles.

@@ -3,6 +3,7 @@
 #include "core/DatabaseManager.h"
 #include "core/MeetingSections.h"
 #include "core/SystemUtils.h"
+#include "media/PdfPageImporter.h"
 #include "media/PlaybackController.h"
 #include "media/ThumbnailCache.h"
 #include "parsers/JwlPlaylistParser.h"
@@ -632,6 +633,14 @@ int PlaylistModel::importUrls(const QList<QUrl>& urls, const QString& sectionId)
     return added;
 }
 
+bool PlaylistModel::importPdfDocument(const QString& filePath, const QString& sectionId)
+{
+    m_acceptPdfDocument = true;
+    const bool added = importLocalFile(filePath, sectionId);
+    m_acceptPdfDocument = false;
+    return added;
+}
+
 bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sectionId)
 {
     const QFileInfo info(filePath);
@@ -645,6 +654,11 @@ bool PlaylistModel::importLocalFile(const QString& filePath, const QString& sect
     const QString ext = info.suffix().toLower();
     if (ext == QStringLiteral("jwpub")) {
         emit publicationFileRequested(QUrl::fromLocalFile(info.absoluteFilePath()), targetSection);
+        return false;
+    }
+    if (ext == QStringLiteral("pdf") && !m_acceptPdfDocument &&
+        PdfPageImporter::countPages(info.absoluteFilePath()) > 1) {
+        emit pdfPagesRequested(QUrl::fromLocalFile(info.absoluteFilePath()), targetSection);
         return false;
     }
 
