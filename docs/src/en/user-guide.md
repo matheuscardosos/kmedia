@@ -61,7 +61,11 @@ Every item shows a 16:9 thumbnail with its duration, its song or paragraph numbe
 - **Move to section** and **Insert divider below**.
 - **Delete**, for media you added. Synced media and shared folder media can only be hidden, because the next sync or the folder would bring them back.
 
-Drag an item by its handle onto another item to move it, also across sections. **Reset order** in the page menu restores the order of the sync. On days without a meeting you can create sections (**New section**) and rename, recolor, reorder, or delete them from their menus.
+Drag an item by its handle onto another item to move it, also across sections.
+
+To work on several items at once, `Ctrl`+click each one, or click one and `Shift`+click another to take every visible item in between (hidden items and dividers are left out). Hiding, **Move to section**, **Delete** (or the `Delete` key), and dragging then act on the whole selection, which keeps its order. `Esc` or a plain click on an item ends the selection.
+
+**Reset order** in the page menu restores the order of the sync. On days without a meeting you can create sections (**New section**) and rename, recolor, reorder, or delete them from their menus.
 
 ## Adding media
 

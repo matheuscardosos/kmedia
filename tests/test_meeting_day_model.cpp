@@ -193,3 +193,75 @@ TEST_CASE("MeetingDayModel shows every section on a day without a meeting", "[mo
     REQUIRE(day.data(day.index(0), MeetingDayModel::RowSectionLabelRole).toString() ==
             QStringLiteral("Assembly"));
 }
+
+TEST_CASE("PlaylistModel selects several items and acts on them together",
+          "[models][meeting-day][selection]")
+{
+    const QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(dir.filePath(QStringLiteral("select.db"))));
+    PlaylistModel model;
+    model.attachDatabase(&db);
+    REQUIRE(model.openWorkspaceForDate(QStringLiteral("2026-11-18"), QStringLiteral("midweek")));
+    MeetingDayModel day(&model);
+    const QAbstractItemModelTester tester(&day,
+                                          QAbstractItemModelTester::FailureReportingMode::Fatal);
+
+    for (const QString& name :
+         {QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c"), QStringLiteral("d")}) {
+        REQUIRE(model.importLocalFile(writeImage(dir, name + QStringLiteral(".png")),
+                                      QStringLiteral("lac")));
+    }
+    kmedia::PlaylistEntryView synced;
+    synced.title = QStringLiteral("synced");
+    synced.filePath = writeImage(dir, QStringLiteral("synced.png"));
+    synced.sectionId = QStringLiteral("lac");
+    synced.source = QStringLiteral("dynamic");
+    REQUIRE(model.appendEntry(synced));
+    const auto row = [&model](const char* title) {
+        return sourceRowOf(model, QString::fromLatin1(title));
+    };
+
+    // Ctrl+click toggles, Shift+click takes the visible range in the order shown.
+    QSignalSpy selection(&model, &PlaylistModel::selectionChanged);
+    model.toggleRowSelected(row("a"));
+    model.toggleRowSelected(row("c"));
+    REQUIRE(model.selectionCount() == 2);
+    REQUIRE(model.data(model.index(row("c"), 0), PlaylistModel::SelectedRole).toBool());
+    REQUIRE(
+        day.data(day.index(day.rowForSourceRow(row("c"))), PlaylistModel::SelectedRole).toBool());
+    model.toggleRowSelected(row("a"));
+    REQUIRE(model.selectionCount() == 1);
+    REQUIRE(model.setItemHidden(row("b"), true));
+    model.setShowHidden(true);
+    model.selectRows(day.sourceRowsBetween(row("a"), row("d")));
+    REQUIRE(model.selectedRows() == QList<int>{row("a"), row("c"), row("d")});
+    REQUIRE(selection.count() == 4);
+    model.setShowHidden(false);
+
+    // Dragging the selection moves it as one block, in its order, next to the target.
+    REQUIRE(model.moveSelectedTo(row("synced")));
+    QStringList order;
+    for (int i = 0; i < model.count(); ++i) {
+        order << model.data(model.index(i, 0), PlaylistModel::TitleRole).toString();
+    }
+    REQUIRE(order == QStringList{QStringLiteral("b"), QStringLiteral("synced"), QStringLiteral("a"),
+                                 QStringLiteral("c"), QStringLiteral("d")});
+    REQUIRE(model.selectionCount() == 3);
+    REQUIRE_FALSE(model.moveSelectedTo(row("c")));
+
+    // Delete removes added media and only hides synced media.
+    model.selectRows({row("a"), row("synced")});
+    REQUIRE(model.removeSelected() == 2);
+    REQUIRE(row("a") == -1);
+    REQUIRE(model.data(model.index(row("synced"), 0), PlaylistModel::HiddenRole).toBool());
+    REQUIRE(model.selectionCount() == 0);
+
+    // A reload keeps the selection; another day starts empty.
+    model.selectRows({row("c"), row("d")});
+    model.reloadFromDatabase();
+    REQUIRE(model.selectionCount() == 2);
+    REQUIRE(model.openWorkspaceForDate(QStringLiteral("2026-11-22"), QStringLiteral("weekend")));
+    REQUIRE(model.selectionCount() == 0);
+}

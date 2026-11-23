@@ -69,6 +69,10 @@ public:
 
     Q_INVOKABLE [[nodiscard]] int sourceRowAt(int row) const;
     Q_INVOKABLE [[nodiscard]] int rowForSourceRow(int sourceRow) const;
+    // The source rows of the media rows shown between two items, both included, in the order
+    // they are shown, leaving out hidden items and dividers.
+    Q_INVOKABLE [[nodiscard]] QList<int> sourceRowsBetween(int fromSourceRow,
+                                                           int toSourceRow) const;
     Q_INVOKABLE [[nodiscard]] int headerRowOfSection(const QString& sectionId) const;
 
 signals:

@@ -61,7 +61,11 @@ Cada item mostra uma miniatura 16:9 com a duração, o número do cântico ou do
 - **Mover para seção** e **Inserir divisor abaixo**.
 - **Excluir**, para mídias que você adicionou. Mídias sincronizadas e da pasta compartilhada só podem ser ocultadas, porque a próxima sincronização ou a pasta as trariam de volta.
 
-Arraste um item pela alça até outro item para movê-lo, inclusive entre seções. **Redefinir ordem**, no menu da página, volta à ordem da sincronização. Em dias sem reunião você pode criar seções (**Nova seção**) e renomear, colorir, reordenar ou excluir seções pelos menus delas.
+Arraste um item pela alça até outro item para movê-lo, inclusive entre seções.
+
+Para trabalhar com vários itens de uma vez, use `Ctrl`+clique em cada um, ou clique em um e `Shift`+clique em outro para pegar todos os itens visíveis entre eles (itens ocultos e divisores ficam de fora). Ocultar, **Mover para seção**, **Excluir** (ou a tecla `Delete`) e arrastar passam a agir sobre a seleção inteira, que mantém a ordem. `Esc` ou um clique simples num item encerra a seleção.
+
+**Redefinir ordem**, no menu da página, volta à ordem da sincronização. Em dias sem reunião você pode criar seções (**Nova seção**) e renomear, colorir, reordenar ou excluir seções pelos menus delas.
 
 ## Adicionar mídias
 
