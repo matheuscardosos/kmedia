@@ -397,3 +397,67 @@ TEST_CASE("MeetingMediaBuilder reads paragraph references from captions", "[buil
                 QStringLiteral("jwpub://p/E:1102023301/3-5")) == QStringLiteral("E"));
     REQUIRE(MeetingMediaBuilder::languageFromExtractLink(QStringLiteral("no link")).isEmpty());
 }
+
+TEST_CASE("PublicationDatabase lists Study Bible media by book, chapter, and verse",
+          "[parsers][bible]")
+{
+    const QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+    const QString dbPath = extractFixture(
+        tempDir, QStringLiteral("nwtsty_E"),
+        {
+            QStringLiteral("CREATE TABLE BibleBook (BibleBookId INTEGER PRIMARY KEY, "
+                           "BookDisplayTitle TEXT)"),
+            QStringLiteral("INSERT INTO BibleBook VALUES (40, 'Matthew'), (43, 'John')"),
+            QStringLiteral("CREATE TABLE BibleChapter (BibleChapterId INTEGER PRIMARY KEY, "
+                           "BookNumber INTEGER, ChapterNumber INTEGER, FirstVerseId INTEGER, "
+                           "LastVerseId INTEGER)"),
+            QStringLiteral("INSERT INTO BibleChapter VALUES (1, 40, 4, 100, 125), "
+                           "(2, 43, 11, 200, 257)"),
+            QStringLiteral(
+                "CREATE TABLE BibleVerse (BibleVerseId INTEGER PRIMARY KEY, Label TEXT)"),
+            QStringLiteral(
+                "INSERT INTO BibleVerse VALUES (100, '<span class=\"cl\">4</span>'), "
+                "(104, '<span class=\"vl\">5</span>'), (120, '<span class=\"vl\">21</span>'), "
+                "(243, '<span class=\"vl\">44</span>')"),
+            QStringLiteral(
+                "CREATE TABLE Multimedia (MultimediaId INTEGER PRIMARY KEY, KeySymbol "
+                "TEXT, Track INTEGER, IssueTagNumber INTEGER, MepsLanguageIndex INTEGER, "
+                "MepsDocumentId INTEGER, MimeType TEXT, CategoryType INTEGER, Label TEXT, "
+                "Caption TEXT, FilePath TEXT, LinkMultimediaId INTEGER)"),
+            QStringLiteral(
+                "INSERT INTO Multimedia VALUES "
+                "(1, NULL, NULL, 0, 0, NULL, 'image/jpeg', 8, 'Wilderness', '', 'wild.jpg', NULL), "
+                "(2, NULL, 1, 0, 0, 1001072080, 'video/mp4', -1, 'Battlement', '', "
+                "'battlement_r240P.mp4', 3), "
+                "(3, NULL, NULL, 0, 0, NULL, 'image/jpeg', 17, '', '', 'battlement.jpg', NULL), "
+                "(4, NULL, NULL, 0, 0, NULL, 'image/jpeg', 9, 'Cover', '', 'cover.jpg', NULL), "
+                "(5, NULL, NULL, 0, 0, NULL, 'image/jpeg', 8, 'Lazarus', '', 'lazarus.jpg', NULL)"),
+            QStringLiteral("CREATE TABLE VerseMultimediaMap (BibleVerseId INTEGER, MultimediaId "
+                           "INTEGER)"),
+            // The video belongs to two verses and comes back once, at the first one.
+            QStringLiteral("INSERT INTO VerseMultimediaMap VALUES (100, 1), (104, 2), (120, 2), "
+                           "(100, 4), (243, 5)"),
+        });
+
+    kmedia::PublicationDatabase db;
+    REQUIRE(db.open(dbPath));
+    const auto books = db.bibleBooksWithMedia();
+    REQUIRE(books.size() == 2);
+    REQUIRE(books[0].book == 40);
+    REQUIRE(books[0].name == QStringLiteral("Matthew"));
+    REQUIRE(books[0].chapters == QList<int>{4});
+    REQUIRE(books[1].chapters == QList<int>{11});
+
+    const auto rows = db.verseMultimedia(40, 4);
+    REQUIRE(rows.size() == 2);
+    REQUIRE(rows[0].label == QStringLiteral("Wilderness"));
+    REQUIRE(rows[0].targetParagraphNumberLabel == QStringLiteral("4:4"));
+    REQUIRE(rows[1].categoryType == -1);
+    REQUIRE(rows[1].mepsDocumentId == 1001072080);
+    REQUIRE(rows[1].linkedPreviewFilePath == QStringLiteral("battlement.jpg"));
+    REQUIRE(rows[1].targetParagraphNumberLabel == QStringLiteral("4:5"));
+    REQUIRE(db.verseMultimedia(43, 11).front().targetParagraphNumberLabel ==
+            QStringLiteral("11:44"));
+    REQUIRE(db.verseMultimedia(43, 12).empty());
+}

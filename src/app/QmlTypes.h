@@ -21,6 +21,7 @@
 #include "network/MeetingSyncEngine.h"
 #include "network/PublicTalkMedia.h"
 #include "network/PublicationMediaPicker.h"
+#include "network/StudyBibleMedia.h"
 #include "network/WatchedFolderMedia.h"
 #include "parsers/CloudSyncWatcher.h"
 
@@ -142,6 +143,14 @@ struct MediaAutoExportForeign
     Q_GADGET
     QML_FOREIGN(kmedia::MediaAutoExport)
     QML_NAMED_ELEMENT(MediaAutoExport)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct StudyBibleMediaForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::StudyBibleMedia)
+    QML_NAMED_ELEMENT(StudyBibleMedia)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 

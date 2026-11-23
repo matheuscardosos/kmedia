@@ -35,6 +35,7 @@
 #include "network/PublicTalkMedia.h"
 #include "network/PublicationMediaPicker.h"
 #include "network/PublicationStore.h"
+#include "network/StudyBibleMedia.h"
 #include "network/WatchedFolderMedia.h"
 #include "parsers/CloudSyncWatcher.h"
 
@@ -99,6 +100,8 @@ ApplicationController::ApplicationController(QObject* parent)
                                                               m_documentImporter.get());
     m_publicationPicker = std::make_unique<kmedia::PublicationMediaPicker>(
         m_publicationStore.get(), m_documentImporter.get());
+    m_studyBible = std::make_unique<kmedia::StudyBibleMedia>(m_publicationStore.get(),
+                                                             m_documentImporter.get());
     m_bibleCatalog = std::make_unique<kmedia::BibleMediaCatalog>(
         m_catalogClient.get(), m_publicationStore.get(), m_documentImporter.get());
     m_videoCatalog = std::make_unique<kmedia::JwVideoCatalog>(
@@ -374,6 +377,11 @@ kmedia::JwVideoCatalog* ApplicationController::videos() const
 kmedia::BibleMediaCatalog* ApplicationController::bible() const
 {
     return m_bibleCatalog.get();
+}
+
+kmedia::StudyBibleMedia* ApplicationController::studyBible() const
+{
+    return m_studyBible.get();
 }
 
 kmedia::WatchedFolderMedia* ApplicationController::watchedFolder() const
@@ -1172,6 +1180,7 @@ void ApplicationController::applySyncSettings(bool resetWhenChanged)
     }
     m_documentImporter->setLanguages(languages);
     m_publicationPicker->setLanguages(languages);
+    m_studyBible->setLanguages(languages);
     m_videoCatalog->setLanguage(next.languageCode);
     m_bibleCatalog->setLanguage(next.languageCode, next.signLanguage);
     m_musicLibrary->setLanguage(next.languageCode, next.signLanguage);

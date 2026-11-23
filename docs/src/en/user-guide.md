@@ -74,6 +74,7 @@ To work on several items at once, `Ctrl`+click each one, or click one and `Shift
 - **Song:** type the song number; the video comes from JW.org in the media language. The *Public Talk* and *Circuit Overseer* sections show a **Song** button while they have no song yet.
 - **Video:** the JW.org video library, latest videos first, searchable by title.
 - **Audio Bible** (**Sign Language Bible** for sign languages): pick a book, a chapter, then the first and the last verse. The chapter recording is added trimmed to those verses, with a verse tag such as `3:16-18`. A recording without verse marks is added as the whole chapter.
+- **Study Bible:** the pictures and videos of the *New World Translation* study edition. Pick a book and a chapter, then tick the media you need; each one gets a verse tag such as `4:5`. The study edition (about 120 MB) is downloaded the first time.
 - **Publication media:** type a publication symbol (for example `lff`) and, for magazines and workbooks, the issue (`2026-11`), then pick the document whose media you need.
 - **Public talk media:** pick your congregation's S-34mp file once, then search the talks by number or title. The talk's media goes to *Public Talk*, and the talk title becomes the section subtitle.
 - **Files:** videos, audio, pictures, PDF documents, `.jwpub` publications (you then pick a document), and `.jwlplaylist` playlists from JW Library. You can also drop files on the window.

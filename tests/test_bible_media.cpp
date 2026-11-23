@@ -2,12 +2,16 @@
 #include "core/NetworkManager.h"
 #include "network/BibleMediaCatalog.h"
 #include "network/CatalogClient.h"
+#include "network/DownloadService.h"
+#include "network/PublicationStore.h"
+#include "network/StudyBibleMedia.h"
 
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QUrlQuery>
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("Bible book recordings come with their name and verse markers", "[bible]")
@@ -73,4 +77,36 @@ TEST_CASE("BibleMediaCatalog lists the Bible books from JW.org", "[.network][bib
     REQUIRE(verses.size() == 36);
     REQUIRE(verses.front() == 1);
     REQUIRE(bible.reference(43, 3, 16, 18).endsWith(QStringLiteral(" 3:16-18")));
+}
+
+TEST_CASE("StudyBibleMedia opens the Study Bible from JW.org", "[.network][bible]")
+{
+    const QTemporaryDir root;
+    REQUIRE(root.isValid());
+    const QString language = qEnvironmentVariable("KMEDIA_NETWORK_LANG", QStringLiteral("E"));
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(root.filePath(QStringLiteral("profile.db"))));
+    kmedia::NetworkManager network;
+    kmedia::CatalogClient catalog(&network, &db);
+    kmedia::DownloadService downloads(&network, &db);
+    kmedia::PublicationStore store(&catalog, &downloads);
+    store.setCacheRoot(root.path());
+    kmedia::StudyBibleMedia studyBible(&store, nullptr);
+    studyBible.setLanguages({language});
+
+    QSignalSpy books(&studyBible, &kmedia::StudyBibleMedia::booksChanged);
+    studyBible.open();
+    REQUIRE(books.wait(10 * 60 * 1000));
+    REQUIRE(studyBible.books().size() >= 20);
+    const QVariantList media = studyBible.chapterMedia(40, 4);
+    REQUIRE(media.size() >= 5);
+    const auto hasVideo = std::any_of(media.begin(), media.end(), [](const QVariant& item) {
+        return item.toMap().value(QStringLiteral("isVideo")).toBool();
+    });
+    REQUIRE(hasVideo);
+    REQUIRE(media.front()
+                .toMap()
+                .value(QStringLiteral("verse"))
+                .toString()
+                .startsWith(QStringLiteral("4:")));
 }
