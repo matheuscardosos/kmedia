@@ -36,6 +36,7 @@ class PlaybackController : public QObject
     Q_PROPERTY(double panX READ panX WRITE setPanX NOTIFY viewportChanged FINAL)
     Q_PROPERTY(double panY READ panY WRITE setPanY NOTIFY viewportChanged FINAL)
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY audioChanged FINAL)
+    Q_PROPERTY(double speed READ speed WRITE setSpeed NOTIFY speedChanged FINAL)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY audioChanged FINAL)
     Q_PROPERTY(QString audioDevice READ audioDevice WRITE setAudioDevice NOTIFY audioChanged FINAL)
     // The outputs mpv offers ({name, description}) and the description of the one in use.
@@ -94,6 +95,8 @@ public:
 
     [[nodiscard]] int volume() const;
     void setVolume(int volume);
+    [[nodiscard]] double speed() const;
+    void setSpeed(double speed);
     [[nodiscard]] bool isMuted() const;
     void setMuted(bool muted);
     [[nodiscard]] QString audioDevice() const;
@@ -135,6 +138,7 @@ signals:
     void mediaChanged();
     void standbyChanged();
     void transportChanged();
+    void speedChanged();
     void positionChanged();
     void durationChanged();
     void trimChanged();
@@ -166,6 +170,7 @@ private:
     double m_panX{0.0};
     double m_panY{0.0};
     int m_volume{100};
+    double m_speed{1.0};
     bool m_muted{false};
     QString m_audioDevice{QStringLiteral("auto")};
     bool m_subtitlesVisible{true};

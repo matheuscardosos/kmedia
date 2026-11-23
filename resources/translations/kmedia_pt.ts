@@ -57,22 +57,22 @@
 <context>
     <name>ApplicationController</name>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="129"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="131"/>
         <source>The songbook could not be loaded. Check the internet connection.</source>
         <translation>Não foi possível carregar o cancioneiro. Confira a conexão com a internet.</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="135"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="137"/>
         <source>Song</source>
         <translation>Cântico</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="918"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="925"/>
         <source>The shared folder and the export folder must be different</source>
         <translation>A pasta compartilhada e a pasta de exportação precisam ser diferentes</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../src/app/ApplicationController.cpp" line="925"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="932"/>
         <source>%n file(s) could not be converted to MP4</source>
         <translation>
             <numerusform>%n arquivo não pôde ser convertido em MP4</numerusform>
@@ -80,12 +80,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="999"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1006"/>
         <source>Zoom screen share ready (%1): %2</source>
         <translation>Compartilhamento no Zoom pronto (%1): %2</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1079"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1086"/>
         <source>Applied congregation schedule: %1</source>
         <translation>Horário da congregação aplicado: %1</translation>
     </message>
@@ -813,7 +813,7 @@
     </message>
     <message>
         <location filename="../qml/components/MeetingMediaPage.qml" line="187"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1648"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1674"/>
         <source>There are no media items for the selected date.</source>
         <translation>Não há nenhuma mídia para a data selecionada.</translation>
     </message>
@@ -840,7 +840,7 @@
     <message>
         <location filename="../qml/components/MeetingMediaPage.qml" line="291"/>
         <location filename="../qml/components/MeetingMediaPage.qml" line="685"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1663"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1689"/>
         <source>Add media</source>
         <translation>Adicionar mídia</translation>
     </message>
@@ -995,7 +995,7 @@
     </message>
     <message>
         <location filename="../qml/components/MeetingMediaPage.qml" line="664"/>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1671"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1697"/>
         <source>Next day with media</source>
         <translation>Próximo dia com mídia</translation>
     </message>
@@ -1060,7 +1060,7 @@
         <translation>Exibir</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1492"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1493"/>
         <source>%n items selected</source>
         <translation>
             <numerusform>%n item selecionado</numerusform>
@@ -1068,77 +1068,82 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1496"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1497"/>
         <source>Show in media list</source>
         <translation>Mostrar na lista de mídias</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1496"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1497"/>
         <source>Hide from media list</source>
         <translation>Ocultar da lista de mídias</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1508"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1509"/>
         <source>Edit tag</source>
         <translation>Editar etiqueta</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1514"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1515"/>
         <source>Rename</source>
         <translation>Renomear</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1518"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1519"/>
         <source>Slide interval</source>
         <translation>Intervalo do slide</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1522"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1523"/>
         <source>Manual</source>
         <translation>Manual</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1528"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1529"/>
         <source>10 seconds</source>
         <translation>10 segundos</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1534"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1535"/>
         <source>30 seconds</source>
         <translation>30 segundos</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1540"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1541"/>
         <source>1 minute</source>
         <translation>1 minuto</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1549"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1550"/>
         <source>Clip</source>
         <translation>Trecho</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1553"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1554"/>
         <source>Whole video</source>
         <translation>Vídeo inteiro</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1581"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1582"/>
+        <source>Speed</source>
+        <translation>Velocidade</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1607"/>
         <source>Move to section</source>
         <translation>Mover para seção</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1593"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1619"/>
         <source>Insert divider below</source>
         <translation>Inserir divisor abaixo</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1595"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1621"/>
         <source>Section Break</source>
         <translation>Quebra de Seção</translation>
     </message>
     <message>
-        <location filename="../qml/components/MeetingMediaPage.qml" line="1607"/>
+        <location filename="../qml/components/MeetingMediaPage.qml" line="1633"/>
         <source>Delete</source>
         <translation>Excluir</translation>
     </message>

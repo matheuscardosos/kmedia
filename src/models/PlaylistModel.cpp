@@ -938,6 +938,7 @@ bool PlaylistModel::activateIndex(int index)
                 item.trimStartMs, item.trimEndMs);
             m_playback->setFallbackDurationMs(item.durationMs);
             m_playback->setViewport(item.zoomScale, item.panX, item.panY);
+            m_playback->setSpeed(item.playbackRate > 0.0 ? item.playbackRate : 1.0);
         }
     }
     return true;
@@ -2191,6 +2192,9 @@ bool PlaylistModel::setItemPlaybackRate(int index, double rate)
     PlaylistEntryView& entry = m_items[static_cast<size_t>(index)];
     entry.playbackRate = clamped;
     persistEntryAt(index);
+    if (index == m_activeIndex && !m_playback.isNull()) {
+        m_playback->setSpeed(clamped);
+    }
     emit dataChanged(createIndex(index, 0), createIndex(index, 0), {PlaybackRateRole});
     return true;
 }
