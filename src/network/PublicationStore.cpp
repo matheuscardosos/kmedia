@@ -256,6 +256,22 @@ void PublicationStore::tryResolveLanguage(const MediaFileRequest& request, int l
         });
 }
 
+ResolvedMediaFile
+PublicationStore::resolveBibleChapter(const std::vector<CatalogMediaAsset>& chapterFiles,
+                                      DownloadService::Priority priority)
+{
+    const CatalogMediaAsset* chosen =
+        bestAsset(chapterFiles, QStringLiteral("MP4"), m_maxResolution);
+    if (chosen == nullptr && !chapterFiles.empty()) {
+        chosen = &chapterFiles.front();
+    }
+    if (chosen == nullptr) {
+        return {};
+    }
+    return resolveAsset(*chosen, QDir(QDir(m_cacheRoot).filePath(QStringLiteral("Bible"))),
+                        priority);
+}
+
 void PublicationStore::resolveVideo(const JwVideo& video, DownloadService::Priority priority,
                                     QObject* context, MediaCallback callback)
 {

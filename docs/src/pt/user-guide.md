@@ -73,6 +73,7 @@ Para trabalhar com vários itens de uma vez, use `Ctrl`+clique em cada um, ou cl
 
 - **Cântico:** digite o número do cântico; o vídeo vem do jw.org no idioma das mídias. As seções *Discurso Público* e *Superintendente de Circuito* mostram um botão **Cântico** enquanto ainda não têm cântico.
 - **Vídeo:** a videoteca do jw.org, os vídeos mais recentes primeiro, com pesquisa pelo título.
+- **Bíblia em áudio** (**Bíblia em língua de sinais** para línguas de sinais): escolha um livro, um capítulo e depois o primeiro e o último versículo. A gravação do capítulo é adicionada cortada nesses versículos, com uma etiqueta como `3:16-18`. Uma gravação que não marca os versículos é adicionada com o capítulo inteiro.
 - **Mídias de publicação:** digite a sigla da publicação (por exemplo `lff`) e, para revistas e apostilas, a edição (`2026-11`); depois escolha o documento cujas mídias você precisa.
 - **Mídias do discurso público:** escolha uma vez o arquivo S-34mp da sua congregação e depois procure os discursos por número ou tema. As mídias do discurso vão para o *Discurso Público*, e o tema vira o subtítulo da seção.
 - **Arquivos:** vídeos, áudios, imagens, documentos PDF, publicações `.jwpub` (depois você escolhe um documento) e listas `.jwlplaylist` do JW Library. Também dá para arrastar arquivos para a janela.

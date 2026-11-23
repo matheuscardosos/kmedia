@@ -126,6 +126,8 @@ Item {
             publicationPicker.openForJwOrg(target)
         } else if (sourceKind === "video") {
             videoPicker.openFor(target)
+        } else if (sourceKind === "bible") {
+            biblePicker.openFor(target)
         } else {
             mediaFileDialog.targetSection = target
             mediaFileDialog.open()
@@ -318,6 +320,10 @@ Item {
         id: videoPicker
     }
 
+    BiblePickerPopup {
+        id: biblePicker
+    }
+
     SongPickerPopup {
         id: songPicker
 
@@ -443,6 +449,11 @@ Item {
             iconName: "film"
             text: qsTr("Video")
             onTriggered: root.addFrom("video", addMenu.targetSection)
+        }
+        StudioMenuItem {
+            iconName: "audio-lines"
+            text: ApplicationController.bible.signLanguage ? qsTr("Sign Language Bible") : qsTr("Audio Bible")
+            onTriggered: root.addFrom("bible", addMenu.targetSection)
         }
         StudioMenuItem {
             iconName: "file-text"

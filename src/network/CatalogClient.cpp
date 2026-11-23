@@ -89,6 +89,17 @@ CatalogMediaAsset assetFromMediatorFile(const QJsonObject& file, const QString& 
     return asset;
 }
 
+// "00:01:07.343" as milliseconds.
+qint64 clockToMs(const QString& clock)
+{
+    const QStringList parts = clock.trimmed().split(QLatin1Char(':'));
+    double seconds = 0.0;
+    for (const QString& part : parts) {
+        seconds = (seconds * 60.0) + part.toDouble();
+    }
+    return static_cast<qint64>(seconds * 1000.0 + 0.5);
+}
+
 void parseAssetObject(const QJsonObject& obj, const QString& pubSymbol, int issueTag,
                       const QString& formatKey, std::vector<CatalogMediaAsset>& out)
 {
@@ -117,6 +128,17 @@ void parseAssetObject(const QJsonObject& obj, const QString& pubSymbol, int issu
                          .value(QStringLiteral("url"))
                          .toString()
                          .trimmed();
+    const QJsonArray markers =
+        obj.value(QStringLiteral("markers")).toObject().value(QStringLiteral("markers")).toArray();
+    for (const QJsonValue& markerValue : markers) {
+        const QJsonObject marker = markerValue.toObject();
+        const int verse = marker.value(QStringLiteral("verseNumber")).toInt(0);
+        if (verse > 0) {
+            asset.verseMarkers.push_back(BibleVerseMarker{
+                verse, clockToMs(marker.value(QStringLiteral("startTime")).toString()),
+                clockToMs(marker.value(QStringLiteral("duration")).toString())});
+        }
+    }
     out.push_back(std::move(asset));
 }
 
@@ -209,6 +231,53 @@ QUrl CatalogClient::pubMediaLinksUrl(const QString& pubSymbol, const QString& la
     query.addQueryItem(QStringLiteral("output"), QStringLiteral("json"));
     url.setQuery(query);
     return url;
+}
+
+QUrl CatalogClient::bibleBookUrl(const QString& langCode, int bookNumber, const QString& fileFormat)
+{
+    QUrl url = pubMediaLinksUrl(QStringLiteral("nwt"), langCode, 0, fileFormat);
+    QUrlQuery query(url);
+    query.addQueryItem(QStringLiteral("booknum"), QString::number(bookNumber));
+    url.setQuery(query);
+    return url;
+}
+
+JwBibleBook CatalogClient::parseBibleBookJson(const QByteArray& json, const QString& langCode)
+{
+    JwBibleBook book;
+    const QJsonObject root = QJsonDocument::fromJson(json).object();
+    book.number = root.value(QStringLiteral("booknum")).toInt(0);
+    book.name = root.value(QStringLiteral("pubName"))
+                    .toString()
+                    .replace(QStringLiteral("&nbsp;"), QStringLiteral(" "))
+                    .trimmed();
+    for (CatalogMediaAsset& asset : parsePubMediaLinksJson(json, langCode)) {
+        if (asset.track > 0) {
+            book.chapters.push_back(std::move(asset));
+        }
+    }
+    return book;
+}
+
+void CatalogClient::requestBibleBook(const QUrl& endpoint, const QString& langCode,
+                                     QObject* context, BibleBookCallback callback)
+{
+    const QPointer<QObject> guard(context);
+    fetchWithEtagCache(
+        endpoint,
+        [guard, callback, langCode](const QByteArray& body, bool) {
+            if (guard.isNull()) {
+                return;
+            }
+            const JwBibleBook book =
+                body.isEmpty() ? JwBibleBook{} : parseBibleBookJson(body, langCode);
+            callback(!book.chapters.empty(), book);
+        },
+        [guard, callback](const QString&) {
+            if (!guard.isNull()) {
+                callback(false, {});
+            }
+        });
 }
 
 QUrl CatalogClient::mediatorMediaUrl(const QString& pubMediaKey, const QString& langCode,

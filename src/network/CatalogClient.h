@@ -25,6 +25,14 @@ struct CatalogLanguage
     bool isRtl{false};
 };
 
+/** Where a verse is read in a Bible chapter recording. */
+struct BibleVerseMarker
+{
+    int verse{0};
+    qint64 startMs{0};
+    qint64 durationMs{0};
+};
+
 struct CatalogMediaAsset
 {
     QString url;
@@ -42,6 +50,15 @@ struct CatalogMediaAsset
     QString pubMediaId;
     bool streamOnly{false};
     QString imageUrl;
+    std::vector<BibleVerseMarker> verseMarkers;
+};
+
+/** A book of the Bible recording: its name in the language asked for, and its chapters. */
+struct JwBibleBook
+{
+    int number{0};
+    QString name;
+    std::vector<CatalogMediaAsset> chapters; // every file of every chapter, `track` = chapter
 };
 
 /** A video of the JW.org video library, with every file it comes in. */
@@ -115,6 +132,12 @@ public:
                         const QString& baseUrl =
                             QStringLiteral("https://b.jw-cdn.org/apis/mediator/v1/categories"));
 
+    // The recording of one Bible book (`nwt`): MP3, or MP4 for sign languages.
+    [[nodiscard]] static QUrl bibleBookUrl(const QString& langCode, int bookNumber,
+                                           const QString& fileFormat);
+    [[nodiscard]] static JwBibleBook parseBibleBookJson(const QByteArray& json,
+                                                        const QString& langCode);
+
     [[nodiscard]] static QString buildPubMediaKey(const QString& pubSymbol, int issueTagNumber,
                                                   qint64 docId = 0, int track = 0,
                                                   bool isVideo = true);
@@ -147,6 +170,10 @@ public:
      */
     void requestPubMediaLinks(const QUrl& endpoint, const QString& preferredLangCode,
                               QObject* context, AssetsCallback callback);
+
+    using BibleBookCallback = std::function<void(bool ok, const kmedia::JwBibleBook& book)>;
+    void requestBibleBook(const QUrl& endpoint, const QString& langCode, QObject* context,
+                          BibleBookCallback callback);
 
     using CategoryCallback = std::function<void(bool ok, const kmedia::JwVideoCategory& category)>;
     void requestMediatorCategory(const QUrl& endpoint, QObject* context, CategoryCallback callback);

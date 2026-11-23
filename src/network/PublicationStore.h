@@ -88,6 +88,10 @@ public:
 
     /** Runs blocking work on the store's worker pool and delivers the result on this thread. */
     /** Picks a JW.org video file at or below the preferred resolution and downloads it. */
+    // A Bible chapter recording: the MP3, or the best MP4 at or below the preferred resolution.
+    [[nodiscard]] ResolvedMediaFile
+    resolveBibleChapter(const std::vector<CatalogMediaAsset>& chapterFiles,
+                        DownloadService::Priority priority);
     void resolveVideo(const JwVideo& video, DownloadService::Priority priority, QObject* context,
                       MediaCallback callback);
     void runInBackground(QObject* context, std::function<void()> work, std::function<void()> done);
