@@ -4,7 +4,7 @@ layout: home
 hero:
   name: KMedia
   text: Apresentador Nativo de Mídia para Reuniões
-  tagline: Construído do zero em C++20, Qt 6 e libmpv para operação silenciosa, menos de 45 MB de RAM em repouso e reprodução acelerada por GPU em duas telas.
+  tagline: Construído do zero em C++20, Qt 6 e libmpv para operação silenciosa, um único processo leve e reprodução acelerada por GPU em duas telas.
   image:
     src: /logo.svg
     alt: Logo do KMedia
@@ -27,7 +27,7 @@ hero:
 
 features:
   - title: Desempenho Nativo Leve
-    details: Projetado para consumir menos de 45 MB de RAM em repouso, inicializar em menos de 400 ms e manter notebooks frios e silenciosos.
+    details: Um único processo nativo que abre em cerca de 1,3 segundo e mantém silenciosos os notebooks do Salão do Reino, sem navegador embutido.
   - title: Motor libmpv com Aceleração por GPU
     details: Renderização OpenGL sem cópia com decodificação por hardware automática (hwdec=auto-safe), áudio contínuo e cortes sem recodificação.
   - title: Download Automático de Mídias

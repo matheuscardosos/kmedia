@@ -4,7 +4,7 @@ layout: home
 hero:
   name: KMedia
   text: Native Congregation Media Presenter
-  tagline: Built from scratch in C++20, Qt 6, and libmpv for silent operation, sub-45 MB idle RAM, and hardware-accelerated dual-screen playback.
+  tagline: Built from scratch in C++20, Qt 6, and libmpv for silent operation, a single lightweight process, and hardware-accelerated dual-screen playback.
   image:
     src: /logo.svg
     alt: KMedia logo
@@ -27,7 +27,7 @@ hero:
 
 features:
   - title: Lightweight Native Performance
-    details: Designed for under 45 MB idle RAM, sub-400 ms cold startup, and silent thermal behavior on Kingdom Hall laptops.
+    details: A single native process that opens in about 1.3 seconds and stays quiet on Kingdom Hall laptops, with no bundled browser.
   - title: Hardware-Accelerated libmpv Engine
     details: Zero-copy OpenGL video rendering with automatic hardware decoding (hwdec=auto-safe), gapless audio, and non-destructive trim markers.
   - title: Automated Media Fetching
