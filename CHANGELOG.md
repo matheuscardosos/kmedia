@@ -4,6 +4,74 @@ All notable changes to KMedia will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/matheuscardosos/kmedia/compare/v0.1.2...v0.2.0) (2026-11-24)
+
+
+### Added
+
+* **calendar:** implement date-keyed day workspaces and JWPUB week extraction ([#65](https://github.com/matheuscardosos/kmedia/issues/65)) ([1633705](https://github.com/matheuscardosos/kmedia/commit/1633705372f8df07546a13b2a5b3e6cd16a044e0)), closes [#56](https://github.com/matheuscardosos/kmedia/issues/56) [#57](https://github.com/matheuscardosos/kmedia/issues/57)
+* **core:** save the meeting timing report as PDF or CSV ([#136](https://github.com/matheuscardosos/kmedia/issues/136)) ([1cc2333](https://github.com/matheuscardosos/kmedia/commit/1cc23330ac1a3da99f7ef3abea5091744a0fc4f9)), closes [#131](https://github.com/matheuscardosos/kmedia/issues/131)
+* **core:** store meeting sections by stable id with translated labels ([#78](https://github.com/matheuscardosos/kmedia/issues/78)) ([42f95ec](https://github.com/matheuscardosos/kmedia/commit/42f95ec111b46889cc5be76d97b11f7c34706256)), closes [#71](https://github.com/matheuscardosos/kmedia/issues/71) [#69](https://github.com/matheuscardosos/kmedia/issues/69)
+* **core:** time each part of the meeting ([#135](https://github.com/matheuscardosos/kmedia/issues/135)) ([9936298](https://github.com/matheuscardosos/kmedia/commit/99362986f69d41f10958423e0fcba240066a1a0c)), closes [#131](https://github.com/matheuscardosos/kmedia/issues/131)
+* **media:** add audio Bible verses from the Add media menu ([#108](https://github.com/matheuscardosos/kmedia/issues/108)) ([63f4711](https://github.com/matheuscardosos/kmedia/commit/63f4711ba28f72a88702d42c9de97ff99eea40e0)), closes [#95](https://github.com/matheuscardosos/kmedia/issues/95)
+* **media:** add dated day folders, day export, and PDF page export ([#66](https://github.com/matheuscardosos/kmedia/issues/66)) ([2ed2603](https://github.com/matheuscardosos/kmedia/commit/2ed2603d9f3338813f15f161a15d0e51e78440ed)), closes [#58](https://github.com/matheuscardosos/kmedia/issues/58)
+* **media:** add JW.org videos from the Add media menu ([#98](https://github.com/matheuscardosos/kmedia/issues/98)) ([bc862d4](https://github.com/matheuscardosos/kmedia/commit/bc862d4ad68a2ba50627ede54ff806f0d77f37e5)), closes [#92](https://github.com/matheuscardosos/kmedia/issues/92) [#58](https://github.com/matheuscardosos/kmedia/issues/58)
+* **media:** add public talk media from the S-34mp ([#96](https://github.com/matheuscardosos/kmedia/issues/96)) ([2b97cd5](https://github.com/matheuscardosos/kmedia/commit/2b97cd58a7220802a5a6d2fe9573ca0a5f3adc99)), closes [#94](https://github.com/matheuscardosos/kmedia/issues/94) [#58](https://github.com/matheuscardosos/kmedia/issues/58)
+* **media:** add publication media by document ([#97](https://github.com/matheuscardosos/kmedia/issues/97)) ([65ec15c](https://github.com/matheuscardosos/kmedia/commit/65ec15c5bf7980b74176e5874b1b1268f5f31ec2)), closes [#93](https://github.com/matheuscardosos/kmedia/issues/93) [#58](https://github.com/matheuscardosos/kmedia/issues/58)
+* **media:** add Study Bible media from the Add media menu ([#109](https://github.com/matheuscardosos/kmedia/issues/109)) ([c0939b8](https://github.com/matheuscardosos/kmedia/commit/c0939b8b9cf1892dd3b2ed6125e8fe4ef4c3f2cc)), closes [#95](https://github.com/matheuscardosos/kmedia/issues/95)
+* **media:** bring the shared folder and media export into each day ([#99](https://github.com/matheuscardosos/kmedia/issues/99)) ([3b75c20](https://github.com/matheuscardosos/kmedia/commit/3b75c20c80f716a3bada2929c66e3d1c0ec4d590)), closes [#75](https://github.com/matheuscardosos/kmedia/issues/75) [#58](https://github.com/matheuscardosos/kmedia/issues/58)
+* **media:** download the JW.org subtitles of a video ([#122](https://github.com/matheuscardosos/kmedia/issues/122)) ([1095c3c](https://github.com/matheuscardosos/kmedia/commit/1095c3c32b0beae745ad2adfe671889e06d3e76e)), closes [#116](https://github.com/matheuscardosos/kmedia/issues/116)
+* **media:** fade the presentation screen into and out of standby ([#120](https://github.com/matheuscardosos/kmedia/issues/120)) ([811018f](https://github.com/matheuscardosos/kmedia/commit/811018f486d2b16e4eba19c338848960b1095a9d)), closes [#114](https://github.com/matheuscardosos/kmedia/issues/114)
+* **media:** pick the pages of a PDF to add as pictures ([#111](https://github.com/matheuscardosos/kmedia/issues/111)) ([f25ac39](https://github.com/matheuscardosos/kmedia/commit/f25ac39115c7658d1f92806f97177415d4af7664)), closes [#58](https://github.com/matheuscardosos/kmedia/issues/58)
+* **media:** play the songbook as background music before meetings ([#105](https://github.com/matheuscardosos/kmedia/issues/105)) ([6c5928e](https://github.com/matheuscardosos/kmedia/commit/6c5928efab082084a0cde907b413082ee71e7fd1)), closes [#101](https://github.com/matheuscardosos/kmedia/issues/101)
+* **media:** show a camera as the background of the presentation screen ([#126](https://github.com/matheuscardosos/kmedia/issues/126)) ([a73f30f](https://github.com/matheuscardosos/kmedia/commit/a73f30fc8de7213c22e4adbf6f1c4249c0af6f1d)), closes [#125](https://github.com/matheuscardosos/kmedia/issues/125) [#59](https://github.com/matheuscardosos/kmedia/issues/59)
+* **media:** show a playing video live in the preview panel ([#124](https://github.com/matheuscardosos/kmedia/issues/124)) ([cf552ed](https://github.com/matheuscardosos/kmedia/commit/cf552edd11a1bc3c58bbb563b00092532829b104)), closes [#115](https://github.com/matheuscardosos/kmedia/issues/115)
+* **media:** show the yeartext on the presentation screen ([#118](https://github.com/matheuscardosos/kmedia/issues/118)) ([2b687cd](https://github.com/matheuscardosos/kmedia/commit/2b687cd11d3a921142cac935e86f04bdf66900c2)), closes [#113](https://github.com/matheuscardosos/kmedia/issues/113)
+* **meeting:** play one clip of a sign language video ([#112](https://github.com/matheuscardosos/kmedia/issues/112)) ([f060598](https://github.com/matheuscardosos/kmedia/commit/f06059800f53833cb50486880b8f517188e936bb)), closes [#58](https://github.com/matheuscardosos/kmedia/issues/58)
+* **meeting:** select several media items at once ([#107](https://github.com/matheuscardosos/kmedia/issues/107)) ([6676284](https://github.com/matheuscardosos/kmedia/commit/6676284a4d1e900d4bd0ef2e6a93d1c19babe310)), closes [#86](https://github.com/matheuscardosos/kmedia/issues/86)
+* **models:** lay out each meeting day and show real thumbnails ([#85](https://github.com/matheuscardosos/kmedia/issues/85)) ([e6a1416](https://github.com/matheuscardosos/kmedia/commit/e6a1416fb16b55555f83e665c24f46f5c20be2c4)), closes [#73](https://github.com/matheuscardosos/kmedia/issues/73)
+* **network:** serve a read only timer page for a tablet ([#139](https://github.com/matheuscardosos/kmedia/issues/139)) ([7f18da3](https://github.com/matheuscardosos/kmedia/commit/7f18da3f82ecf6128848a87816b95592fd88b9d2)), closes [#133](https://github.com/matheuscardosos/kmedia/issues/133)
+* **parsers:** read meeting weeks from publications like the meeting media sync needs ([#81](https://github.com/matheuscardosos/kmedia/issues/81)) ([e4521ff](https://github.com/matheuscardosos/kmedia/commit/e4521ffd47568b5b849434060dbfbd31eaf9b49d)), closes [#68](https://github.com/matheuscardosos/kmedia/issues/68) [#69](https://github.com/matheuscardosos/kmedia/issues/69) [#72](https://github.com/matheuscardosos/kmedia/issues/72)
+* **sync:** sync every meeting day of a rolling window in the background ([#83](https://github.com/matheuscardosos/kmedia/issues/83)) ([39fb0f1](https://github.com/matheuscardosos/kmedia/commit/39fb0f12266c9b3288a3aed57129de228bb23430)), closes [#67](https://github.com/matheuscardosos/kmedia/issues/67) [#68](https://github.com/matheuscardosos/kmedia/issues/68) [#69](https://github.com/matheuscardosos/kmedia/issues/69) [#70](https://github.com/matheuscardosos/kmedia/issues/70) [#71](https://github.com/matheuscardosos/kmedia/issues/71) [#72](https://github.com/matheuscardosos/kmedia/issues/72)
+* **ui:** keep the app to two pages, Meeting and Settings ([#88](https://github.com/matheuscardosos/kmedia/issues/88)) ([7f15680](https://github.com/matheuscardosos/kmedia/commit/7f15680dee0ecfa9b621635d5f80e064a9631e98)), closes [#74](https://github.com/matheuscardosos/kmedia/issues/74)
+* **ui:** rebuild the Meeting page around the selected day ([#87](https://github.com/matheuscardosos/kmedia/issues/87)) ([b2d7c5a](https://github.com/matheuscardosos/kmedia/commit/b2d7c5a523563906209324bd38722968377c7578)), closes [#73](https://github.com/matheuscardosos/kmedia/issues/73) [#58](https://github.com/matheuscardosos/kmedia/issues/58)
+* **ui:** show a floating live preview while the preview panel is closed ([#128](https://github.com/matheuscardosos/kmedia/issues/128)) ([097d2ff](https://github.com/matheuscardosos/kmedia/commit/097d2ff43a305609208b395afa7d6d4944aca23c)), closes [#127](https://github.com/matheuscardosos/kmedia/issues/127) [#59](https://github.com/matheuscardosos/kmedia/issues/59)
+* **ui:** show the meeting timer in its own window ([#137](https://github.com/matheuscardosos/kmedia/issues/137)) ([e45fcc8](https://github.com/matheuscardosos/kmedia/commit/e45fcc8533ba884d86cd542d8314f6e3273adc0f)), closes [#132](https://github.com/matheuscardosos/kmedia/issues/132)
+* **ui:** zoom toward the pointer and drag to pan in the preview panel ([#130](https://github.com/matheuscardosos/kmedia/issues/130)) ([c8ca0bd](https://github.com/matheuscardosos/kmedia/commit/c8ca0bdeb4f0257e108e40760d07a8d12282bfd2)), closes [#129](https://github.com/matheuscardosos/kmedia/issues/129) [#59](https://github.com/matheuscardosos/kmedia/issues/59)
+
+
+### Fixed
+
+* **core:** drop bool comparisons flagged by MSVC C4804 ([#77](https://github.com/matheuscardosos/kmedia/issues/77)) ([1ad0d55](https://github.com/matheuscardosos/kmedia/commit/1ad0d551965b4ef49e87c1aa6e705216b2121b22))
+* **integrations,ui:** fix OBS/Zoom wiring, image scene routing, demo guards, and shortcuts ([#63](https://github.com/matheuscardosos/kmedia/issues/63)) ([6ea08c3](https://github.com/matheuscardosos/kmedia/commit/6ea08c32b00678a13204d78d6c6c6cf1c6978485)), closes [#55](https://github.com/matheuscardosos/kmedia/issues/55)
+* **media:** apply the playback speed saved for an item ([#121](https://github.com/matheuscardosos/kmedia/issues/121)) ([fc2c37b](https://github.com/matheuscardosos/kmedia/commit/fc2c37b8718d8cd2457b51b6fd8b849d0f1e0853)), closes [#117](https://github.com/matheuscardosos/kmedia/issues/117)
+* **network:** read a reply only while it is open ([#123](https://github.com/matheuscardosos/kmedia/issues/123)) ([7c02c23](https://github.com/matheuscardosos/kmedia/commit/7c02c23f6e27f6dc645cf0b468d7a2a3488e5046)), closes [#119](https://github.com/matheuscardosos/kmedia/issues/119)
+* **network:** verify JW.org downloads with their MD5 checksums ([#80](https://github.com/matheuscardosos/kmedia/issues/80)) ([e6cab6c](https://github.com/matheuscardosos/kmedia/commit/e6cab6cbbbbf32cc06349c49d8aebdf850309afe)), closes [#79](https://github.com/matheuscardosos/kmedia/issues/79)
+* **settings:** add the missing OBS, Zoom, audio, and standby settings ([#104](https://github.com/matheuscardosos/kmedia/issues/104)) ([a247079](https://github.com/matheuscardosos/kmedia/commit/a2470798b2cf8ace89544075ed80eed0348bcde2)), closes [#102](https://github.com/matheuscardosos/kmedia/issues/102)
+
+
+### Performance
+
+* **app:** measure startup and state the real figures ([#110](https://github.com/matheuscardosos/kmedia/issues/110)) ([a59502b](https://github.com/matheuscardosos/kmedia/commit/a59502b297ec80daaa8305f945a88a059cdb2a57)), closes [#72](https://github.com/matheuscardosos/kmedia/issues/72)
+* **ui:** draw icons from a cached image provider ([#100](https://github.com/matheuscardosos/kmedia/issues/100)) ([32b5059](https://github.com/matheuscardosos/kmedia/commit/32b5059af00e22d817ab1842fa34abd8ccc96336)), closes [#72](https://github.com/matheuscardosos/kmedia/issues/72)
+
+
+### Changed
+
+* **calendar:** drop the month grid and readiness of the old Calendar page ([#106](https://github.com/matheuscardosos/kmedia/issues/106)) ([d3e8d88](https://github.com/matheuscardosos/kmedia/commit/d3e8d88fb6b3b2ba977d94d82bdf32426e2c55f4)), closes [#89](https://github.com/matheuscardosos/kmedia/issues/89)
+* **network:** drop the old weekly sync from MeetingCatalogService ([#91](https://github.com/matheuscardosos/kmedia/issues/91)) ([b0ddb2b](https://github.com/matheuscardosos/kmedia/commit/b0ddb2b4d1c5409446e0bf489b7c02761661e6c2)), closes [#84](https://github.com/matheuscardosos/kmedia/issues/84)
+
+
+### Documentation
+
+* describe startup without an exact time ([#144](https://github.com/matheuscardosos/kmedia/issues/144)) ([3dc072b](https://github.com/matheuscardosos/kmedia/commit/3dc072b92c0bd5bf12c66d38b31be3729be307ae)), closes [#64](https://github.com/matheuscardosos/kmedia/issues/64)
+* rewrite the guides and FAQ around the day by day Meeting page ([#103](https://github.com/matheuscardosos/kmedia/issues/103)) ([a01b001](https://github.com/matheuscardosos/kmedia/commit/a01b0014967bf0dce1ffc818e8a3fc7c4469db5d)), closes [#76](https://github.com/matheuscardosos/kmedia/issues/76)
+
+
+### Miscellaneous
+
+* **release:** prepare the 0.2.0 release ([#140](https://github.com/matheuscardosos/kmedia/issues/140)) ([07a1481](https://github.com/matheuscardosos/kmedia/commit/07a1481515c66e0b55a9030ff769a2fe1d259a73)), closes [#64](https://github.com/matheuscardosos/kmedia/issues/64)
+
 ## [Unreleased]
 
 ### Added
