@@ -27,7 +27,7 @@ hero:
 
 features:
   - title: Desempenho Nativo Leve
-    details: Um único processo nativo que abre em cerca de 1,3 segundo e mantém silenciosos os notebooks do Salão do Reino, sem navegador embutido.
+    details: Um único processo nativo que abre em poucos segundos, mesmo em notebooks antigos, e mantém silenciosos os computadores do Salão do Reino, sem navegador embutido.
   - title: Motor libmpv com Aceleração por GPU
     details: Renderização OpenGL sem cópia com decodificação por hardware automática (hwdec=auto-safe), áudio contínuo e cortes sem recodificação.
   - title: Download Automático de Mídias
