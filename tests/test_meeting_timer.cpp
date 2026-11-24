@@ -102,6 +102,7 @@ TEST_CASE("The meeting timer times parts, keeps them with the day, and tracks th
             QStringLiteral("20:01"));
     REQUIRE(timer.nextIndex() == 0);
     REQUIRE_FALSE(timer.isRunning());
+    REQUIRE(timer.meetingStart() == QDateTime(QDate(2026, 11, 25), QTime(19, 30)));
 
     // Started two minutes late.
     clock = clock.addSecs(120);
@@ -114,6 +115,9 @@ TEST_CASE("The meeting timer times parts, keeps them with the day, and tracks th
 
     timer.advanceForTest(6 * 60000LL);
     REQUIRE(timer.isOvertime());
+    // Like Meeting Media Manager, only the extra time shows by default.
+    REQUIRE(timer.formattedTime() == QStringLiteral("+01:00"));
+    timer.setOvertimeAmountOnly(false);
     REQUIRE(timer.formattedTime() == QStringLiteral("06:00"));
     timer.setOvertimeAmountOnly(true);
     REQUIRE(timer.formattedTime() == QStringLiteral("+01:00"));

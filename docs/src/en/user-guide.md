@@ -104,6 +104,7 @@ The clock pill opens the meeting timer, which times each part of the meeting, in
 - Finished parts show how long they really took. The times are kept with the day, so they are still there after a restart; **Clear times** starts over.
 - The download button saves the day's timing report as a PDF or a spreadsheet (CSV): each part with its planned and real start, its planned and real length, and the difference.
 - Days without a regular meeting (an assembly, a special program) start with no parts: type a title and use **Add part**.
+- **Timer window** (under **Options**) shows the timer for the chairman or the speaker: the part's title, the time in large digits, and a ring that fills as the part goes, yellow in its last minute and red once it runs over, blinking while paused or over. With a third screen it fills a screen that is neither the main nor the presentation screen; otherwise it opens as a normal window you can move. While no part runs it shows the time of day, and in the five minutes before the meeting a countdown to its start. It comes back the next time KMedia starts, and closing it turns it off.
 
 ### Keyboard shortcuts
 

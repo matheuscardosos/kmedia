@@ -38,6 +38,7 @@ inline constexpr auto kStandbyImage = "presentation/standby_image";
 inline constexpr auto kTimerCountDown = "timer/count_down";
 inline constexpr auto kTimerOvertimeAmountOnly = "timer/overtime_amount_only";
 inline constexpr auto kTimerDayStates = "timer/day_states";
+inline constexpr auto kTimerWindow = "timer/window_visible";
 inline constexpr auto kPresentationCamera = "presentation/camera";
 inline constexpr auto kObsEnabled = "obs/enabled";
 inline constexpr auto kObsHost = "obs/host";

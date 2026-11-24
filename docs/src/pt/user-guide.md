@@ -104,6 +104,7 @@ A pílula do relógio abre o cronômetro da reunião, que marca o tempo de cada 
 - As partes encerradas mostram quanto tempo levaram de fato. Os tempos ficam salvos com o dia, então continuam lá depois de reiniciar; **Limpar tempos** recomeça.
 - O botão de download salva o relatório de tempos do dia em PDF ou planilha (CSV): cada parte com o início previsto e o real, a duração prevista e a real, e a diferença.
 - Dias sem reunião regular (uma assembleia, um programa especial) começam sem partes: digite um título e use **Adicionar parte**.
+- **Janela do cronômetro** (em **Opções**) mostra o cronômetro para o presidente ou o orador: o título da parte, o tempo em dígitos grandes e um anel que se completa conforme a parte avança, amarelo no último minuto e vermelho quando passa do tempo, piscando quando pausado ou no excesso. Com uma terceira tela, ocupa uma tela que não seja a principal nem a de apresentação; senão, abre como janela comum que pode ser movida. Sem parte rodando, mostra a hora, e nos cinco minutos antes da reunião, uma contagem até o início. Ela volta na próxima vez que o KMedia abrir, e fechá-la a desliga.
 
 ### Atalhos de teclado
 

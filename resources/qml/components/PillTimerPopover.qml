@@ -514,6 +514,25 @@ ColumnLayout {
 
             Text {
                 Layout.fillWidth: true
+                text: qsTr("Timer window")
+                color: Theme.textSecondary
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSizeXs
+                elide: Text.ElideRight
+            }
+
+            StudioSwitch {
+                checked: ApplicationController.timerWindowVisible
+                onToggled: ApplicationController.timerWindowVisible = checked
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            Text {
+                Layout.fillWidth: true
                 text: qsTr("Count down")
                 color: Theme.textSecondary
                 font.family: Theme.fontFamily

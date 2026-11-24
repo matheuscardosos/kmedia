@@ -293,6 +293,11 @@ QString MeetingTimer::dateIso() const
     return m_dateIso;
 }
 
+QDateTime MeetingTimer::meetingStart() const
+{
+    return isMeetingDay() ? m_meetingStart : QDateTime{};
+}
+
 int MeetingTimer::ayfmCount() const
 {
     return m_ayfmCount;
