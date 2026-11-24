@@ -57,22 +57,22 @@
 <context>
     <name>ApplicationController</name>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="140"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="144"/>
         <source>The songbook could not be loaded. Check the internet connection.</source>
         <translation>The songbook could not be loaded. Check the internet connection.</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="146"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="150"/>
         <source>Song</source>
         <translation>Song</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="967"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1015"/>
         <source>The shared folder and the export folder must be different</source>
         <translation>The shared folder and the export folder must be different</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../src/app/ApplicationController.cpp" line="974"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1022"/>
         <source>%n file(s) could not be converted to MP4</source>
         <translation>
             <numerusform>%n file could not be converted to MP4</numerusform>
@@ -80,12 +80,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1048"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1114"/>
         <source>Zoom screen share ready (%1): %2</source>
         <translation>Zoom screen share ready (%1): %2</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1128"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1194"/>
         <source>Applied congregation schedule: %1</source>
         <translation>Applied congregation schedule: %1</translation>
     </message>
@@ -1436,54 +1436,213 @@
 <context>
     <name>PillTimerPopover</name>
     <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="24"/>
+        <source>Untitled part</source>
+        <translation>Untitled part</translation>
+    </message>
+    <message>
         <location filename="../qml/components/PillTimerPopover.qml" line="27"/>
+        <source>Apply Yourself %1</source>
+        <translation>Apply Yourself %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="29"/>
+        <source>Living as Christians %1</source>
+        <translation>Living as Christians %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="33"/>
+        <source>Song and prayer</source>
+        <translation>Song and prayer</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="35"/>
+        <source>Song</source>
+        <translation>Song</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="37"/>
+        <source>Opening comments</source>
+        <translation>Opening comments</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="39"/>
+        <source>Treasures From God&apos;s Word</source>
+        <translation>Treasures From God&apos;s Word</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="41"/>
+        <source>Spiritual gems</source>
+        <translation>Spiritual gems</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="43"/>
+        <source>Bible reading</source>
+        <translation>Bible reading</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="45"/>
+        <source>Congregation Bible Study</source>
+        <translation>Congregation Bible Study</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="47"/>
+        <source>Concluding comments</source>
+        <translation>Concluding comments</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="49"/>
+        <source>Service talk</source>
+        <translation>Service talk</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="51"/>
+        <source>Public talk</source>
+        <translation>Public talk</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="54"/>
+        <source>Watchtower Study</source>
+        <translation>Watchtower Study</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="56"/>
+        <source>Circuit overseer&apos;s talk</source>
+        <translation>Circuit overseer&apos;s talk</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="83"/>
         <source>Meeting Timer</source>
         <translation>Meeting Timer</translation>
     </message>
-    <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="36"/>
-        <source>Overtime</source>
-        <translation>Overtime</translation>
+    <message numerus="yes">
+        <location filename="../qml/components/PillTimerPopover.qml" line="95"/>
+        <source>%n min behind</source>
+        <translation>
+            <numerusform>%n min behind</numerusform>
+            <numerusform>%n min behind</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/components/PillTimerPopover.qml" line="97"/>
+        <source>%n min ahead</source>
+        <translation>
+            <numerusform>%n min ahead</numerusform>
+            <numerusform>%n min ahead</numerusform>
+        </translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="36"/>
-        <source>On Schedule</source>
-        <translation>On Schedule</translation>
+        <location filename="../qml/components/PillTimerPopover.qml" line="98"/>
+        <source>On time</source>
+        <translation>On time</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="64"/>
-        <source>Elapsed</source>
-        <translation>Elapsed</translation>
+        <location filename="../qml/components/PillTimerPopover.qml" line="127"/>
+        <source>Paused</source>
+        <translation>Paused</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="84"/>
-        <source>Over</source>
-        <translation>Over</translation>
+        <location filename="../qml/components/PillTimerPopover.qml" line="127"/>
+        <source>Now</source>
+        <translation>Now</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="84"/>
-        <source>Remaining</source>
-        <translation>Remaining</translation>
+        <location filename="../qml/components/PillTimerPopover.qml" line="128"/>
+        <source>Next</source>
+        <translation>Next</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="110"/>
+        <location filename="../qml/components/PillTimerPopover.qml" line="128"/>
+        <source>No parts left</source>
+        <translation>No parts left</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/components/PillTimerPopover.qml" line="148"/>
+        <source>%n min</source>
+        <translation>
+            <numerusform>%n min</numerusform>
+            <numerusform>%n min</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="149"/>
+        <source>planned %1</source>
+        <translation>planned %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="176"/>
+        <source>Next part</source>
+        <translation>Next part</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="191"/>
+        <source>Resume</source>
+        <translation>Resume</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="204"/>
+        <source>Stop</source>
+        <translation>Stop</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="321"/>
+        <source>Remove part</source>
+        <translation>Remove part</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="337"/>
+        <source>Part title</source>
+        <translation>Part title</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="354"/>
+        <source>Add part</source>
+        <translation>Add part</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="369"/>
+        <source>Options</source>
+        <translation>Options</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="380"/>
+        <source>Clear times</source>
+        <translation>Clear times</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="440"/>
+        <source>Apply Yourself parts</source>
+        <translation>Apply Yourself parts</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="447"/>
+        <source>Living as Christians parts</source>
+        <translation>Living as Christians parts</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="460"/>
+        <source>End the study at</source>
+        <translation>End the study at</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="491"/>
+        <source>Count down</source>
+        <translation>Count down</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="510"/>
+        <source>Show only the extra time</source>
+        <translation>Show only the extra time</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="191"/>
         <source>Pause</source>
         <translation>Pause</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="110"/>
+        <location filename="../qml/components/PillTimerPopover.qml" line="176"/>
         <source>Start</source>
         <translation>Start</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="118"/>
-        <source>Reset</source>
-        <translation>Reset</translation>
-    </message>
-    <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="128"/>
-        <source>Target: %1 min</source>
-        <translation>Target: %1 min</translation>
     </message>
 </context>
 <context>

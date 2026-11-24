@@ -226,6 +226,9 @@ private:
     void syncAudioRouting();
     void applySyncSettings(bool resetWhenChanged);
     void applyFolderSettings();
+    // Points the meeting timer at the open day, with what was kept for that day.
+    void syncMeetingTimerDay();
+    void saveMeetingTimerDay(const QString& dateIso, const QString& dayState);
     [[nodiscard]] std::vector<QDate> meetingDaysInWindow() const;
     void wireIntegrations();
 
