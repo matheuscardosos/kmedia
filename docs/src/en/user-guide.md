@@ -20,7 +20,7 @@ Download KMedia for Windows, macOS, or Linux from the [download page](./download
 
 - **Navigation:** *Meeting* and *Settings*, the congregation switcher, and the status of OBS Studio, the second display, Zoom, and free disk space.
 - **Meeting page:** the media of the selected day, section by section.
-- **Preview panel:** what the audience sees, file details, trims, and zoom. The monitor button in the page header shows or hides it.
+- **Preview panel:** what the audience sees (a playing video shows live), file details, trims, and zoom. The monitor button in the page header shows or hides it.
 - **Pill bar:** quick toggles for the display, standby, subtitles, background music, the meeting timer, OBS Studio, Zoom, downloads, and the command palette.
 - **Transport bar:** play, pause, previous, next, and mute for the active item, and the background music switch.
 

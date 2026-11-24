@@ -152,6 +152,8 @@ int main(int argc, char* argv[])
         controller->attachQmlEngine(&engine);
         engine.addImageProvider(QStringLiteral("kmedia-pdf"),
                                 new kmedia::PdfPageImageProvider(controller->pdfController()));
+        engine.addImageProvider(QStringLiteral("kmedia-preview"),
+                                new kmedia::PreviewFrameProvider(controller->playback()));
     }
 
     QObject::connect(

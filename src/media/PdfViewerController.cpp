@@ -1,5 +1,7 @@
 #include "media/PdfViewerController.h"
 
+#include "media/PlaybackController.h"
+
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaObject>
@@ -316,6 +318,21 @@ QStringList PdfViewerController::exportPagesToPng(const QString& pdfPath, const 
         }
     }
     return outPaths;
+}
+
+PreviewFrameProvider::PreviewFrameProvider(PlaybackController* playback)
+    : QQuickImageProvider(QQuickImageProvider::Image), m_playback(playback)
+{
+}
+
+QImage PreviewFrameProvider::requestImage(const QString& /*id*/, QSize* size,
+                                          const QSize& /*requestedSize*/)
+{
+    const QImage frame = m_playback.isNull() ? QImage() : m_playback->previewFrame();
+    if (size != nullptr) {
+        *size = frame.size();
+    }
+    return frame;
 }
 
 PdfPageImageProvider::PdfPageImageProvider(PdfViewerController* controller)

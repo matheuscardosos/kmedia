@@ -81,6 +81,20 @@ private:
     QString m_errorMessage;
 };
 
+class PlaybackController;
+
+/** Serves the live preview frame of a playing video (`image://kmedia-preview/<serial>`). */
+class PreviewFrameProvider final : public QQuickImageProvider
+{
+public:
+    explicit PreviewFrameProvider(PlaybackController* playback);
+
+    QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override;
+
+private:
+    QPointer<PlaybackController> m_playback;
+};
+
 class PdfPageImageProvider final : public QQuickImageProvider
 {
 public:
