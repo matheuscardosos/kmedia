@@ -56,7 +56,13 @@ The repository ships synchronized setups across common IDEs and coding agents so
 
 Versioning and changelogs are automated via [`release-please-config.json`](release-please-config.json) (updating `CMakeLists.txt`, `vcpkg.json`, `docs/package.json`, and `CHANGELOG.md`). Publishing a release or pushing a `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/release.yml) to build and attach signed SHA-256 packages for Windows (`kmedia-windows-x64-setup.exe` Inno Setup installer and `kmedia-windows-x64.zip` portable bundle), macOS (`kmedia-macos-arm64.dmg`), and Linux (`kmedia-linux-x64.tar.gz`).
 
-Release Please writes each new version above `## [Unreleased]`. Before merging a release pull request, move the entries under `## [Unreleased]` into the new version section of `CHANGELOG.md` in that same pull request, so they stay with the release that shipped them and the next changes start from an empty `## [Unreleased]`.
+Release Please writes each new version above `## [Unreleased]`. The `## [Unreleased]` notes are written by hand for the people who use KMedia, so they are what a release ships with:
+
+1. Stop merging new features, let the open pull requests land, and wait for `main` to be green.
+2. Run *Release Packaging* by hand (`workflow_dispatch`) on `main`; it only builds the packages as workflow artifacts. Install and open each one before going on.
+3. Pick the version on purpose. Release Please bumps only the patch for new features before 1.0 (`bump-patch-for-minor-pre-major`), so a larger release sets its number with a `Release-As: x.y.z` footer in a commit on `main`.
+4. As the last step, when nothing else will reach `main`, edit the release pull request: replace the generated commit list in its version section of `CHANGELOG.md` with the entries under `## [Unreleased]`, leave `## [Unreleased]` empty, and put the same notes in the pull request description, which becomes the GitHub release notes. Release Please rewrites the pull request on every commit to `main`, so earlier edits are lost.
+5. Merge it. The tag starts *Release Packaging*, which attaches the packages and `SHA256SUMS.txt` to the release without touching its notes.
 
 ## Building from Source
 

@@ -223,8 +223,10 @@ jobs:
         working-directory: release-files
         run: sha256sum * > SHA256SUMS.txt
 
+      # The release notes come from the curated CHANGELOG through release-please; this step
+      # only attaches the packages and their checksums.
       - name: Publish release
         uses: softprops/action-gh-release@v3
         with:
-          generate_release_notes: true
+          generate_release_notes: false
           files: release-files/*
