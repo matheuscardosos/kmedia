@@ -8,6 +8,7 @@ qt_add_executable(kmedia_tests
     test_database_manager.cpp
     test_meeting_calendar.cpp
     test_meeting_timer.cpp
+    test_timer_remote.cpp
     test_profile_manager.cpp
     test_settings_and_network.cpp
     test_thumbnail_cache.cpp

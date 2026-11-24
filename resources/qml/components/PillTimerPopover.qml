@@ -225,7 +225,7 @@ ColumnLayout {
 
         Layout.fillWidth: true
         Layout.preferredHeight: Math.min(contentHeight, 232)
-        visible: count > 0
+        visible: count > 0 && !root.showOptions
         clip: true
         spacing: 2
         model: root.timer.parts
@@ -409,159 +409,340 @@ ColumnLayout {
         }
     }
 
-    ColumnLayout {
+    // The options scroll when the window is too short for all of them.
+    Flickable {
+        id: optionsView
+
+        readonly property real roomLeft: Math.max(160, (root.Window.window ? root.Window.window.height : 720) - 480)
+
         Layout.fillWidth: true
-        spacing: 8
+        Layout.preferredHeight: Math.min(optionsColumn.implicitHeight, optionsView.roomLeft)
         visible: root.showOptions
+        contentWidth: width
+        contentHeight: optionsColumn.implicitHeight
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.vertical: StudioScrollBar {}
 
-        component CountRow: RowLayout {
-            id: countRow
+        ColumnLayout {
+            id: optionsColumn
 
-            property string label
-            property int value
-            signal changed(int value)
+            width: optionsView.width - 8
+            spacing: 8
 
-            Layout.fillWidth: true
-            spacing: 6
+            component CountRow: RowLayout {
+                id: countRow
 
-            Text {
+                property string label
+                property int value
+                signal changed(int value)
+
                 Layout.fillWidth: true
-                text: countRow.label
-                color: Theme.textSecondary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeXs
-                elide: Text.ElideRight
-            }
+                spacing: 6
 
-            StudioButton {
-                variant: "ghost"
-                iconName: "minus"
-                leftPadding: 0
-                rightPadding: 0
-                Layout.preferredWidth: 24
-                Layout.preferredHeight: 24
-                onClicked: countRow.changed(countRow.value - 1)
-            }
-
-            Text {
-                text: countRow.value
-                color: Theme.textPrimary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeSm
-            }
-
-            StudioButton {
-                variant: "ghost"
-                iconName: "plus"
-                leftPadding: 0
-                rightPadding: 0
-                Layout.preferredWidth: 24
-                Layout.preferredHeight: 24
-                onClicked: countRow.changed(countRow.value + 1)
-            }
-        }
-
-        CountRow {
-            visible: root.timer.meetingKind === "midweek"
-            label: qsTr("Apply Yourself parts")
-            value: root.timer.ayfmCount
-            onChanged: (value) => root.timer.ayfmCount = value
-        }
-
-        CountRow {
-            visible: root.timer.meetingKind === "midweek"
-            label: qsTr("Living as Christians parts")
-            value: root.timer.lacCount
-            onChanged: (value) => root.timer.lacCount = value
-        }
-
-        // Counting down, the study can be made to end at a set time, so it absorbs earlier delays.
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 6
-            visible: root.timer.hasStudyPart
-
-            Text {
-                Layout.fillWidth: true
-                text: qsTr("End the study at")
-                color: Theme.textSecondary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeXs
-                elide: Text.ElideRight
-            }
-
-            TextField {
-                Layout.preferredWidth: 70
-                text: root.timer.studyEndTime
-                placeholderText: "hh:mm"
-                validator: RegularExpressionValidator { regularExpression: /^$|^([01]?\d|2[0-3]):[0-5]\d$/ }
-                horizontalAlignment: TextInput.AlignHCenter
-                color: Theme.textPrimary
-                placeholderTextColor: Theme.textMuted
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeSm
-                background: StudioCard {
-                    surfaceColor: Theme.windowBase
-                    cornerRadius: Theme.radiusSmall
+                Text {
+                    Layout.fillWidth: true
+                    text: countRow.label
+                    color: Theme.textSecondary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                    elide: Text.ElideRight
                 }
-                onEditingFinished: root.timer.studyEndTime = text
+
+                StudioButton {
+                    variant: "ghost"
+                    iconName: "minus"
+                    leftPadding: 0
+                    rightPadding: 0
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
+                    onClicked: countRow.changed(countRow.value - 1)
+                }
+
+                Text {
+                    text: countRow.value
+                    color: Theme.textPrimary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeSm
+                }
+
+                StudioButton {
+                    variant: "ghost"
+                    iconName: "plus"
+                    leftPadding: 0
+                    rightPadding: 0
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
+                    onClicked: countRow.changed(countRow.value + 1)
+                }
             }
-        }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 6
+            CountRow {
+                visible: root.timer.meetingKind === "midweek"
+                label: qsTr("Apply Yourself parts")
+                value: root.timer.ayfmCount
+                onChanged: (value) => root.timer.ayfmCount = value
+            }
 
-            Text {
+            CountRow {
+                visible: root.timer.meetingKind === "midweek"
+                label: qsTr("Living as Christians parts")
+                value: root.timer.lacCount
+                onChanged: (value) => root.timer.lacCount = value
+            }
+
+            // Counting down, the study can be made to end at a set time, so it absorbs earlier delays.
+            RowLayout {
                 Layout.fillWidth: true
-                text: qsTr("Timer window")
-                color: Theme.textSecondary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeXs
-                elide: Text.ElideRight
+                spacing: 6
+                visible: root.timer.hasStudyPart
+
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("End the study at")
+                    color: Theme.textSecondary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                    elide: Text.ElideRight
+                }
+
+                TextField {
+                    Layout.preferredWidth: 70
+                    text: root.timer.studyEndTime
+                    placeholderText: "hh:mm"
+                    validator: RegularExpressionValidator { regularExpression: /^$|^([01]?\d|2[0-3]):[0-5]\d$/ }
+                    horizontalAlignment: TextInput.AlignHCenter
+                    color: Theme.textPrimary
+                    placeholderTextColor: Theme.textMuted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeSm
+                    background: StudioCard {
+                        surfaceColor: Theme.windowBase
+                        cornerRadius: Theme.radiusSmall
+                    }
+                    onEditingFinished: root.timer.studyEndTime = text
+                }
             }
 
-            StudioSwitch {
-                checked: ApplicationController.timerWindowVisible
-                onToggled: ApplicationController.timerWindowVisible = checked
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 6
-
-            Text {
+            RowLayout {
                 Layout.fillWidth: true
-                text: qsTr("Count down")
-                color: Theme.textSecondary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeXs
+                spacing: 6
+
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("Timer window")
+                    color: Theme.textSecondary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                    elide: Text.ElideRight
+                }
+
+                StudioSwitch {
+                    checked: ApplicationController.timerWindowVisible
+                    onToggled: ApplicationController.timerWindowVisible = checked
+                }
             }
 
-            StudioSwitch {
-                checked: root.timer.countDown
-                onToggled: root.timer.countDown = checked
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 6
-            visible: !root.timer.countDown
-
-            Text {
+            // A read only page with the timer for a tablet at the lectern, inspired by Meeting Media
+            // Manager; only devices given its link or QR code can open it.
+            RowLayout {
                 Layout.fillWidth: true
-                text: qsTr("Show only the extra time")
-                color: Theme.textSecondary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSizeXs
-                elide: Text.ElideRight
+                spacing: 6
+
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("Page for a tablet")
+                    color: Theme.textSecondary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                    elide: Text.ElideRight
+                }
+
+                StudioSwitch {
+                    checked: ApplicationController.timerRemote.enabled
+                    onToggled: ApplicationController.timerRemote.enabled = checked
+                }
             }
 
-            StudioSwitch {
-                checked: root.timer.overtimeAmountOnly
-                onToggled: root.timer.overtimeAmountOnly = checked
+            ColumnLayout {
+                id: remoteBox
+
+                readonly property var remote: ApplicationController.timerRemote
+                readonly property string link: remoteBox.remote.urls.length > 0 ? remoteBox.remote.urls[0] : ""
+
+                Layout.fillWidth: true
+                spacing: 6
+                visible: remoteBox.remote.enabled
+
+                Text {
+                    Layout.fillWidth: true
+                    visible: text.length > 0
+                    text: {
+                        switch (remoteBox.remote.problem) {
+                        case TimerRemoteServer.PortInUse:
+                            return qsTr("Another program uses port %1. Choose another port.").arg(remoteBox.remote.port)
+                        case TimerRemoteServer.NoNetwork:
+                            return qsTr("No network was found. Connect this computer to the same network as the tablet.")
+                        case TimerRemoteServer.Failed:
+                            return qsTr("The page for the tablet could not start.")
+                        default:
+                            return ""
+                        }
+                    }
+                    color: Theme.statusLive
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                    wrapMode: Text.WordWrap
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    visible: remoteBox.link.length > 0
+                    text: qsTr("Scan the code with the tablet, or open this address in its browser:")
+                    color: Theme.textMuted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                    wrapMode: Text.WordWrap
+                }
+
+                // The QR code of the page's address, with its quiet border.
+                Canvas {
+                    id: qrCanvas
+
+                    readonly property var qr: ApplicationController.timerRemote.qrCode(remoteBox.link)
+
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 156
+                    Layout.preferredHeight: 156
+                    visible: remoteBox.link.length > 0 && qrCanvas.qr.size > 0
+                    onQrChanged: requestPaint()
+                    onPaint: {
+                        const context = getContext("2d")
+                        context.fillStyle = "#FFFFFF"
+                        context.fillRect(0, 0, width, height)
+                        const size = qrCanvas.qr.size
+                        if (!size)
+                            return
+                        const cell = width / (size + 4)
+                        context.fillStyle = "#000000"
+                        for (let y = 0; y < size; ++y) {
+                            for (let x = 0; x < size; ++x) {
+                                if (qrCanvas.qr.modules[y * size + x] === "1")
+                                    context.fillRect((x + 2) * cell, (y + 2) * cell, Math.ceil(cell), Math.ceil(cell))
+                            }
+                        }
+                    }
+                }
+
+                TextEdit {
+                    Layout.fillWidth: true
+                    visible: remoteBox.link.length > 0
+                    text: remoteBox.link
+                    readOnly: true
+                    selectByMouse: true
+                    horizontalAlignment: TextEdit.AlignHCenter
+                    wrapMode: TextEdit.WrapAnywhere
+                    color: Theme.textPrimary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    StudioButton {
+                        variant: "secondary"
+                        iconName: "refresh-cw"
+                        text: qsTr("New code")
+                        onClicked: remoteBox.remote.renewAccessCode()
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("Pages opened with the old code stop updating")
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
+                    Text {
+                        text: qsTr("Port")
+                        color: Theme.textSecondary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeXs
+                    }
+
+                    TextField {
+                        Layout.preferredWidth: 64
+                        text: remoteBox.remote.port
+                        validator: IntValidator { bottom: 1024; top: 65535 }
+                        horizontalAlignment: TextInput.AlignHCenter
+                        color: Theme.textPrimary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeSm
+                        background: StudioCard {
+                            surfaceColor: Theme.windowBase
+                            cornerRadius: Theme.radiusSmall
+                        }
+                        onEditingFinished: remoteBox.remote.port = parseInt(text)
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: qsTr("Progress ring on the page")
+                        color: Theme.textSecondary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeXs
+                        elide: Text.ElideRight
+                    }
+
+                    StudioSwitch {
+                        checked: remoteBox.remote.focusLayout
+                        onToggled: remoteBox.remote.focusLayout = checked
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("Count down")
+                    color: Theme.textSecondary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                }
+
+                StudioSwitch {
+                    checked: root.timer.countDown
+                    onToggled: root.timer.countDown = checked
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                visible: !root.timer.countDown
+
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("Show only the extra time")
+                    color: Theme.textSecondary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                    elide: Text.ElideRight
+                }
+
+                StudioSwitch {
+                    checked: root.timer.overtimeAmountOnly
+                    onToggled: root.timer.overtimeAmountOnly = checked
+                }
             }
         }
     }

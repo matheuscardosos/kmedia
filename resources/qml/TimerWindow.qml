@@ -99,6 +99,26 @@ Window {
     // Closing the window turns it off, like the switch in the timer.
     onClosing: ApplicationController.timerWindowVisible = false
 
+    // The timer remote's page shows the same title and words, in the interface language.
+    Binding {
+        target: ApplicationController.timerRemote
+        property: "partTitle"
+        value: timerWindow.currentPart ? timerWindow.partTitle(timerWindow.currentPart) : ""
+    }
+
+    Binding {
+        target: ApplicationController.timerRemote
+        property: "pageTexts"
+        value: ({
+            lang: ApplicationController.uiLanguage,
+            elapsed: qsTr("Elapsed"),
+            remaining: qsTr("Remaining"),
+            paused: qsTr("Paused"),
+            meetingStartsIn: qsTr("Meeting starts in"),
+            reconnecting: qsTr("Reconnecting...")
+        })
+    }
+
     Timer {
         interval: 1000
         repeat: true

@@ -40,6 +40,7 @@ endif()
 
 find_package(LibMPV REQUIRED)
 find_package(minizip-ng CONFIG REQUIRED)
+find_package(unofficial-nayuki-qr-code-generator CONFIG REQUIRED)
 
 include(CompilerWarnings)
 
@@ -120,6 +121,8 @@ qt_add_library(kmedia_core STATIC
     src/network/PublicationMediaPicker.cpp
     src/network/DocumentMediaImporter.h
     src/network/DocumentMediaImporter.cpp
+    src/network/TimerRemoteServer.h
+    src/network/TimerRemoteServer.cpp
     src/network/YeartextProvider.h
     src/network/YeartextProvider.cpp
     src/network/StudyBibleMedia.h
@@ -164,6 +167,12 @@ qt6_add_translation(KMEDIA_QM_FILES
     resources/translations/kmedia_en.ts
     resources/translations/kmedia_pt.ts
 )
+# The timer remote's page, served to tablets on the local network.
+qt6_add_resources(kmedia_core "kmedia_web"
+    PREFIX "/kmedia"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+    FILES resources/web/timer-remote.html
+)
 qt6_add_resources(kmedia_core "kmedia_translations"
     PREFIX "/i18n"
     BASE "${CMAKE_CURRENT_BINARY_DIR}"
@@ -185,6 +194,7 @@ target_link_libraries(kmedia_core
         Qt6::Svg
         LibMPV::LibMPV
         MINIZIP::minizip-ng
+        unofficial::nayuki-qr-code-generator::nayuki-qr-code-generator
         $<$<PLATFORM_ID:Windows>:psapi>
 )
 

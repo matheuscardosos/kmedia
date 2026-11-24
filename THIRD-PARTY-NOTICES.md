@@ -4,7 +4,7 @@ KMedia is licensed under the GNU Affero General Public License v3.0 or later (`A
 
 ## Core Frameworks and Libraries
 
-- **Qt 6** (`Core`, `Gui`, `LinguistTools`, `Network`, `OpenGL`, `Pdf`, `Quick`, `QuickControls2`, `QuickEffects`, `Sql`, `Svg`, `Test`, `WebSockets`)
+- **Qt 6** (`Core`, `Gui`, `LinguistTools`, `Multimedia`, `Network`, `OpenGL`, `Pdf`, `Quick`, `QuickControls2`, `QuickEffects`, `Sql`, `Svg`, `Test`, `WebSockets`)
   - License: LGPL-3.0-or-later / GPL-3.0-or-later
   - Upstream: https://www.qt.io/
 
@@ -15,6 +15,11 @@ KMedia is licensed under the GNU Affero General Public License v3.0 or later (`A
 - **minizip-ng**
   - License: zlib License
   - Upstream: https://github.com/zlib-ng/minizip-ng
+
+- **QR Code generator** (Project Nayuki, C++ library, for the timer remote's QR code)
+  - Copyright (c) Project Nayuki
+  - License: MIT License
+  - Upstream: https://www.nayuki.io/page/qr-code-generator-library
 
 - **SQLite** (via Qt Sqlite driver and embedded SQLite package reading)
   - License: Public Domain
