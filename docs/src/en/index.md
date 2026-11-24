@@ -27,7 +27,7 @@ hero:
 
 features:
   - title: Lightweight Native Performance
-    details: A single native process that opens in about 1.3 seconds and stays quiet on Kingdom Hall laptops, with no bundled browser.
+    details: A single native process that opens in a few seconds, even on older laptops, and stays quiet on Kingdom Hall computers, with no bundled browser.
   - title: Hardware-Accelerated libmpv Engine
     details: Zero-copy OpenGL video rendering with automatic hardware decoding (hwdec=auto-safe), gapless audio, and non-destructive trim markers.
   - title: Automated Media Fetching
