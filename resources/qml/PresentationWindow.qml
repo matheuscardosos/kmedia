@@ -45,16 +45,45 @@ Window {
             visible: presentationRoot.activeKind === PlaybackController.Image ||
                 presentationRoot.activeKind === PlaybackController.Pdf
 
+            // Eases toward the zoom and pan set in the preview, but not when other media comes in.
+            property bool easeViewport: true
+
+            Connections {
+                target: ApplicationController.playback
+                function onMediaChanged() {
+                    graphicTransformContainer.easeViewport = false
+                    Qt.callLater(() => graphicTransformContainer.easeViewport = true)
+                }
+            }
+
             transform: [
                 Scale {
                     origin.x: graphicTransformContainer.width * 0.5
                     origin.y: graphicTransformContainer.height * 0.5
                     xScale: ApplicationController.playback.zoomScale
                     yScale: ApplicationController.playback.zoomScale
+
+                    Behavior on xScale {
+                        enabled: graphicTransformContainer.easeViewport
+                        SmoothedAnimation { duration: 180; velocity: -1 }
+                    }
+                    Behavior on yScale {
+                        enabled: graphicTransformContainer.easeViewport
+                        SmoothedAnimation { duration: 180; velocity: -1 }
+                    }
                 },
                 Translate {
                     x: ApplicationController.playback.panX * graphicTransformContainer.width
                     y: ApplicationController.playback.panY * graphicTransformContainer.height
+
+                    Behavior on x {
+                        enabled: graphicTransformContainer.easeViewport
+                        SmoothedAnimation { duration: 180; velocity: -1 }
+                    }
+                    Behavior on y {
+                        enabled: graphicTransformContainer.easeViewport
+                        SmoothedAnimation { duration: 180; velocity: -1 }
+                    }
                 }
             ]
 

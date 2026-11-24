@@ -461,162 +461,162 @@
         <translation>Prévia ao Vivo</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="148"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="151"/>
         <source>STANDBY ACTIVE</source>
         <translation>ESPERA ATIVA</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="149"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="152"/>
         <source>NO ACTIVE MEDIA</source>
         <translation>NENHUMA MÍDIA ATIVA</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="165"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="168"/>
         <source>STANDBY</source>
         <translation>ESPERA</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="167"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="170"/>
         <source>ON AIR</source>
         <translation>NO AR</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="168"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="171"/>
         <source>READY</source>
         <translation>PRONTO</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="212"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="215"/>
         <source>Standby</source>
         <translation>Espera</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="250"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="253"/>
         <source>Blackout</source>
         <translation>Blackout</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="323"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="326"/>
         <source>Toggle secondary presentation output window</source>
         <translation>Alternar janela secundária de apresentação</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="353"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="356"/>
         <source>File Information</source>
         <translation>Informações do arquivo</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="367"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="370"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="379"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="382"/>
         <source>Format</source>
         <translation>Formato</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="389"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="392"/>
         <source>Resolution</source>
         <translation>Resolução</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="399"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="402"/>
         <source>Duration</source>
         <translation>Duração</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="409"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="412"/>
         <source>File Size</source>
         <translation>Tamanho</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="446"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="449"/>
         <source>Outputs / Routing</source>
         <translation>Saídas / Roteamento</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="458"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="461"/>
         <source>Projector / 2nd Display</source>
         <translation>Projetor / 2ª Tela</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="470"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="473"/>
         <source>Active</source>
         <translation>Ativo</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="471"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="474"/>
         <source>Ready</source>
         <translation>Pronto</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="471"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="474"/>
         <source>Off</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="483"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="486"/>
         <source>OBS Scene Sync</source>
         <translation>Sincronia OBS</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="493"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="496"/>
         <source>Connected</source>
         <translation>Conectado</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="493"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="496"/>
         <source>Offline</source>
         <translation>Offline</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="505"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="508"/>
         <source>Audio Output</source>
         <translation>Saída de Áudio</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="515"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="518"/>
         <source>Muted</source>
         <translation>Silenciado</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="515"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="518"/>
         <source>Active (Stereo)</source>
         <translation>Ativo (Estéreo)</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="549"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="552"/>
         <source>Edit (Non-Destructive)</source>
         <translation>Edição (Não destrutiva)</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="570"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="573"/>
         <source>Reset trim markers and zoom</source>
         <translation>Redefinir cortes e zoom</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="579"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="582"/>
         <source>In</source>
         <translation>Início</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="615"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="618"/>
         <source>Set trim start at current position</source>
         <translation>Definir início na posição atual</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="621"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="624"/>
         <source>Out</source>
         <translation>Fim</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="659"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="662"/>
         <source>Set trim end at current position</source>
         <translation>Definir fim na posição atual</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="704"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="705"/>
         <source>Page %1 of %2</source>
         <translation>Página %1 de %2</translation>
     </message>
