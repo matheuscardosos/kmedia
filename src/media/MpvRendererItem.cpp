@@ -324,8 +324,8 @@ void MpvRendererItem::setSpeed(double speed)
 
 void MpvRendererItem::requestVideoFrame(int maxWidth)
 {
-    if (m_frameRequested || !m_mediaLoaded || !isVisible() || window() == nullptr ||
-        !window()->isExposed() || width() <= 0 || height() <= 0) {
+    if (m_frameRequested || !m_mediaLoaded || !m_frameShown || !isVisible() ||
+        window() == nullptr || !window()->isExposed() || width() <= 0 || height() <= 0) {
         return;
     }
     const int targetWidth = qMin(maxWidth, static_cast<int>(width()));
@@ -337,9 +337,10 @@ void MpvRendererItem::requestVideoFrame(int maxWidth)
     }
     m_frameRequested = true;
     QQuickItemGrabResult* grab = m_frameGrab.data();
-    connect(grab, &QQuickItemGrabResult::ready, this, [this, grab]() {
+    const quint64 generation = m_frameGeneration;
+    connect(grab, &QQuickItemGrabResult::ready, this, [this, grab, generation]() {
         m_frameRequested = false;
-        if (!grab->image().isNull()) {
+        if (generation == m_frameGeneration && !grab->image().isNull()) {
             emit videoFrameReady(grab->image());
         }
     });
@@ -547,6 +548,8 @@ void MpvRendererItem::loadMedia(const QUrl& url, qint64 trimStartMs, qint64 trim
     }
 
     applyTrimProperties(trimStartMs, trimEndMs);
+    ++m_frameGeneration;
+    m_frameShown = false;
 
     const QByteArray pathUtf8 =
         url.isLocalFile() ? url.toLocalFile().toUtf8() : url.toString().toUtf8();
@@ -581,6 +584,8 @@ void MpvRendererItem::stop()
 
     const char* cmd[] = {"stop", nullptr};
     mpv_command_async(m_mpv.get(), 0, cmd);
+    ++m_frameGeneration;
+    m_frameShown = false;
     if (m_mediaLoaded) {
         m_mediaLoaded = false;
         emit mediaLoadedChanged();
@@ -748,6 +753,9 @@ void MpvRendererItem::processMpvEvents()
         }
 
         switch (event->event_id) {
+        case MPV_EVENT_PLAYBACK_RESTART:
+            m_frameShown = true;
+            break;
         case MPV_EVENT_FILE_LOADED:
             if (!m_mediaLoaded) {
                 m_mediaLoaded = true;

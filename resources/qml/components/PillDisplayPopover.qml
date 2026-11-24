@@ -125,6 +125,25 @@ ColumnLayout {
         }
     }
 
+    // The floating preview, inspired by Meeting Media Manager.
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: 8
+
+        Text {
+            text: qsTr("Floating preview")
+            color: Theme.textPrimary
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeSm
+            Layout.fillWidth: true
+        }
+
+        StudioSwitch {
+            checked: ApplicationController.floatingPreview
+            onToggled: ApplicationController.floatingPreview = checked
+        }
+    }
+
     // The camera as background, offered to sign language congregations (inspired by Meeting
     // Media Manager).
     ColumnLayout {

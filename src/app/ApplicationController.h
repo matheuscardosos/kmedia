@@ -94,6 +94,8 @@ class ApplicationController : public QObject
     Q_PROPERTY(QString memoryUsage READ memoryUsage CONSTANT FINAL)
     Q_PROPERTY(QString uiLanguage READ uiLanguage NOTIFY uiLanguageChanged FINAL)
     Q_PROPERTY(bool darkTheme READ isDarkTheme WRITE setDarkTheme NOTIFY darkThemeChanged FINAL)
+    Q_PROPERTY(bool floatingPreview READ isFloatingPreviewEnabled WRITE setFloatingPreviewEnabled
+                   NOTIFY floatingPreviewChanged FINAL)
     Q_PROPERTY(bool demoMode READ isDemoMode NOTIFY demoModeChanged FINAL)
     Q_PROPERTY(int startupTabIndex READ startupTabIndex CONSTANT FINAL)
     Q_PROPERTY(bool boothPinEnabled READ isBoothPinEnabled NOTIFY boothLockChanged FINAL)
@@ -151,6 +153,8 @@ public:
     [[nodiscard]] QString uiLanguage() const;
     [[nodiscard]] bool isDarkTheme() const;
     void setDarkTheme(bool dark);
+    [[nodiscard]] bool isFloatingPreviewEnabled() const;
+    void setFloatingPreviewEnabled(bool enabled);
     [[nodiscard]] bool isDemoMode() const;
     [[nodiscard]] int startupTabIndex() const;
     [[nodiscard]] bool isBoothPinEnabled() const;
@@ -212,6 +216,7 @@ signals:
     void profilesChanged();
     void uiLanguageChanged();
     void darkThemeChanged();
+    void floatingPreviewChanged();
     void demoModeChanged();
     void boothLockChanged();
     void toastRequested(const QString& message, const QString& level);
@@ -233,6 +238,7 @@ private:
     std::unique_ptr<QTemporaryDir> m_demoSandbox;
     bool m_demoMode{false};
     bool m_darkTheme{true};
+    bool m_floatingPreview{true};
     QString m_uiLanguage{QStringLiteral("en")};
     QString m_boothPinSalt;
     QString m_boothPinHash;

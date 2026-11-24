@@ -141,6 +141,10 @@ private:
     bool m_paused{true};
     bool m_mediaLoaded{false};
     bool m_frameRequested{false};
+    // Frames are only handed out once the current file has started, and a grab taken for an
+    // earlier file is dropped, so the preview never shows the previous video.
+    bool m_frameShown{false};
+    quint64 m_frameGeneration{0};
     QSharedPointer<QQuickItemGrabResult> m_frameGrab;
     QString m_hardwareDecoder{QStringLiteral("auto-safe")};
     qint64 m_positionMs{0};

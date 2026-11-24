@@ -134,6 +134,34 @@ TEST_CASE("PlaybackController detects kinds, normalizes trims, and preserves sta
     REQUIRE(controller.panY() == Catch::Approx(0.0));
 }
 
+TEST_CASE("The preview drops the last video frame when the media changes", "[media]")
+{
+    kmedia::PlaybackController controller;
+    MpvRendererItem player;
+    controller.attachMpvItem(&player);
+    QImage frame(16, 9, QImage::Format_RGB32);
+    frame.fill(Qt::red);
+
+    controller.loadMediaWithKind(QUrl::fromLocalFile(QStringLiteral("/tmp/first.mp4")),
+                                 kmedia::PlaybackController::MediaKind::Video);
+    emit player.videoFrameReady(frame);
+    REQUIRE(controller.previewSerial() == 1);
+    REQUIRE_FALSE(controller.previewFrame().isNull());
+
+    // A new video starts with no frame; the player drops grabs taken for the old one.
+    controller.loadMediaWithKind(QUrl::fromLocalFile(QStringLiteral("/tmp/second.mp4")),
+                                 kmedia::PlaybackController::MediaKind::Video);
+    REQUIRE(controller.previewSerial() == 0);
+    REQUIRE(controller.previewFrame().isNull());
+
+    emit player.videoFrameReady(frame);
+    REQUIRE(controller.previewSerial() == 1);
+
+    controller.stop();
+    REQUIRE(controller.previewSerial() == 0);
+    REQUIRE(controller.previewFrame().isNull());
+}
+
 TEST_CASE("The presentation camera is offered to sign languages and reports a missing camera",
           "[media]")
 {

@@ -45,12 +45,27 @@ void PlaybackController::setPreviewActive(bool active)
     emit previewActiveChanged();
 }
 
+int PlaybackController::previewFrameWidth() const
+{
+    return m_previewFrameWidth;
+}
+
+void PlaybackController::setPreviewFrameWidth(int width)
+{
+    width = qBound(64, width, 3840);
+    if (m_previewFrameWidth == width) {
+        return;
+    }
+    m_previewFrameWidth = width;
+    emit previewFrameWidthChanged();
+}
+
 void PlaybackController::grabPreviewFrame()
 {
     if (m_mpvItem.isNull() || m_mediaKind != MediaKind::Video) {
         return;
     }
-    m_mpvItem->requestVideoFrame(480);
+    m_mpvItem->requestVideoFrame(m_previewFrameWidth);
 }
 
 void PlaybackController::storePreviewFrame(const QImage& frame)
@@ -61,6 +76,18 @@ void PlaybackController::storePreviewFrame(const QImage& frame)
     }
     ++m_previewSerial;
     emit previewFrameChanged();
+}
+
+void PlaybackController::clearPreviewFrame()
+{
+    {
+        const QMutexLocker lock(&m_previewMutex);
+        m_previewFrame = {};
+    }
+    if (m_previewSerial != 0) {
+        m_previewSerial = 0;
+        emit previewFrameChanged();
+    }
 }
 
 void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
@@ -490,6 +517,8 @@ void PlaybackController::loadMediaWithKind(const QUrl& url, MediaKind kind, cons
     m_trimEndMs = cleanEnd;
     m_positionMs = cleanStart;
     m_durationMs = 0;
+    // The previous video's last frame must not flash in the preview.
+    clearPreviewFrame();
 
     m_zoomScale = 1.0;
     m_panX = 0.0;
@@ -554,6 +583,7 @@ void PlaybackController::stop()
     }
 
     m_mediaKind = MediaKind::None;
+    clearPreviewFrame();
     m_source.clear();
     m_mediaTitle.clear();
     m_paused = true;

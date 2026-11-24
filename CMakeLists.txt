@@ -241,6 +241,8 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/NavRailButton.qml
     resources/qml/components/StatusRow.qml
     resources/qml/components/CameraLayer.qml
+    resources/qml/components/FloatingPreview.qml
+    resources/qml/components/LivePreviewSurface.qml
     resources/qml/components/LeftNavRail.qml
     resources/qml/components/CompactBottomNav.qml
     resources/qml/components/ToastBanner.qml

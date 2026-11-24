@@ -507,6 +507,37 @@ ColumnLayout {
                             }
                         }
 
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+
+                                Text {
+                                    text: qsTr("Floating preview")
+                                    color: Theme.textPrimary
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeSm
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: qsTr("While the preview panel is closed, show a small live preview of the presentation screen while a picture, PDF page, or video is on it.")
+                                    color: Theme.textMuted
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeXs
+                                    wrapMode: Text.WordWrap
+                                }
+                            }
+
+                            StudioSwitch {
+                                checked: ApplicationController.floatingPreview
+                                onToggled: ApplicationController.floatingPreview = checked
+                            }
+                        }
+
                         Repeater {
                             model: ApplicationController.displayManager.screens
 

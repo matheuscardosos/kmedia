@@ -15,6 +15,7 @@ inline constexpr auto kMediaLanguage = "media/language";
 inline constexpr auto kMediaFallbackLanguage = "media/fallback_language";
 inline constexpr auto kUiLanguage = "ui/language";
 inline constexpr auto kUiDarkTheme = "ui/dark_theme";
+inline constexpr auto kUiFloatingPreview = "ui/floating_preview";
 inline constexpr auto kMeetingMidweekDay = "meeting/midweek_day";
 inline constexpr auto kMeetingMidweekTime = "meeting/midweek_time";
 inline constexpr auto kMeetingWeekendDay = "meeting/weekend_day";
