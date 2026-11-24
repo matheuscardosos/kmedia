@@ -162,7 +162,8 @@ TEST_CASE("The timer remote reports a port in use and makes QR codes", "[network
         kmedia::TimerRemoteServer::qrCode(QStringLiteral("http://192.168.0.10:8787/abc23456/"));
     const int size = qr.value(QStringLiteral("size")).toInt();
     REQUIRE(size >= 21);
-    REQUIRE(qr.value(QStringLiteral("modules")).toString().size() == static_cast<qsizetype>(size) * size);
+    REQUIRE(qr.value(QStringLiteral("modules")).toString().size() ==
+            static_cast<qsizetype>(size) * size);
     REQUIRE(kmedia::TimerRemoteServer::newAccessCode() !=
             kmedia::TimerRemoteServer::newAccessCode());
 }
