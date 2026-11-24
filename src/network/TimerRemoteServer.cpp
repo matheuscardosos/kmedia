@@ -215,7 +215,7 @@ QVariantMap TimerRemoteServer::qrCode(const QString& text)
                                                                    qrcodegen::QrCode::Ecc::MEDIUM);
         const int size = qr.getSize();
         QString modules;
-        modules.reserve(size * size);
+        modules.reserve(static_cast<qsizetype>(size) * size);
         for (int y = 0; y < size; ++y) {
             for (int x = 0; x < size; ++x) {
                 modules.append(qr.getModule(x, y) ? QLatin1Char('1') : QLatin1Char('0'));
