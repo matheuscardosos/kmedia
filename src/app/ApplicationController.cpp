@@ -256,6 +256,26 @@ void ApplicationController::setDarkTheme(bool dark)
     emit darkThemeChanged();
 }
 
+bool ApplicationController::isFloatingPreviewEnabled() const
+{
+    return m_floatingPreview;
+}
+
+void ApplicationController::setFloatingPreviewEnabled(bool enabled)
+{
+    if (m_floatingPreview == enabled) {
+        return;
+    }
+    m_floatingPreview = enabled;
+    if (!m_demoMode) {
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kUiFloatingPreview),
+                                     enabled);
+        }
+    }
+    emit floatingPreviewChanged();
+}
+
 void ApplicationController::toggleDarkTheme()
 {
     setDarkTheme(!m_darkTheme);
@@ -805,6 +825,12 @@ void ApplicationController::applyProfileSettings()
         standbyImage.isEmpty() ? QUrl{} : QUrl::fromLocalFile(standbyImage));
     m_camera->setCameraId(
         settings->stringValue(QLatin1StringView(kmedia::settings_keys::kPresentationCamera)));
+    const bool floatingPreview =
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kUiFloatingPreview), true);
+    if (m_floatingPreview != floatingPreview) {
+        m_floatingPreview = floatingPreview;
+        emit floatingPreviewChanged();
+    }
 
     syncAudioRouting();
 

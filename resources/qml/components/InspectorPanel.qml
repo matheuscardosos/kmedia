@@ -122,28 +122,8 @@ Rectangle {
                         border.color: Theme.borderHairline
                         clip: true
 
-                        // A playing video shows live frames grabbed from the presentation player.
-                        Image {
+                        LivePreviewSurface {
                             anchors.fill: parent
-                            visible: root.mediaKind === PlaybackController.Video
-                                     && !ApplicationController.playback.standbyActive
-                                     && ApplicationController.playback.previewSerial > 0
-                            source: visible ? "image://kmedia-preview/" + ApplicationController.playback.previewSerial : ""
-                            cache: false
-                            fillMode: Image.PreserveAspectFit
-                            smooth: true
-                        }
-
-                        Image {
-                            anchors.fill: parent
-                            visible: (root.mediaKind === PlaybackController.Image || root.mediaKind === PlaybackController.Pdf) && !ApplicationController.playback.standbyActive
-                            source: root.mediaKind === PlaybackController.Pdf
-                                    ? ApplicationController.pdf.currentPageImageUrl
-                                    : ApplicationController.playback.source
-                            fillMode: Image.PreserveAspectFit
-                            smooth: true
-                            mipmap: true
-                            scale: ApplicationController.playback.zoomScale
                         }
 
                         Rectangle {

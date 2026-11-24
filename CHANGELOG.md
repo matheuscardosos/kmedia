@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- A floating live preview of the presentation screen, inspired by Meeting Media Manager: while the preview panel is closed, it shows up in the bottom right corner whenever a picture, PDF page, or video is presented, can be dragged and resized from its corners, and opens large with a click. **Floating preview** in the **Display** pill and *Settings > Display* turns it off.
 - Sign language congregations can show a camera as the background of the presentation screen, inspired by Meeting Media Manager: pick it in the **Display** pill and it replaces the standby picture or the yeartext while nothing is presented. Qt Multimedia is now a dependency, loaded only when a camera is used.
 - The preview panel shows a playing video live (about four frames a second, taken from the presentation player while the panel is on screen), where it used to stay black.
 - Videos from JW.org that have subtitles now download them next to the video, inspired by Meeting Media Manager, so the subtitles button can show them.
@@ -45,6 +46,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- The preview no longer flashes the last frame of the previous video when another video starts, and pictures and PDF pages in the preview now follow the pan of the presentation screen, not only its zoom.
 - A request that failed or timed out was still read after Qt had closed it, which logged `device not open` warnings at startup; catalog requests and downloads now read a reply only while it is open.
 - The playback speed saved for an item now reaches the player: it applies when the item plays, and the item menu has a **Speed** submenu (0.5x to 2x).
 - Windows builds no longer fail at random when the app and the tests link at the same time: both copied `libmpv-2.dll` into the same folder at once, and one copy hit a permission error. One shared copy step now runs before either.

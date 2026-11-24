@@ -42,6 +42,9 @@ class PlaybackController : public QObject
     Q_PROPERTY(double speed READ speed WRITE setSpeed NOTIFY speedChanged FINAL)
     // Counts the live preview frames of a playing video, for the preview panel to reload.
     Q_PROPERTY(int previewSerial READ previewSerial NOTIFY previewFrameChanged FINAL)
+    // How wide the grabbed frames are at most: small for the panel, larger for a big preview.
+    Q_PROPERTY(int previewFrameWidth READ previewFrameWidth WRITE setPreviewFrameWidth NOTIFY
+                   previewFrameWidthChanged FINAL)
     Q_PROPERTY(bool previewActive READ isPreviewActive WRITE setPreviewActive NOTIFY
                    previewActiveChanged FINAL)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY audioChanged FINAL)
@@ -104,6 +107,8 @@ public:
     void setVolume(int volume);
     [[nodiscard]] double speed() const;
     [[nodiscard]] int previewSerial() const;
+    [[nodiscard]] int previewFrameWidth() const;
+    void setPreviewFrameWidth(int width);
     [[nodiscard]] QImage previewFrame() const;
     [[nodiscard]] bool isPreviewActive() const;
     // Frames are grabbed only while a video plays and someone shows the preview.
@@ -152,6 +157,7 @@ signals:
     void transportChanged();
     void speedChanged();
     void previewFrameChanged();
+    void previewFrameWidthChanged();
     void previewActiveChanged();
     void positionChanged();
     void durationChanged();
@@ -187,10 +193,12 @@ private:
     double m_speed{1.0};
     void grabPreviewFrame();
     void storePreviewFrame(const QImage& frame);
+    void clearPreviewFrame();
     QTimer m_previewTimer;
     mutable QMutex m_previewMutex;
     QImage m_previewFrame;
     int m_previewSerial{0};
+    int m_previewFrameWidth{480};
     bool m_previewActive{false};
     bool m_muted{false};
     QString m_audioDevice{QStringLiteral("auto")};

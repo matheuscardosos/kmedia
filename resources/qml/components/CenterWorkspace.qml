@@ -19,6 +19,11 @@ Rectangle {
     signal openCommandPalette()
     signal openBoothSettings()
 
+    // The bars at the bottom of the workspace, kept clear by the floating preview.
+    readonly property real bottomBarsHeight: (pillBar.visible ? pillBar.height + workspaceColumn.spacing : 0)
+                                             + (transportBar.visible ? transportBar.height + workspaceColumn.spacing : 0)
+                                             + workspaceColumn.anchors.margins
+
     function openAddMediaDialog() {
         root.addMediaRequested()
     }
@@ -26,6 +31,8 @@ Rectangle {
     color: Theme.windowBase
 
     ColumnLayout {
+        id: workspaceColumn
+
         anchors.fill: parent
         anchors.margins: root.compactMode ? Theme.spacingSm : Theme.spacingMd
         spacing: Theme.spacingSm
@@ -119,6 +126,8 @@ Rectangle {
 
         // Quick-access Floating Pill Taskbar for booth toggles and shortcuts
         ActionPillBar {
+            id: pillBar
+
             visible: root.activeTabIndex === 0
             Layout.fillWidth: true
             compactMode: root.compactMode
@@ -128,6 +137,8 @@ Rectangle {
 
         // Docked Studio Broadcast Transport Bar inside Meeting view
         TransportBar {
+            id: transportBar
+
             visible: root.activeTabIndex === 0
             Layout.fillWidth: true
             compactMode: root.compactMode

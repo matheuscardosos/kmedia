@@ -27,6 +27,7 @@ ApplicationWindow {
     property int currentTabIndex: ApplicationController.startupTabIndex
     property bool inspectorDrawerOpen: false
     property bool previewDocked: true
+    readonly property bool previewPanelOpen: (root.isWide && root.previewDocked) || root.inspectorDrawerOpen
 
     readonly property list<string> sectionTitles: [
         qsTr("Meeting Workspace"),
@@ -172,6 +173,8 @@ ApplicationWindow {
             }
 
             CenterWorkspace {
+                id: centerWorkspace
+
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 activeTabIndex: root.currentTabIndex
@@ -239,12 +242,36 @@ ApplicationWindow {
         onNavigateTabRequested: (tabIndex) => root.currentTabIndex = tabIndex
     }
 
+    // The floating preview stands in for the preview panel while the panel is closed.
+    FloatingPreview {
+        id: floatingPreview
+
+        readonly property int mediaKind: ApplicationController.playback.mediaKind
+
+        anchors.fill: parent
+        bottomInset: centerWorkspace.bottomBarsHeight + (root.isCompact ? Theme.compactTabBarHeight : 0)
+        z: 60
+        shown: ApplicationController.floatingPreview
+               && ApplicationController.displayManager.presentationWindowVisible
+               && !ApplicationController.playback.standbyActive
+               && (floatingPreview.mediaKind === PlaybackController.Video
+                   || floatingPreview.mediaKind === PlaybackController.Image
+                   || floatingPreview.mediaKind === PlaybackController.Pdf)
+               && !root.previewPanelOpen
+    }
+
     PresentationWindow {}
 
-    // Live video frames are grabbed only while a preview panel is on screen.
+    // Live video frames are grabbed only while a preview is on screen.
     Binding {
         target: ApplicationController.playback
         property: "previewActive"
-        value: (root.isWide && root.previewDocked) || root.inspectorDrawerOpen
+        value: root.previewPanelOpen || floatingPreview.shown
+    }
+
+    Binding {
+        target: ApplicationController.playback
+        property: "previewFrameWidth"
+        value: floatingPreview.expanded ? 1280 : 480
     }
 }
