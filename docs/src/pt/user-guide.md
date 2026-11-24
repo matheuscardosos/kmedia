@@ -91,6 +91,19 @@ Para trabalhar com vários itens de uma vez, use `Ctrl`+clique em cada um, ou cl
 - **Cortes** definem início e fim de um vídeo ou áudio sem mudar o arquivo. **Zoom e posição** funcionam em imagens, vídeos e páginas de PDF, e documentos PDF podem ser folheados. No painel de prévia, segure `Ctrl` ou `Shift` e gire a roda do mouse para dar zoom na direção do ponteiro (até 5x), e arraste uma imagem com zoom para movê-la; a mídia sempre cobre o próprio quadro, e a tela de apresentação acompanha suavemente. O zoom e a posição ficam salvos com o item.
 - Com uma segunda tela ou projetor conectado, o KMedia apresenta nela em tela cheia e deixa os controles na tela principal. *Configurações > Tela* escolhe outra tela, e *Configurações > Áudio* escolhe onde o som toca.
 
+### Cronômetro da reunião
+
+A pílula do relógio abre o cronômetro da reunião, que marca o tempo de cada parte, inspirado no Meeting Media Manager.
+
+- As partes seguem o dia aberto: a reunião do meio de semana (cântico e oração, comentários iniciais, Tesouros, joias espirituais, leitura da Bíblia, as partes do Faça Seu Melhor, cântico, as partes do Nossa Vida Cristã, estudo bíblico de congregação, comentários finais, cântico e oração) ou a do fim de semana (discurso público e estudo de *A Sentinela*), com a semana do superintendente de circuito. Um minuto de conselho vem depois da leitura da Bíblia e de cada parte do Faça Seu Melhor.
+- Cada parte começa com os minutos de costume; mude com **-** e **+**. Em **Opções**, escolha quantas partes do Faça Seu Melhor e do Nossa Vida Cristã há, e os 15 minutos delas são divididos de novo.
+- **Iniciar** marca a próxima parte, **Próxima parte** encerra a atual e começa a seguinte, e um clique em qualquer parte marca aquela. **Pausar** segura o tempo, e o botão quadrado para a parte.
+- Uma parte que passa do tempo fica vermelha. **Contagem regressiva** mostra o tempo que falta em vez do tempo gasto, e **Mostrar só o tempo excedido** mostra só quanto a parte passou.
+- Na contagem regressiva, **Terminar o estudo às** faz o estudo de *A Sentinela* ou o estudo bíblico de congregação contar até esse horário (nunca mais que a parte), para absorver atrasos anteriores.
+- O selo do cronômetro mostra quantos minutos a reunião está adiantada ou atrasada, pelo início da parte atual em relação ao horário da reunião em *Configurações > Reuniões*.
+- As partes encerradas mostram quanto tempo levaram de fato. Os tempos ficam salvos com o dia, então continuam lá depois de reiniciar; **Limpar tempos** recomeça.
+- Dias sem reunião regular (uma assembleia, um programa especial) começam sem partes: digite um título e use **Adicionar parte**.
+
 ### Atalhos de teclado
 
 | Tecla | Ação |

@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The meeting timer times each part of the meeting, inspired by Meeting Media Manager: the parts of the midweek or weekend meeting (with the circuit overseer's week) with their usual minutes, changeable by hand, counting up or down, a study that can count down to a set end, how far ahead or behind the meeting is, and the real times kept with each day. Days without a meeting take custom parts.
 - Zoom and pan by hand in the preview panel, inspired by Meeting Media Manager: `Ctrl` or `Shift` with the mouse wheel zooms toward the pointer, a drag moves a zoomed picture, video, or PDF page without uncovering its edges, and the presentation screen follows smoothly.
 - A floating live preview of the presentation screen, inspired by Meeting Media Manager: while the preview panel is closed, it shows up in the bottom right corner whenever a picture, PDF page, or video is presented, can be dragged and resized from its corners, and opens large with a click. **Floating preview** in the **Display** pill and *Settings > Display* turns it off.
 - Sign language congregations can show a camera as the background of the presentation screen, inspired by Meeting Media Manager: pick it in the **Display** pill and it replaces the standby picture or the yeartext while nothing is presented. Qt Multimedia is now a dependency, loaded only when a camera is used.

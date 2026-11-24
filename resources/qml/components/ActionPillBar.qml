@@ -320,8 +320,8 @@ Item {
                 id: timerBtn
 
                 iconName: "clock"
-                badgeText: (!root.compactMode && (ApplicationController.meetingTimer.running || ApplicationController.meetingTimer.elapsedMs > 0))
-                           ? ApplicationController.meetingTimer.formattedElapsed
+                badgeText: (!root.compactMode && ApplicationController.meetingTimer.running)
+                           ? ApplicationController.meetingTimer.formattedTime
                            : ""
                 tooltipText: qsTr("Meeting Timer")
                 showDot: true

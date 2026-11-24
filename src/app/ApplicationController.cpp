@@ -44,10 +44,14 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QQmlEngine>
 #include <QTemporaryDir>
 #include <QTimer>
 #include <QTranslator>
+
+#include <algorithm>
 
 bool ApplicationController::s_startupDemoMode = false;
 QString ApplicationController::s_startupThemeOverride;
@@ -581,6 +585,46 @@ void ApplicationController::saveStandbyImage(const QUrl& imageUrl)
     }
 }
 
+void ApplicationController::syncMeetingTimerDay()
+{
+    const QString dateIso = m_playlistModel->currentDateIso();
+    const QString kind = m_playlistModel->currentMeetingKind();
+    const QDate date = QDate::fromString(dateIso, Qt::ISODate);
+    const bool meeting = kind == QLatin1String("midweek") || kind == QLatin1String("weekend");
+    const QDateTime start =
+        meeting && date.isValid() ? m_calendarModel->meetingStartForDate(date) : QDateTime{};
+    QString dayState;
+    if (auto* settings = m_demoMode ? nullptr : m_profileManager->activeSettings()) {
+        const QJsonObject days =
+            QJsonDocument::fromJson(
+                settings->stringValue(QLatin1StringView(kmedia::settings_keys::kTimerDayStates))
+                    .toUtf8())
+                .object();
+        dayState = days.value(dateIso).toString();
+    }
+    m_meetingTimer->setMeeting(dateIso, kind, m_playlistModel->currentIsCoWeek(), start, dayState);
+}
+
+void ApplicationController::saveMeetingTimerDay(const QString& dateIso, const QString& dayState)
+{
+    auto* settings = m_demoMode ? nullptr : m_profileManager->activeSettings();
+    if (settings == nullptr || dateIso.isEmpty()) {
+        return;
+    }
+    const auto key = QLatin1StringView(kmedia::settings_keys::kTimerDayStates);
+    QJsonObject days = QJsonDocument::fromJson(settings->stringValue(key).toUtf8()).object();
+    days.insert(dateIso, dayState);
+    // Only the most recent days are kept; ISO dates sort in time order.
+    constexpr qsizetype kKeptDays = 60;
+    QStringList dates = days.keys();
+    std::sort(dates.begin(), dates.end());
+    for (qsizetype i = 0; i + kKeptDays < dates.size(); ++i) {
+        days.remove(dates.at(i));
+    }
+    (void)settings->setValue(key,
+                             QString::fromUtf8(QJsonDocument(days).toJson(QJsonDocument::Compact)));
+}
+
 int ApplicationController::startupTabIndex() const
 {
     return s_startupTabIndex;
@@ -825,6 +869,13 @@ void ApplicationController::applyProfileSettings()
         standbyImage.isEmpty() ? QUrl{} : QUrl::fromLocalFile(standbyImage));
     m_camera->setCameraId(
         settings->stringValue(QLatin1StringView(kmedia::settings_keys::kPresentationCamera)));
+    m_meetingTimer->setCountDown(
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kTimerCountDown), false));
+    m_meetingTimer->setOvertimeAmountOnly(settings->boolValue(
+        QLatin1StringView(kmedia::settings_keys::kTimerOvertimeAmountOnly), false));
+    // Another profile keeps its own times for the same day.
+    m_meetingTimer->setMeeting({}, {}, false, {});
+    syncMeetingTimerDay();
     const bool floatingPreview =
         settings->boolValue(QLatin1StringView(kmedia::settings_keys::kUiFloatingPreview), true);
     if (m_floatingPreview != floatingPreview) {
@@ -989,6 +1040,24 @@ void ApplicationController::wireIntegrations()
     connect(m_playlistModel.get(), &QAbstractItemModel::rowsMoved, this, exportOpenDaySoon);
     connect(m_playlistModel.get(), &kmedia::PlaylistModel::sectionsChanged, this,
             exportOpenDaySoon);
+    // The meeting timer follows the open day and keeps each day's timings with the profile.
+    connect(m_playlistModel.get(), &kmedia::PlaylistModel::workspaceDateChanged, this,
+            &ApplicationController::syncMeetingTimerDay);
+    connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::scheduleChanged, this,
+            &ApplicationController::syncMeetingTimerDay);
+    connect(m_calendarModel.get(), &kmedia::MeetingCalendarModel::tempSchedulesChanged, this,
+            &ApplicationController::syncMeetingTimerDay);
+    connect(m_meetingTimer.get(), &kmedia::MeetingTimer::dayStateChanged, this,
+            &ApplicationController::saveMeetingTimerDay);
+    connect(m_meetingTimer.get(), &kmedia::MeetingTimer::optionsChanged, this, [this]() {
+        if (auto* settings = m_demoMode ? nullptr : m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kTimerCountDown),
+                                     m_meetingTimer->isCountDown());
+            (void)settings->setValue(
+                QLatin1StringView(kmedia::settings_keys::kTimerOvertimeAmountOnly),
+                m_meetingTimer->isOvertimeAmountOnly());
+        }
+    });
     // Folder settings are saved per congregation as they change.
     connect(m_watchedFolder.get(), &kmedia::WatchedFolderMedia::settingsChanged, this, [this]() {
         m_watchedFolder->setBlockedFolder(m_autoExport->folder());

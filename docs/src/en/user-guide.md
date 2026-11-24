@@ -91,6 +91,19 @@ To work on several items at once, `Ctrl`+click each one, or click one and `Shift
 - **Trims** set a start and an end for a video or audio without changing the file. **Zoom and pan** work on pictures, videos, and PDF pages, and PDF documents can be paged. In the preview panel, hold `Ctrl` or `Shift` and turn the mouse wheel to zoom toward the pointer (up to 5x), and drag a zoomed picture to move it; the media always covers its frame, and the presentation display follows smoothly. The zoom and position are kept with the item.
 - With a second display or projector connected, KMedia presents on it full screen and keeps the controls on the main screen. *Settings > Display* picks another screen, and *Settings > Audio* picks where the sound plays.
 
+### Meeting timer
+
+The clock pill opens the meeting timer, which times each part of the meeting, inspired by Meeting Media Manager.
+
+- The parts follow the open day: the midweek meeting (song and prayer, opening comments, Treasures, spiritual gems, Bible reading, the Apply Yourself parts, song, the Living as Christians parts, Congregation Bible Study, concluding comments, song and prayer) or the weekend meeting (public talk and *Watchtower* Study), with the circuit overseer's week. A minute of counsel follows the Bible reading and each Apply Yourself part.
+- Each part starts with its usual minutes; change them with **-** and **+**. Under **Options**, pick how many Apply Yourself and Living as Christians parts there are, and their 15 minutes are shared out again.
+- **Start** times the next part, **Next part** ends the current one and starts the following, and a click on any part times that one. **Pause** holds the time, and the square button stops the part.
+- A part that runs over turns red. **Count down** shows the time left instead of the time taken, and **Show only the extra time** shows just how much a part ran over.
+- Counting down, **End the study at** makes the *Watchtower* Study or the Congregation Bible Study count down to that time (never longer than the part), so it absorbs earlier delays.
+- The badge in the timer shows how many minutes the meeting is ahead or behind, from when the current part started against the meeting time in *Settings > Meetings*.
+- Finished parts show how long they really took. The times are kept with the day, so they are still there after a restart; **Clear times** starts over.
+- Days without a regular meeting (an assembly, a special program) start with no parts: type a title and use **Add part**.
+
 ### Keyboard shortcuts
 
 | Key | Action |
