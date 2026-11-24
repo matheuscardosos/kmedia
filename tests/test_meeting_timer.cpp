@@ -1,6 +1,9 @@
 #include "core/MeetingTimer.h"
 
+#include <QFile>
 #include <QSignalSpy>
+#include <QTemporaryDir>
+#include <QUrl>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -220,4 +223,46 @@ TEST_CASE("The meeting timer times custom parts on days without a meeting", "[co
     timer.setMeeting(QStringLiteral("2026-12-06"), QStringLiteral("weekend"), false, {});
     timer.addCustomPart(QStringLiteral("Extra"), 5);
     REQUIRE(partIds(timer).size() == 5);
+}
+
+TEST_CASE("The meeting timer saves a timing report as CSV and PDF", "[core][timer]")
+{
+    kmedia::MeetingTimer timer;
+    QDateTime clock(QDate(2026, 11, 29), QTime(9, 31));
+    timer.setClockForTest([&clock]() { return clock; });
+    timer.setMeeting(QStringLiteral("2026-11-29"), QStringLiteral("weekend"), false,
+                     QDateTime(QDate(2026, 11, 29), QTime(9, 30)));
+    timer.startPart(0);
+    timer.advanceForTest(6 * 60000LL + 5000);
+    timer.stop();
+
+    const QVariantMap titles{{QStringLiteral("opening-song"), QStringLiteral("Song, and prayer")},
+                             {QStringLiteral("public-talk"), QStringLiteral("Public talk")}};
+    const QList<QStringList> rows = timer.timingReportRows(titles);
+    REQUIRE(rows.size() == 5);
+    REQUIRE(rows.at(0) ==
+            QStringList{"Song, and prayer", "09:30", "09:31", "05:00", "06:05", "+01:05"});
+    REQUIRE(rows.at(1).at(0) == QStringLiteral("Public talk"));
+    REQUIRE(rows.at(1).at(4).isEmpty());
+
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const QStringList headers{"Part", "Planned start", "Started", "Planned", "Took", "Difference"};
+    const QString csvPath = dir.filePath(QStringLiteral("report.csv"));
+    REQUIRE(timer.saveTimingReport(QUrl::fromLocalFile(csvPath), titles, headers,
+                                   QStringLiteral("Weekend meeting")));
+    QFile csv(csvPath);
+    REQUIRE(csv.open(QIODevice::ReadOnly));
+    const QByteArray bytes = csv.readAll();
+    REQUIRE(bytes.startsWith("\xEF\xBB\xBF"
+                             "Part,Planned start,"));
+    const QString text = QString::fromUtf8(bytes);
+    REQUIRE(text.contains(QStringLiteral("\"Song, and prayer\",09:30,09:31,05:00,06:05,+01:05")));
+
+    const QString pdfPath = dir.filePath(QStringLiteral("report.pdf"));
+    REQUIRE(timer.saveTimingReport(QUrl::fromLocalFile(pdfPath), titles, headers,
+                                   QStringLiteral("Weekend meeting")));
+    QFile pdf(pdfPath);
+    REQUIRE(pdf.open(QIODevice::ReadOnly));
+    REQUIRE(pdf.read(4) == QByteArray("%PDF"));
 }

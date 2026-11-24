@@ -1,6 +1,8 @@
 pragma ComponentBehavior: Bound
+import QtCore
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import KMedia.UI
 import ".."
@@ -178,7 +180,15 @@ Item {
     Component {
         id: timerPopoverComp
 
-        PillTimerPopover {}
+        PillTimerPopover {
+            onSaveReportRequested: (titles, headers, heading) => {
+                reportDialog.titles = titles
+                reportDialog.headers = headers
+                reportDialog.heading = heading
+                popover.close()
+                reportDialog.open()
+            }
+        }
     }
 
     Component {
@@ -208,6 +218,27 @@ Item {
         id: downloadsPopoverComp
 
         PillDownloadsPopover {}
+    }
+
+    FileDialog {
+        id: reportDialog
+
+        property var titles: ({})
+        property var headers: []
+        property string heading: ""
+
+        title: qsTr("Save timing report")
+        fileMode: FileDialog.SaveFile
+        nameFilters: [qsTr("PDF document (*.pdf)"), qsTr("Spreadsheet (*.csv)")]
+        defaultSuffix: "pdf"
+        currentFolder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        currentFile: currentFolder + "/" + qsTr("timing-report") + "-" + ApplicationController.meetingTimer.dateIso + ".pdf"
+        onAccepted: {
+            const saved = ApplicationController.meetingTimer.saveTimingReport(
+                reportDialog.selectedFile, reportDialog.titles, reportDialog.headers, reportDialog.heading)
+            ApplicationController.showToast(saved ? qsTr("Timing report saved") : qsTr("The timing report could not be saved"),
+                                            saved ? "success" : "warning")
+        }
     }
 
     Popup {
