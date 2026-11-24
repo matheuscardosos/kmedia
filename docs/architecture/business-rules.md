@@ -31,6 +31,7 @@ This document defines the behavioral contracts and architectural invariants that
 - Media trimming uses `trim_start_ms` and `trim_end_ms` metadata passed directly to `libmpv` (`start` and `end` options) without re-encoding files on disk.
 - If `trim_end_ms > 0` and `trim_end_ms <= trim_start_ms`, the invalid trim bound is ignored cleanly.
 - Image zoom, normalized pan coordinates (`pan_x`, `pan_y`), and PDF page numbers synchronize in real time between the operator preview and the secondary presentation window.
+- Zoom and pan are set in the preview panel (`LivePreviewSurface`, inspired by Meeting Media Manager) for pictures, PDF pages, and videos: `Ctrl` or `Shift` with the wheel zooms toward the pointer (the point under it stays put) by at most 10% per notch, from 1x to 5x, also the zoom slider (around the middle); a drag over 3 px pans a zoomed item, and a press at 1x goes through. The media may move at most half of what the zoom adds to its drawn size (`size * (zoom - 1) / 2`), so it always covers its own frame and does not move at 1x; every zoom change clamps the pan again. Pictures and PDF pages pan in parts of the screen, videos in parts of the zoomed video as mpv does (`video-pan-x`), and the gesture converts between them. The values are saved with the item 300 ms after the gesture settles, not on every step. The presentation window eases its picture toward the new zoom and pan (`SmoothedAnimation`, 180 ms), except when other media is loaded; mpv applies a video's directly.
 
 ## 5. Meeting Schedule and Background Music Fade-Out
 

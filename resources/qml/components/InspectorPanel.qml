@@ -123,7 +123,10 @@ Rectangle {
                         clip: true
 
                         LivePreviewSurface {
+                            id: previewSurface
+
                             anchors.fill: parent
+                            interactive: true
                         }
 
                         Rectangle {
@@ -685,12 +688,10 @@ Rectangle {
                         StudioSlider {
                             Layout.fillWidth: true
                             from: 1.0
-                            to: 4.0
+                            to: previewSurface.maxZoom
                             stepSize: 0.1
                             value: ApplicationController.playback.zoomScale
-                            onMoved: ApplicationController.playlist.updateActiveViewport(
-                                         value, ApplicationController.playback.panX,
-                                         ApplicationController.playback.panY)
+                            onMoved: previewSurface.zoomAt(value)
                         }
                     }
 
