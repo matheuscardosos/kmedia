@@ -280,6 +280,26 @@ void ApplicationController::setFloatingPreviewEnabled(bool enabled)
     emit floatingPreviewChanged();
 }
 
+bool ApplicationController::isTimerWindowVisible() const
+{
+    return m_timerWindowVisible;
+}
+
+void ApplicationController::setTimerWindowVisible(bool visible)
+{
+    if (m_timerWindowVisible == visible) {
+        return;
+    }
+    m_timerWindowVisible = visible;
+    if (!m_demoMode) {
+        if (auto* settings = m_profileManager->activeSettings()) {
+            (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kTimerWindow),
+                                     visible);
+        }
+    }
+    emit timerWindowVisibleChanged();
+}
+
 void ApplicationController::toggleDarkTheme()
 {
     setDarkTheme(!m_darkTheme);
@@ -872,7 +892,15 @@ void ApplicationController::applyProfileSettings()
     m_meetingTimer->setCountDown(
         settings->boolValue(QLatin1StringView(kmedia::settings_keys::kTimerCountDown), false));
     m_meetingTimer->setOvertimeAmountOnly(settings->boolValue(
-        QLatin1StringView(kmedia::settings_keys::kTimerOvertimeAmountOnly), false));
+        QLatin1StringView(kmedia::settings_keys::kTimerOvertimeAmountOnly), true));
+    // The timer window comes back the way it was left.
+    const bool timerWindow =
+        !m_demoMode &&
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kTimerWindow), false);
+    if (m_timerWindowVisible != timerWindow) {
+        m_timerWindowVisible = timerWindow;
+        emit timerWindowVisibleChanged();
+    }
     // Another profile keeps its own times for the same day.
     m_meetingTimer->setMeeting({}, {}, false, {});
     syncMeetingTimerDay();

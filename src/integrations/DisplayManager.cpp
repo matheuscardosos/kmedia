@@ -86,6 +86,8 @@ QVariantList DisplayManager::screensVariant() const
         QVariantMap map;
         map.insert(QStringLiteral("index"), i);
         map.insert(QStringLiteral("name"), s.name);
+        map.insert(QStringLiteral("x"), s.geometry.x());
+        map.insert(QStringLiteral("y"), s.geometry.y());
         map.insert(QStringLiteral("width"), s.geometry.width());
         map.insert(QStringLiteral("height"), s.geometry.height());
         map.insert(QStringLiteral("isPrimary"), s.isPrimary);

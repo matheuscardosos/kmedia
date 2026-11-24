@@ -225,6 +225,7 @@ set_source_files_properties(resources/qml/Theme.qml PROPERTIES
 set(KMEDIA_QML_ROOT_FILES
     resources/qml/Main.qml
     resources/qml/PresentationWindow.qml
+    resources/qml/TimerWindow.qml
 )
 set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/controls/StudioIcon.qml

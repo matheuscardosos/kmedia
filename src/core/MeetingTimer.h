@@ -46,6 +46,8 @@ class MeetingTimer : public QObject
     Q_PROPERTY(QString meetingKind READ meetingKind NOTIFY partsChanged FINAL)
     Q_PROPERTY(bool coWeek READ isCoWeek NOTIFY partsChanged FINAL)
     Q_PROPERTY(QString dateIso READ dateIso NOTIFY partsChanged FINAL)
+    // When the open day's meeting starts; invalid on a day without one.
+    Q_PROPERTY(QDateTime meetingStart READ meetingStart NOTIFY partsChanged FINAL)
     Q_PROPERTY(int ayfmCount READ ayfmCount WRITE setAyfmCount NOTIFY partsChanged FINAL)
     Q_PROPERTY(int lacCount READ lacCount WRITE setLacCount NOTIFY partsChanged FINAL)
     Q_PROPERTY(bool hasStudyPart READ hasStudyPart NOTIFY partsChanged FINAL)
@@ -102,6 +104,7 @@ public:
     [[nodiscard]] QString meetingKind() const;
     [[nodiscard]] bool isCoWeek() const;
     [[nodiscard]] QString dateIso() const;
+    [[nodiscard]] QDateTime meetingStart() const;
     [[nodiscard]] int ayfmCount() const;
     void setAyfmCount(int count);
     [[nodiscard]] int lacCount() const;
@@ -191,7 +194,7 @@ private:
     bool m_paused{false};
     int m_currentIndex{-1};
     bool m_countDown{false};
-    bool m_overtimeAmountOnly{false};
+    bool m_overtimeAmountOnly{true};
 
     QString m_dateIso;
     QString m_meetingKind;

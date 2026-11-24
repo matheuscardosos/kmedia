@@ -97,12 +97,12 @@
         <translation>Song</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1018"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1046"/>
         <source>The shared folder and the export folder must be different</source>
         <translation>The shared folder and the export folder must be different</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../src/app/ApplicationController.cpp" line="1025"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1053"/>
         <source>%n file(s) could not be converted to MP4</source>
         <translation>
             <numerusform>%n file could not be converted to MP4</numerusform>
@@ -110,12 +110,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1117"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1145"/>
         <source>Zoom screen share ready (%1): %2</source>
         <translation>Zoom screen share ready (%1): %2</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1197"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1225"/>
         <source>Applied congregation schedule: %1</source>
         <translation>Applied congregation schedule: %1</translation>
     </message>
@@ -1661,11 +1661,16 @@
     </message>
     <message>
         <location filename="../qml/components/PillTimerPopover.qml" line="517"/>
+        <source>Timer window</source>
+        <translation>Timer window</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="536"/>
         <source>Count down</source>
         <translation>Count down</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="536"/>
+        <location filename="../qml/components/PillTimerPopover.qml" line="555"/>
         <source>Show only the extra time</source>
         <translation>Show only the extra time</translation>
     </message>
@@ -2459,6 +2464,94 @@
         <location filename="../qml/components/TagEditPopup.qml" line="116"/>
         <source>Save</source>
         <translation>Save</translation>
+    </message>
+</context>
+<context>
+    <name>TimerWindow</name>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="47"/>
+        <source>Untitled part</source>
+        <translation>Untitled part</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="50"/>
+        <source>Apply Yourself %1</source>
+        <translation>Apply Yourself %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="52"/>
+        <source>Living as Christians %1</source>
+        <translation>Living as Christians %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="56"/>
+        <source>Song and prayer</source>
+        <translation>Song and prayer</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="58"/>
+        <source>Song</source>
+        <translation>Song</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="60"/>
+        <source>Opening comments</source>
+        <translation>Opening comments</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="62"/>
+        <source>Treasures From God&apos;s Word</source>
+        <translation>Treasures From God&apos;s Word</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="64"/>
+        <source>Spiritual gems</source>
+        <translation>Spiritual gems</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="66"/>
+        <source>Bible reading</source>
+        <translation>Bible reading</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="68"/>
+        <source>Congregation Bible Study</source>
+        <translation>Congregation Bible Study</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="70"/>
+        <source>Concluding comments</source>
+        <translation>Concluding comments</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="72"/>
+        <source>Service talk</source>
+        <translation>Service talk</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="74"/>
+        <source>Public talk</source>
+        <translation>Public talk</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="77"/>
+        <source>Watchtower Study</source>
+        <translation>Watchtower Study</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="79"/>
+        <source>Circuit overseer&apos;s talk</source>
+        <translation>Circuit overseer&apos;s talk</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="88"/>
+        <source>KMedia - Timer</source>
+        <translation>KMedia - Timer</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="121"/>
+        <source>Meeting starts in</source>
+        <translation>Meeting starts in</translation>
     </message>
 </context>
 <context>

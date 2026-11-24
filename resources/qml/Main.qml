@@ -262,6 +262,10 @@ ApplicationWindow {
 
     PresentationWindow {}
 
+    TimerWindow {
+        mainScreenName: root.Screen.name
+    }
+
     // Live video frames are grabbed only while a preview is on screen.
     Binding {
         target: ApplicationController.playback

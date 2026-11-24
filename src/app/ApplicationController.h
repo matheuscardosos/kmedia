@@ -96,6 +96,8 @@ class ApplicationController : public QObject
     Q_PROPERTY(bool darkTheme READ isDarkTheme WRITE setDarkTheme NOTIFY darkThemeChanged FINAL)
     Q_PROPERTY(bool floatingPreview READ isFloatingPreviewEnabled WRITE setFloatingPreviewEnabled
                    NOTIFY floatingPreviewChanged FINAL)
+    Q_PROPERTY(bool timerWindowVisible READ isTimerWindowVisible WRITE setTimerWindowVisible NOTIFY
+                   timerWindowVisibleChanged FINAL)
     Q_PROPERTY(bool demoMode READ isDemoMode NOTIFY demoModeChanged FINAL)
     Q_PROPERTY(int startupTabIndex READ startupTabIndex CONSTANT FINAL)
     Q_PROPERTY(bool boothPinEnabled READ isBoothPinEnabled NOTIFY boothLockChanged FINAL)
@@ -155,6 +157,8 @@ public:
     void setDarkTheme(bool dark);
     [[nodiscard]] bool isFloatingPreviewEnabled() const;
     void setFloatingPreviewEnabled(bool enabled);
+    [[nodiscard]] bool isTimerWindowVisible() const;
+    void setTimerWindowVisible(bool visible);
     [[nodiscard]] bool isDemoMode() const;
     [[nodiscard]] int startupTabIndex() const;
     [[nodiscard]] bool isBoothPinEnabled() const;
@@ -217,6 +221,7 @@ signals:
     void uiLanguageChanged();
     void darkThemeChanged();
     void floatingPreviewChanged();
+    void timerWindowVisibleChanged();
     void demoModeChanged();
     void boothLockChanged();
     void toastRequested(const QString& message, const QString& level);
@@ -242,6 +247,7 @@ private:
     bool m_demoMode{false};
     bool m_darkTheme{true};
     bool m_floatingPreview{true};
+    bool m_timerWindowVisible{false};
     QString m_uiLanguage{QStringLiteral("en")};
     QString m_boothPinSalt;
     QString m_boothPinHash;
