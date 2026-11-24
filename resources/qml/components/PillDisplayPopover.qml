@@ -13,6 +13,15 @@ ColumnLayout {
 
     spacing: 10
 
+    // Listing the cameras starts the camera service, so only when the camera is offered.
+    function refreshCameras() {
+        if (root.visible && ApplicationController.camera.offered)
+            ApplicationController.camera.refreshCameras()
+    }
+
+    onVisibleChanged: root.refreshCameras()
+    Component.onCompleted: root.refreshCameras()
+
     RowLayout {
         Layout.fillWidth: true
         spacing: 8
@@ -113,6 +122,101 @@ ColumnLayout {
                     ApplicationController.displayManager.presentationWindowVisible = true
                 }
             }
+        }
+    }
+
+    // The camera as background, offered to sign language congregations (inspired by Meeting
+    // Media Manager).
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: 6
+        visible: ApplicationController.camera.offered
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Theme.borderHairline
+        }
+
+        Text {
+            text: qsTr("Camera as background")
+            color: Theme.textSecondary
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeXs
+            font.weight: Font.DemiBold
+        }
+
+        Repeater {
+            model: [{ id: "", name: qsTr("No camera") }].concat(ApplicationController.camera.cameras)
+
+            delegate: Rectangle {
+                id: cameraRow
+
+                required property var modelData
+                readonly property bool isChosen: cameraRow.modelData.id === ApplicationController.camera.cameraId
+
+                Layout.fillWidth: true
+                Layout.preferredHeight: 34
+                radius: Theme.radiusSmall
+                color: cameraRow.isChosen
+                       ? Theme.accentSoft
+                       : (cameraMouse.containsMouse ? Theme.cardHover : Theme.cardSurface)
+                border.width: 1
+                border.color: cameraRow.isChosen ? Theme.accentBorder : Theme.borderHairline
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 10
+                    spacing: 8
+
+                    StudioIcon {
+                        name: cameraRow.modelData.id.length > 0 ? "video" : "video-off"
+                        size: 15
+                        color: cameraRow.isChosen ? Theme.accentPrimary : Theme.textMuted
+                    }
+
+                    Text {
+                        text: cameraRow.modelData.name
+                        color: Theme.textPrimary
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSizeSm
+                        font.weight: cameraRow.isChosen ? Font.DemiBold : Font.Medium
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                    }
+                }
+
+                MouseArea {
+                    id: cameraMouse
+
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: ApplicationController.camera.cameraId = cameraRow.modelData.id
+                }
+            }
+        }
+
+        Text {
+            Layout.fillWidth: true
+            visible: text.length > 0
+            text: {
+                switch (ApplicationController.camera.problem) {
+                case CameraController.NotConnected:
+                    return qsTr("The chosen camera is not connected.")
+                case CameraController.PermissionDenied:
+                    return qsTr("KMedia is not allowed to use the camera. Allow it in the system settings.")
+                case CameraController.Failed:
+                    return qsTr("The camera stopped working. Choose it again or try another one.")
+                default:
+                    return ""
+                }
+            }
+            color: Theme.statusLive
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSizeXs
+            wrapMode: Text.WordWrap
         }
     }
 

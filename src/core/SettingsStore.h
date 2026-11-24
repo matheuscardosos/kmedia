@@ -34,6 +34,7 @@ inline constexpr auto kMaxConcurrentDownloads = "network/max_concurrent_download
 inline constexpr auto kThumbnailCacheMaxMb = "cache/thumbnail_max_mb";
 inline constexpr auto kStandbyBlackoutMode = "presentation/standby_mode";
 inline constexpr auto kStandbyImage = "presentation/standby_image";
+inline constexpr auto kPresentationCamera = "presentation/camera";
 inline constexpr auto kObsEnabled = "obs/enabled";
 inline constexpr auto kObsHost = "obs/host";
 inline constexpr auto kObsPort = "obs/port";

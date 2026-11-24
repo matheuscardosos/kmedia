@@ -16,6 +16,7 @@
 #include "integrations/ZoomBridge.h"
 #include "media/BackgroundMusicEngine.h"
 #include "media/BackgroundMusicService.h"
+#include "media/CameraController.h"
 #include "media/MediaAutoExport.h"
 #include "media/MpvRendererItem.h"
 #include "media/PdfPageImporter.h"
@@ -104,6 +105,14 @@ ApplicationController::ApplicationController(QObject* parent)
         m_publicationStore.get(), m_documentImporter.get());
     m_pdfPages = std::make_unique<kmedia::PdfPageImporter>(m_playlistModel.get());
     m_yeartext = std::make_unique<kmedia::YeartextProvider>(m_catalogClient.get());
+    m_camera = std::make_unique<kmedia::CameraController>();
+    connect(m_camera.get(), &kmedia::CameraController::cameraIdChanged, this, [this]() {
+        auto* settings = m_demoMode ? nullptr : m_profileManager->activeSettings();
+        const auto key = QLatin1StringView(kmedia::settings_keys::kPresentationCamera);
+        if (settings != nullptr && settings->stringValue(key) != m_camera->cameraId()) {
+            (void)settings->setValue(key, m_camera->cameraId());
+        }
+    });
     m_studyBible = std::make_unique<kmedia::StudyBibleMedia>(m_publicationStore.get(),
                                                              m_documentImporter.get());
     m_bibleCatalog = std::make_unique<kmedia::BibleMediaCatalog>(
@@ -391,6 +400,11 @@ kmedia::StudyBibleMedia* ApplicationController::studyBible() const
 kmedia::YeartextProvider* ApplicationController::yeartext() const
 {
     return m_yeartext.get();
+}
+
+kmedia::CameraController* ApplicationController::camera() const
+{
+    return m_camera.get();
 }
 
 kmedia::PdfPageImporter* ApplicationController::pdfPages() const
@@ -789,6 +803,8 @@ void ApplicationController::applyProfileSettings()
         settings->stringValue(QLatin1StringView(kmedia::settings_keys::kStandbyImage));
     m_playbackController->setStandbyImageUrl(
         standbyImage.isEmpty() ? QUrl{} : QUrl::fromLocalFile(standbyImage));
+    m_camera->setCameraId(
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kPresentationCamera)));
 
     syncAudioRouting();
 
@@ -1196,6 +1212,7 @@ void ApplicationController::applySyncSettings(bool resetWhenChanged)
     m_documentImporter->setLanguages(languages);
     m_publicationPicker->setLanguages(languages);
     m_studyBible->setLanguages(languages);
+    m_camera->setSignLanguage(next.signLanguage);
     m_yeartext->setLanguages(m_demoMode ? QStringList{} : languages, next.signLanguage,
                              QDate::currentDate().year());
     m_videoCatalog->setLanguage(next.languageCode);
