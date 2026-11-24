@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex">
+<title>KMedia</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; color: #fff; overflow: hidden;
+    font-family: Inter, "Segoe UI", Roboto, system-ui, sans-serif; -webkit-user-select: none; user-select: none; }
+  main { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2vh; padding: 4vh 4vw; box-sizing: border-box; }
+  #label { font-size: clamp(1rem, 5.5vh, 3rem); font-weight: 600; color: #b0b6c0; text-align: center;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 1.2em; }
+  #dial { position: relative; display: grid; place-items: center; }
+  #ring { display: none; position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+  #ring circle { fill: none; stroke-width: 6; }
+  #track { stroke: #1f242c; }
+  #progress { stroke: #22c55e; stroke-linecap: round; transition: stroke-dashoffset .25s linear, stroke .3s; }
+  #time { font-size: min(30vw, 55vh); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1;
+    letter-spacing: -.02em; transition: color .3s; }
+  #caption { font-size: clamp(.9rem, 3.5vh, 2rem); color: #8a919c; min-height: 1.2em; }
+  .last-minute #time { color: #f59e0b; }
+  .last-minute #progress { stroke: #f59e0b; }
+  .overtime #time { color: #ef4444; }
+  .overtime #progress { stroke: #ef4444; }
+  .blink #time { animation: blink 1.2s ease-in-out infinite; }
+  @keyframes blink { 50% { opacity: .35; } }
+  .focus #dial { width: min(80vw, 66vh); aspect-ratio: 1; }
+  .focus #ring { display: block; }
+  .focus #time { font-size: min(17vw, 15vh); }
+  #status { position: fixed; left: 50%; bottom: 3vh; transform: translateX(-50%); padding: .4em 1em;
+    border-radius: 999px; background: #1f242c; color: #f59e0b; font-size: clamp(.8rem, 2.5vh, 1.2rem); }
+  #awake { position: fixed; width: 1px; height: 1px; opacity: .01; pointer-events: none; }
+</style>
+</head>
+<body>
+<main id="display">
+  <div id="label"></div>
+  <div id="dial">
+    <svg id="ring" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <circle id="track" cx="50" cy="50" r="46"></circle>
+      <circle id="progress" cx="50" cy="50" r="46" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"></circle>
+    </svg>
+    <div id="time" role="timer" aria-live="off">--:--</div>
+  </div>
+  <div id="caption"></div>
+</main>
+<div id="status" hidden></div>
+<video id="awake" muted loop playsinline aria-hidden="true"></video>
+<script>
+(function () {
+  'use strict';
+  var el = {
+    display: document.getElementById('display'), label: document.getElementById('label'),
+    time: document.getElementById('time'), caption: document.getElementById('caption'),
+    progress: document.getElementById('progress'), status: document.getElementById('status'),
+    awake: document.getElementById('awake')
+  };
+  var state = null;
+  var receivedAt = 0;
+  var clockOffset = 0;
+
+  function two(n) { return (n < 10 ? '0' : '') + n; }
+  function clock(ms) {
+    var s = Math.floor(Math.max(0, ms) / 1000);
+    return two(Math.floor(s / 60)) + ':' + two(s % 60);
+  }
+  function text(key) { return state && state.texts && state.texts[key] ? state.texts[key] : ''; }
+  function setText(node, value) { if (node.textContent !== value) node.textContent = value; }
+
+  function render() {
+    if (!state) return;
+    var classes = [];
+    if (state.focus) classes.push('focus');
+    var label = '', time = '', caption = '', progress = 0;
+    if (state.running) {
+      var elapsed = state.elapsedMs + (state.paused ? 0 : performance.now() - receivedAt);
+      var target = state.targetMs;
+      var overtime = target > 0 && elapsed > target;
+      var remaining = target - elapsed;
+      if (overtime) classes.push('overtime');
+      else if (target > 0 && remaining <= 60000) classes.push('last-minute');
+      if (state.paused || overtime) classes.push('blink');
+      label = state.partTitle;
+      if (state.countDown) time = remaining >= 0 ? clock(remaining) : '-' + clock(-remaining);
+      else if (overtime && state.overtimeAmountOnly) time = '+' + clock(elapsed - target);
+      else time = clock(elapsed);
+      caption = state.paused ? text('paused') : (state.countDown ? text('remaining') : text('elapsed'));
+      progress = target > 0 ? Math.min(1, elapsed / target) : 0;
+    } else {
+      var now = Date.now() + clockOffset;
+      var startsIn = state.meetingStart > 0 ? state.meetingStart - now : -1;
+      if (startsIn > 0 && startsIn <= 5 * 60000) {
+        label = text('meetingStartsIn');
+        time = clock(startsIn);
+      } else {
+        var d = new Date(now);
+        time = two(d.getHours()) + ':' + two(d.getMinutes());
+      }
+    }
+    var className = classes.join(' ');
+    if (el.display.className !== className) el.display.className = className;
+    setText(el.label, label);
+    setText(el.time, time);
+    setText(el.caption, caption);
+    el.progress.style.strokeDashoffset = String(100 - progress * 100);
+  }
+
+  function connect() {
+    var source = new EventSource('events');
+    source.onmessage = function (event) {
+      try { state = JSON.parse(event.data); } catch (e) { return; }
+      receivedAt = performance.now();
+      clockOffset = state.serverTime - Date.now();
+      if (state.texts && state.texts.lang) document.documentElement.lang = state.texts.lang;
+      el.status.hidden = true;
+      render();
+    };
+    source.onerror = function () {
+      setText(el.status, text('reconnecting') || '...');
+      el.status.hidden = false;
+    };
+  }
+
+  // Keep the screen of the tablet awake. Browsers offer Wake Lock only to secure pages, and this
+  // one is plain HTTP on the local network, so a tiny silent video made here stands in for it.
+  var lock = null;
+  function videoFallback() {
+    if (el.awake.src) { el.awake.play().catch(function () {}); return; }
+    var canvas = document.createElement('canvas');
+    canvas.width = 16; canvas.height = 16;
+    if (!canvas.captureStream || !window.MediaRecorder) return;
+    var context = canvas.getContext('2d');
+    var recorder = new MediaRecorder(canvas.captureStream(4));
+    var chunks = [];
+    var frame = 0;
+    var draw = setInterval(function () {
+      context.fillStyle = frame++ % 2 ? '#000000' : '#010101';
+      context.fillRect(0, 0, 16, 16);
+    }, 100);
+    recorder.ondataavailable = function (event) { if (event.data.size) chunks.push(event.data); };
+    recorder.onstop = function () {
+      clearInterval(draw);
+      el.awake.src = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType }));
+      el.awake.play().catch(function () {});
+    };
+    recorder.start();
+    setTimeout(function () { recorder.stop(); }, 1500);
+  }
+  function keepAwake() {
+    if (lock && !lock.released) return;
+    if (navigator.wakeLock && window.isSecureContext) {
+      navigator.wakeLock.request('screen').then(function (l) { lock = l; }, videoFallback);
+    } else {
+      videoFallback();
+    }
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') keepAwake();
+  });
+  // Playing a video may need a touch first.
+  document.addEventListener('click', keepAwake);
+  document.addEventListener('touchend', keepAwake);
+
+  connect();
+  keepAwake();
+  setInterval(render, 250);
+})();
+</script>
+</body>
+</html>

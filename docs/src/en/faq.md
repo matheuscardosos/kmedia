@@ -50,6 +50,14 @@ The [User Guide](./user-guide.md#keyboard-shortcuts) lists them all. The main on
 
 It plays the songbook in the media language: before a meeting of the same day it is timed to end when the meeting starts, with that meeting's songs last, and at other times it loops the whole songbook. It can start by itself before meetings; see the [User Guide](./user-guide.md#background-music).
 
+### How do I time the parts of the meeting?
+
+Open the clock pill. It lists the parts of the open day with their usual minutes; **Start** times the next part and **Next part** moves on. It shows how far ahead or behind the meeting is, keeps the real times with the day, and saves a timing report as PDF or CSV. See the [User Guide](./user-guide.md#meeting-timer).
+
+### Can the speaker see the time on a tablet at the lectern?
+
+Yes. Under **Options** in the timer, turn on **Page for a tablet**, then scan the QR code with a tablet or phone on the same network. The page only shows the timer, and only devices given its address, which carries an access code, can open it. **Timer window** shows the same timer on a spare screen instead.
+
 ## Integrations
 
 ### How do I use KMedia with Zoom?
@@ -88,6 +96,13 @@ Yes. Each congregation profile has its own settings, media, schedule, and integr
 - Click **Save & Connect** again after changing them.
 - If it connects but never switches scenes, pick the stage and media scenes in *Settings > Integrations*.
 
+### The tablet does not open the timer page. What should I check?
+
+- The tablet and this computer are on the same network (the same Wi-Fi, not a guest network).
+- The address or QR code is the current one: **New code** makes the old address stop working.
+- No message under **Page for a tablet** says the port is in use; if it does, choose another port.
+- The firewall lets KMedia use the network. On Windows, allow it on private networks when asked, or in *Windows Security > Firewall*.
+
 ### Shared folder media does not show up. What should I check?
 
 - The files are inside a date folder (`YYYY-MM-DD`) placed directly in the shared folder.
@@ -102,7 +117,7 @@ Apps built on Electron carry a whole web browser with them. KMedia is a native a
 
 ### Does KMedia collect data about me?
 
-No. KMedia has no telemetry and sends no reports. It only connects to the servers of jw.org, to download media and look up congregations, and to OBS Studio and Zoom on your own computer when you use them. Your settings and media stay on your computer.
+No. KMedia has no telemetry and sends no reports. It only connects to the servers of jw.org, to download media and look up congregations, and to OBS Studio and Zoom on your own computer when you use them. If you turn on the timer's **Page for a tablet**, it also serves that read only page on your local network. Your settings and media stay on your computer.
 
 ### Does KMedia update itself?
 

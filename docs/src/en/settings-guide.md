@@ -48,6 +48,9 @@ Turn it on and pick a folder. Every day with media is copied into a date folder 
 - **Presentation Output Active:** shows or hides the presentation window. `Ctrl+P` does the same.
 - **Screen list:** click a screen to present on it instead. If that screen is disconnected, KMedia goes back to presenting automatically.
 - **Standby picture:** the picture shown on the presentation display during standby and while nothing is presented, such as the yeartext. Without one, the yeartext of the current year shows, in the media language. **Blackout** in the preview panel always shows black.
+- **Floating preview:** while the preview panel is closed, a small live preview of the presentation display floats in the corner of the window whenever a picture, PDF page, or video is on it. It is on by default; the [User Guide](./user-guide.md#presenting) explains how to move, resize, and enlarge it.
+
+The meeting timer's own choices (count down, timer window, page for a tablet) live in the timer pill, not here; see the [User Guide](./user-guide.md#meeting-timer).
 
 ## Audio
 

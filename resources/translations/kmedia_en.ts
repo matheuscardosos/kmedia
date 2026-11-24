@@ -87,22 +87,22 @@
 <context>
     <name>ApplicationController</name>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="144"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="161"/>
         <source>The songbook could not be loaded. Check the internet connection.</source>
         <translation>The songbook could not be loaded. Check the internet connection.</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="150"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="167"/>
         <source>Song</source>
         <translation>Song</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1046"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1086"/>
         <source>The shared folder and the export folder must be different</source>
         <translation>The shared folder and the export folder must be different</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../src/app/ApplicationController.cpp" line="1053"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1093"/>
         <source>%n file(s) could not be converted to MP4</source>
         <translation>
             <numerusform>%n file could not be converted to MP4</numerusform>
@@ -110,12 +110,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1145"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1185"/>
         <source>Zoom screen share ready (%1): %2</source>
         <translation>Zoom screen share ready (%1): %2</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1225"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1265"/>
         <source>Applied congregation schedule: %1</source>
         <translation>Applied congregation schedule: %1</translation>
     </message>
@@ -1645,32 +1645,77 @@
         <translation>Clear times</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="466"/>
+        <location filename="../qml/components/PillTimerPopover.qml" line="482"/>
         <source>Apply Yourself parts</source>
         <translation>Apply Yourself parts</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="473"/>
+        <location filename="../qml/components/PillTimerPopover.qml" line="489"/>
         <source>Living as Christians parts</source>
         <translation>Living as Christians parts</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="486"/>
+        <location filename="../qml/components/PillTimerPopover.qml" line="502"/>
         <source>End the study at</source>
         <translation>End the study at</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="517"/>
+        <location filename="../qml/components/PillTimerPopover.qml" line="533"/>
         <source>Timer window</source>
         <translation>Timer window</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="536"/>
+        <location filename="../qml/components/PillTimerPopover.qml" line="554"/>
+        <source>Page for a tablet</source>
+        <translation>Page for a tablet</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="583"/>
+        <source>Another program uses port %1. Choose another port.</source>
+        <translation>Another program uses port %1. Choose another port.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="585"/>
+        <source>No network was found. Connect this computer to the same network as the tablet.</source>
+        <translation>No network was found. Connect this computer to the same network as the tablet.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="587"/>
+        <source>The page for the tablet could not start.</source>
+        <translation>The page for the tablet could not start.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="601"/>
+        <source>Scan the code with the tablet, or open this address in its browser:</source>
+        <translation>Scan the code with the tablet, or open this address in its browser:</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="657"/>
+        <source>New code</source>
+        <translation>New code</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="660"/>
+        <source>Pages opened with the old code stop updating</source>
+        <translation>Pages opened with the old code stop updating</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="668"/>
+        <source>Port</source>
+        <translation>Port</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="696"/>
+        <source>Progress ring on the page</source>
+        <translation>Progress ring on the page</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/PillTimerPopover.qml" line="716"/>
         <source>Count down</source>
         <translation>Count down</translation>
     </message>
     <message>
-        <location filename="../qml/components/PillTimerPopover.qml" line="555"/>
+        <location filename="../qml/components/PillTimerPopover.qml" line="735"/>
         <source>Show only the extra time</source>
         <translation>Show only the extra time</translation>
     </message>
@@ -2549,9 +2594,30 @@
         <translation>KMedia - Timer</translation>
     </message>
     <message>
-        <location filename="../qml/TimerWindow.qml" line="121"/>
+        <location filename="../qml/TimerWindow.qml" line="114"/>
+        <source>Elapsed</source>
+        <translation>Elapsed</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="115"/>
+        <source>Remaining</source>
+        <translation>Remaining</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="116"/>
+        <source>Paused</source>
+        <translation>Paused</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="117"/>
+        <location filename="../qml/TimerWindow.qml" line="141"/>
         <source>Meeting starts in</source>
         <translation>Meeting starts in</translation>
+    </message>
+    <message>
+        <location filename="../qml/TimerWindow.qml" line="118"/>
+        <source>Reconnecting...</source>
+        <translation>Reconnecting...</translation>
     </message>
 </context>
 <context>

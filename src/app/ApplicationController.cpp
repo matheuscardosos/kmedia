@@ -38,6 +38,7 @@
 #include "network/PublicationMediaPicker.h"
 #include "network/PublicationStore.h"
 #include "network/StudyBibleMedia.h"
+#include "network/TimerRemoteServer.h"
 #include "network/WatchedFolderMedia.h"
 #include "network/YeartextProvider.h"
 #include "parsers/CloudSyncWatcher.h"
@@ -110,6 +111,22 @@ ApplicationController::ApplicationController(QObject* parent)
     m_pdfPages = std::make_unique<kmedia::PdfPageImporter>(m_playlistModel.get());
     m_yeartext = std::make_unique<kmedia::YeartextProvider>(m_catalogClient.get());
     m_camera = std::make_unique<kmedia::CameraController>();
+    m_timerRemote = std::make_unique<kmedia::TimerRemoteServer>(m_meetingTimer.get());
+    // The timer remote's choices are kept per profile; never in --demo.
+    connect(m_timerRemote.get(), &kmedia::TimerRemoteServer::stateChanged, this, [this]() {
+        auto* settings = m_demoMode ? nullptr : m_profileManager->activeSettings();
+        if (settings == nullptr || m_loadingTimerRemote) {
+            return;
+        }
+        (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kTimerRemoteEnabled),
+                                 m_timerRemote->isEnabled());
+        (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kTimerRemotePort),
+                                 m_timerRemote->port());
+        (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kTimerRemoteCode),
+                                 m_timerRemote->accessCode());
+        (void)settings->setValue(QLatin1StringView(kmedia::settings_keys::kTimerRemoteFocus),
+                                 m_timerRemote->isFocusLayout());
+    });
     connect(m_camera.get(), &kmedia::CameraController::cameraIdChanged, this, [this]() {
         auto* settings = m_demoMode ? nullptr : m_profileManager->activeSettings();
         const auto key = QLatin1StringView(kmedia::settings_keys::kPresentationCamera);
@@ -449,6 +466,11 @@ kmedia::YeartextProvider* ApplicationController::yeartext() const
 kmedia::CameraController* ApplicationController::camera() const
 {
     return m_camera.get();
+}
+
+kmedia::TimerRemoteServer* ApplicationController::timerRemote() const
+{
+    return m_timerRemote.get();
 }
 
 kmedia::PdfPageImporter* ApplicationController::pdfPages() const
@@ -900,6 +922,24 @@ void ApplicationController::applyProfileSettings()
     if (m_timerWindowVisible != timerWindow) {
         m_timerWindowVisible = timerWindow;
         emit timerWindowVisibleChanged();
+    }
+    m_loadingTimerRemote = true;
+    m_timerRemote->setEnabled(false);
+    m_timerRemote->setPort(
+        settings->intValue(QLatin1StringView(kmedia::settings_keys::kTimerRemotePort),
+                           kmedia::TimerRemoteServer::kDefaultPort));
+    m_timerRemote->setFocusLayout(
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kTimerRemoteFocus), false));
+    // A profile without a code gets one, kept from then on.
+    m_timerRemote->setAccessCode(
+        settings->stringValue(QLatin1StringView(kmedia::settings_keys::kTimerRemoteCode)));
+    m_timerRemote->setEnabled(
+        !m_demoMode &&
+        settings->boolValue(QLatin1StringView(kmedia::settings_keys::kTimerRemoteEnabled), false));
+    m_loadingTimerRemote = false;
+    if (auto* writable = m_demoMode ? nullptr : m_profileManager->activeSettings()) {
+        (void)writable->setValue(QLatin1StringView(kmedia::settings_keys::kTimerRemoteCode),
+                                 m_timerRemote->accessCode());
     }
     // Another profile keeps its own times for the same day.
     m_meetingTimer->setMeeting({}, {}, false, {});

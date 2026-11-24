@@ -36,6 +36,10 @@ features:
     details: Extrai pacotes .jwpub e .jwlplaylist diretamente em C++ e renderiza documentos PDF multipágina via Qt6::Pdf.
   - title: Apresentação em Duas Telas
     details: Detecta monitores externos automaticamente, projeta sem bordas na segunda tela e oferece modo Standby ou Blackout instantâneo.
+  - title: Prévia ao Vivo e Câmera como Fundo
+    details: Mostra o vídeo tocando ao vivo no painel de prévia ou numa prévia flutuante, dá zoom e move a imagem com o mouse, e coloca uma câmera atrás da apresentação para congregações de língua de sinais.
+  - title: Cronômetro da Reunião e Tablet na Tribuna
+    details: Marca o tempo de cada parte da reunião, mostra se ela está adiantada ou atrasada, abre uma janela do cronômetro numa tela livre e leva o cronômetro a um tablet por QR code.
   - title: Página da Reunião Dia a Dia
     details: Abre cada dia de reunião seção por seção, com miniaturas reais e um calendário cujos pontos coloridos mostram quais dias estão prontos.
   - title: Música Ambiente com o Cancioneiro

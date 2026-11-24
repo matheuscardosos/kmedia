@@ -35,6 +35,7 @@ Q_MOC_INCLUDE("network/BibleMediaCatalog.h")
 Q_MOC_INCLUDE("network/StudyBibleMedia.h")
 Q_MOC_INCLUDE("network/YeartextProvider.h")
 Q_MOC_INCLUDE("media/CameraController.h")
+Q_MOC_INCLUDE("network/TimerRemoteServer.h")
 Q_MOC_INCLUDE("parsers/CloudSyncWatcher.h")
 
 class MpvRendererItem;
@@ -69,6 +70,7 @@ class BibleMediaCatalog;
 class StudyBibleMedia;
 class YeartextProvider;
 class CameraController;
+class TimerRemoteServer;
 class PdfPageImporter;
 class MediaAutoExport;
 class WatchedFolderMedia;
@@ -130,6 +132,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(kmedia::StudyBibleMedia* studyBible READ studyBible CONSTANT FINAL)
     Q_PROPERTY(kmedia::YeartextProvider* yeartext READ yeartext CONSTANT FINAL)
     Q_PROPERTY(kmedia::CameraController* camera READ camera CONSTANT FINAL)
+    Q_PROPERTY(kmedia::TimerRemoteServer* timerRemote READ timerRemote CONSTANT FINAL)
     Q_PROPERTY(kmedia::PdfPageImporter* pdfPages READ pdfPages CONSTANT FINAL)
     Q_PROPERTY(kmedia::WatchedFolderMedia* watchedFolder READ watchedFolder CONSTANT FINAL)
     Q_PROPERTY(kmedia::MediaAutoExport* autoExport READ autoExport CONSTANT FINAL)
@@ -189,6 +192,7 @@ public:
     [[nodiscard]] kmedia::StudyBibleMedia* studyBible() const;
     [[nodiscard]] kmedia::YeartextProvider* yeartext() const;
     [[nodiscard]] kmedia::CameraController* camera() const;
+    [[nodiscard]] kmedia::TimerRemoteServer* timerRemote() const;
     [[nodiscard]] kmedia::PdfPageImporter* pdfPages() const;
     [[nodiscard]] kmedia::WatchedFolderMedia* watchedFolder() const;
     [[nodiscard]] kmedia::MediaAutoExport* autoExport() const;
@@ -248,6 +252,7 @@ private:
     bool m_darkTheme{true};
     bool m_floatingPreview{true};
     bool m_timerWindowVisible{false};
+    bool m_loadingTimerRemote{false};
     QString m_uiLanguage{QStringLiteral("en")};
     QString m_boothPinSalt;
     QString m_boothPinHash;
@@ -281,6 +286,7 @@ private:
     std::unique_ptr<kmedia::StudyBibleMedia> m_studyBible;
     std::unique_ptr<kmedia::YeartextProvider> m_yeartext;
     std::unique_ptr<kmedia::CameraController> m_camera;
+    std::unique_ptr<kmedia::TimerRemoteServer> m_timerRemote;
     std::unique_ptr<kmedia::PdfPageImporter> m_pdfPages;
     std::unique_ptr<kmedia::BackgroundMusicLibrary> m_musicLibrary;
     std::unique_ptr<kmedia::BackgroundMusicService> m_musicService;

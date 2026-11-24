@@ -24,6 +24,7 @@
 #include "network/PublicTalkMedia.h"
 #include "network/PublicationMediaPicker.h"
 #include "network/StudyBibleMedia.h"
+#include "network/TimerRemoteServer.h"
 #include "network/WatchedFolderMedia.h"
 #include "network/YeartextProvider.h"
 #include "parsers/CloudSyncWatcher.h"
@@ -42,6 +43,14 @@ struct PlaybackControllerForeign
     Q_GADGET
     QML_FOREIGN(kmedia::PlaybackController)
     QML_NAMED_ELEMENT(PlaybackController)
+    QML_UNCREATABLE("Provided by ApplicationController")
+};
+
+struct TimerRemoteServerForeign
+{
+    Q_GADGET
+    QML_FOREIGN(kmedia::TimerRemoteServer)
+    QML_NAMED_ELEMENT(TimerRemoteServer)
     QML_UNCREATABLE("Provided by ApplicationController")
 };
 
