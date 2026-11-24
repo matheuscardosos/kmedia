@@ -17,6 +17,20 @@ ColumnLayout {
     readonly property var nextPart: root.timer.nextIndex >= 0 ? root.timer.parts[root.timer.nextIndex] : null
     property bool showOptions: false
 
+    // The timing report is saved by the pill bar, which outlives this popover.
+    signal saveReportRequested(var titles, var headers, string heading)
+
+    function requestReport() {
+        const titles = {}
+        for (const part of root.timer.parts)
+            titles[part.id] = root.partTitle(part)
+        const headers = [qsTr("Part"), qsTr("Planned start"), qsTr("Started"),
+                         qsTr("Planned"), qsTr("Took"), qsTr("Difference")]
+        const day = Date.fromLocaleDateString(Qt.locale(), root.timer.dateIso, "yyyy-MM-dd")
+        root.saveReportRequested(titles, headers,
+                                 qsTr("Meeting timing report, %1").arg(day.toLocaleDateString(Qt.locale(), Locale.LongFormat)))
+    }
+
     function partTitle(part) {
         if (!part)
             return ""
@@ -372,6 +386,18 @@ ColumnLayout {
 
         Item {
             Layout.fillWidth: true
+        }
+
+        StudioButton {
+            variant: "ghost"
+            iconName: "download"
+            leftPadding: 0
+            rightPadding: 0
+            Layout.preferredWidth: 30
+            enabled: root.timer.hasTimings
+            onClicked: root.requestReport()
+            ToolTip.visible: hovered
+            ToolTip.text: qsTr("Save timing report")
         }
 
         StudioButton {

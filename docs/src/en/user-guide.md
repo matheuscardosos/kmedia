@@ -102,6 +102,7 @@ The clock pill opens the meeting timer, which times each part of the meeting, in
 - Counting down, **End the study at** makes the *Watchtower* Study or the Congregation Bible Study count down to that time (never longer than the part), so it absorbs earlier delays.
 - The badge in the timer shows how many minutes the meeting is ahead or behind, from when the current part started against the meeting time in *Settings > Meetings*.
 - Finished parts show how long they really took. The times are kept with the day, so they are still there after a restart; **Clear times** starts over.
+- The download button saves the day's timing report as a PDF or a spreadsheet (CSV): each part with its planned and real start, its planned and real length, and the difference.
 - Days without a regular meeting (an assembly, a special program) start with no parts: type a title and use **Add part**.
 
 ### Keyboard shortcuts

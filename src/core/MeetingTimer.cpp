@@ -1,8 +1,13 @@
 #include "core/MeetingTimer.h"
 
+#include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QPageSize>
+#include <QPdfWriter>
+#include <QSaveFile>
+#include <QTextDocument>
 #include <QTime>
 #include <QVariantMap>
 
@@ -527,6 +532,96 @@ QString MeetingTimer::exportDayState() const
     }
     state.insert(kStateCustom, custom);
     return QString::fromUtf8(QJsonDocument(state).toJson(QJsonDocument::Compact));
+}
+
+QList<QStringList> MeetingTimer::timingReportRows(const QVariantMap& titles) const
+{
+    QList<QStringList> rows;
+    for (size_t i = 0; i < m_parts.size(); ++i) {
+        const Part& part = m_parts.at(i);
+        const QString title = part.custom ? part.title : titles.value(part.id, part.id).toString();
+        const qint64 plannedMs = static_cast<qint64>(part.minutes) * kMsPerMinute;
+        QString took;
+        QString difference;
+        if (part.startedAt.isValid() && part.endedAt.isValid()) {
+            const qint64 tookMs = qMax<qint64>(0, part.startedAt.msecsTo(part.endedAt));
+            took = formatClock(tookMs);
+            const qint64 deltaMs = tookMs - plannedMs;
+            difference = (deltaMs >= 0 ? QStringLiteral("+") : QStringLiteral("-")) +
+                         formatClock(deltaMs >= 0 ? deltaMs : -deltaMs);
+        }
+        rows.append({title, clockTime(plannedStart(static_cast<int>(i))), clockTime(part.startedAt),
+                     formatClock(plannedMs), took, difference});
+    }
+    return rows;
+}
+
+bool MeetingTimer::saveTimingReport(const QUrl& file, const QVariantMap& titles,
+                                    const QStringList& headers, const QString& heading) const
+{
+    const QString path = file.isLocalFile() ? file.toLocalFile() : file.toString();
+    if (path.isEmpty()) {
+        return false;
+    }
+    const QList<QStringList> rows = timingReportRows(titles);
+
+    if (path.endsWith(QLatin1String(".csv"), Qt::CaseInsensitive)) {
+        const auto csvField = [](QString value) {
+            if (value.contains(QLatin1Char(',')) || value.contains(QLatin1Char('"')) ||
+                value.contains(QLatin1Char('\n'))) {
+                value.replace(QLatin1Char('"'), QStringLiteral("\"\""));
+                return QStringLiteral("\"%1\"").arg(value);
+            }
+            return value;
+        };
+        QString csv;
+        QStringList headerFields;
+        for (const QString& header : headers) {
+            headerFields.append(csvField(header));
+        }
+        csv += headerFields.join(QLatin1Char(',')) + QStringLiteral("\r\n");
+        for (const QStringList& row : rows) {
+            QStringList fields;
+            for (const QString& value : row) {
+                fields.append(csvField(value));
+            }
+            csv += fields.join(QLatin1Char(',')) + QStringLiteral("\r\n");
+        }
+        QSaveFile out(path);
+        if (!out.open(QIODevice::WriteOnly)) {
+            return false;
+        }
+        // A byte order mark, so spreadsheet programs read the accents right.
+        out.write("\xEF\xBB\xBF");
+        out.write(csv.toUtf8());
+        return out.commit();
+    }
+
+    QString html = QStringLiteral("<h2>%1</h2><table width=\"100%\" cellspacing=\"0\" "
+                                  "cellpadding=\"4\" border=\"1\"><tr>")
+                       .arg(heading.toHtmlEscaped());
+    for (const QString& header : headers) {
+        html += QStringLiteral("<th align=\"left\">%1</th>").arg(header.toHtmlEscaped());
+    }
+    html += QStringLiteral("</tr>");
+    for (const QStringList& row : rows) {
+        html += QStringLiteral("<tr>");
+        for (const QString& value : row) {
+            html += QStringLiteral("<td>%1</td>").arg(value.toHtmlEscaped());
+        }
+        html += QStringLiteral("</tr>");
+    }
+    html += QStringLiteral("</table>");
+
+    QPdfWriter writer(path);
+    writer.setPageSize(QPageSize(QPageSize::A4));
+    writer.setResolution(96);
+    writer.setTitle(heading);
+    QTextDocument document;
+    document.setHtml(html);
+    document.setPageSize(QSizeF(writer.width(), writer.height()));
+    document.print(&writer);
+    return QFile::exists(path);
 }
 
 void MeetingTimer::notifyDayState()

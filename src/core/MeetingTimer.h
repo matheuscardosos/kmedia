@@ -7,6 +7,7 @@
 #include <QPair>
 #include <QString>
 #include <QTimer>
+#include <QUrl>
 #include <QVariantList>
 
 #include <functional>
@@ -119,6 +120,14 @@ public:
     void setMeeting(const QString& dateIso, const QString& meetingKind, bool coWeek,
                     const QDateTime& meetingStart, const QString& dayState = {});
     [[nodiscard]] QString exportDayState() const;
+
+    // The day's timing report, one row per part: title, planned start, real start, planned
+    // length, real length, and the difference. `titles` maps part ids to their shown titles.
+    [[nodiscard]] QList<QStringList> timingReportRows(const QVariantMap& titles) const;
+    // Saves the report as CSV when the file ends in .csv, as PDF otherwise. `headers` are the six
+    // column titles and `heading` the line above the table.
+    Q_INVOKABLE bool saveTimingReport(const QUrl& file, const QVariantMap& titles,
+                                      const QStringList& headers, const QString& heading) const;
 
     void setClockForTest(std::function<QDateTime()> now);
     void advanceForTest(qint64 deltaMs);

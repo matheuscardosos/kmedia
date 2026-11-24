@@ -102,6 +102,7 @@ A pílula do relógio abre o cronômetro da reunião, que marca o tempo de cada 
 - Na contagem regressiva, **Terminar o estudo às** faz o estudo de *A Sentinela* ou o estudo bíblico de congregação contar até esse horário (nunca mais que a parte), para absorver atrasos anteriores.
 - O selo do cronômetro mostra quantos minutos a reunião está adiantada ou atrasada, pelo início da parte atual em relação ao horário da reunião em *Configurações > Reuniões*.
 - As partes encerradas mostram quanto tempo levaram de fato. Os tempos ficam salvos com o dia, então continuam lá depois de reiniciar; **Limpar tempos** recomeça.
+- O botão de download salva o relatório de tempos do dia em PDF ou planilha (CSV): cada parte com o início previsto e o real, a duração prevista e a real, e a diferença.
 - Dias sem reunião regular (uma assembleia, um programa especial) começam sem partes: digite um título e use **Adicionar parte**.
 
 ### Atalhos de teclado
