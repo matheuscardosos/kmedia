@@ -16,6 +16,7 @@ Apresentadores baseados em navegadores embarcados consomem centenas de megabytes
 - **Mídias das Reuniões:** Organiza imagens, vídeos, cânticos e publicações semanais automaticamente por data e idioma.
 - **Pacotes e Documentos:** Importa arquivos `.jwpub`, `.jwlplaylist`, pacotes de discurso público `S-34` e `S-34mp`, mídia local e PDFs multipágina.
 - **Controles Precisos:** Marcadores não destrutivos de início e fim, zoom e deslocamento sincronizados em imagens/PDFs, ordenação por arrastar e soltar e Standby instantâneo.
+- **Cronômetro da Reunião:** Tempo de cada parte com acompanhamento de adiantado ou atrasado, janela do cronômetro para uma tela livre, página somente leitura para um tablet na tribuna aberta por QR code e relatórios de tempos em PDF ou CSV.
 - **Integrações Híbridas:** Controle nativo via OBS WebSocket v5, abertura de reuniões Zoom (`zoommtg://`) e detecção leve de processos.
 - **Interface Multilíngue:** Traduções da interface via Qt Linguist independentes do idioma das mídias baixadas.
 

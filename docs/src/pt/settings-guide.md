@@ -48,6 +48,9 @@ Ative e escolha uma pasta. Cada dia com mídias é copiado para uma pasta com a 
 - **Saída de Apresentação Ativa:** mostra ou esconde a janela de apresentação. `Ctrl+P` faz o mesmo.
 - **Lista de telas:** clique numa tela para apresentar nela. Se essa tela for desconectada, o KMedia volta a apresentar automaticamente.
 - **Imagem de espera:** a imagem mostrada na tela de apresentação durante a espera e enquanto nada é apresentado, como o texto do ano. Sem ela, aparece o texto do ano atual, no idioma das mídias. **Blackout**, no painel de prévia, sempre mostra preto.
+- **Prévia flutuante:** com o painel de prévia fechado, uma pequena prévia ao vivo da tela de apresentação flutua no canto da janela sempre que uma imagem, página de PDF ou vídeo está nela. Vem ligada; o [Guia do Usuário](./user-guide.md#apresentar) explica como mover, redimensionar e ampliar.
+
+As escolhas do cronômetro da reunião (contagem regressiva, janela do cronômetro, página para tablet) ficam na pílula do cronômetro, não aqui; veja o [Guia do Usuário](./user-guide.md#cronometro-da-reuniao).
 
 ## Áudio
 

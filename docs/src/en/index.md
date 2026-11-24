@@ -36,6 +36,10 @@ features:
     details: Inspects .jwpub and .jwlplaylist archives natively in C++ and renders multi-page PDF documents through Qt6::Pdf.
   - title: Dual-Monitor Presentation
     details: Automatically tracks connected screens, assigns borderless output to secondary displays, and supports instant standby or blackout.
+  - title: Live Preview and Camera Background
+    details: Shows a playing video live in the preview panel or a floating preview, zooms and pans by hand, and puts a camera behind the presentation for sign language congregations.
+  - title: Meeting Timer and Lectern Tablet
+    details: Times each part of the meeting, shows how far ahead or behind it is, opens a timer window on a spare screen, and serves the timer to a tablet through a QR code.
   - title: Day by Day Meeting Page
     details: Opens each meeting day section by section, with real thumbnails and a calendar whose colored dots show which days are ready.
   - title: Songbook Background Music

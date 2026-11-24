@@ -50,6 +50,14 @@ O [Guia do Usuário](./user-guide.md#atalhos-de-teclado) lista todos. Os princip
 
 Ela toca o cancioneiro no idioma das mídias: antes de uma reunião do mesmo dia, o fim é marcado para o começo da reunião, com os cânticos dessa reunião por último, e nos outros momentos o cancioneiro inteiro toca em repetição. Ela pode começar sozinha antes das reuniões; veja o [Guia do Usuário](./user-guide.md#musica-ambiente).
 
+### Como marco o tempo das partes da reunião?
+
+Abra a pílula do relógio. Ela lista as partes do dia aberto com os minutos de costume; **Iniciar** marca a próxima parte e **Próxima parte** avança. Ela mostra se a reunião está adiantada ou atrasada, guarda os tempos reais com o dia e salva um relatório de tempos em PDF ou CSV. Veja o [Guia do Usuário](./user-guide.md#cronometro-da-reuniao).
+
+### O orador pode ver o tempo num tablet na tribuna?
+
+Sim. Em **Opções** no cronômetro, ligue **Página para tablet** e leia o QR code com um tablet ou celular na mesma rede. A página só mostra o cronômetro, e só os aparelhos que recebem o endereço, que traz um código de acesso, conseguem abri-la. **Janela do cronômetro** mostra o mesmo cronômetro numa tela livre.
+
 ## Integrações
 
 ### Como uso o KMedia com o Zoom?
@@ -88,6 +96,13 @@ Sim. Cada perfil de congregação tem suas próprias configurações, mídias, a
 - Clique em **Salvar e Conectar** de novo depois de mudá-los.
 - Se ele conecta mas nunca troca de cena, escolha as cenas de palco e de mídia em *Configurações > Integrações*.
 
+### O tablet não abre a página do cronômetro. O que devo conferir?
+
+- O tablet e este computador estão na mesma rede (o mesmo Wi-Fi, não uma rede de visitantes).
+- O endereço ou o QR code é o atual: **Novo código** faz o endereço antigo parar de funcionar.
+- Nenhuma mensagem abaixo de **Página para tablet** diz que a porta está em uso; se disser, escolha outra porta.
+- O firewall deixa o KMedia usar a rede. No Windows, permita em redes privadas quando for perguntado, ou em *Segurança do Windows > Firewall*.
+
 ### As mídias da pasta compartilhada não aparecem. O que devo conferir?
 
 - Os arquivos estão dentro de uma pasta com data (`AAAA-MM-DD`) direto na pasta compartilhada.
@@ -102,7 +117,7 @@ Aplicativos feitos com Electron carregam um navegador inteiro junto. O KMedia é
 
 ### O KMedia coleta dados sobre mim?
 
-Não. O KMedia não tem telemetria e não envia relatórios. Ele só se conecta aos servidores do jw.org, para baixar mídias e procurar congregações, e ao OBS Studio e ao Zoom no seu próprio computador quando você os usa. Suas configurações e mídias ficam no seu computador.
+Não. O KMedia não tem telemetria e não envia relatórios. Ele só se conecta aos servidores do jw.org, para baixar mídias e procurar congregações, e ao OBS Studio e ao Zoom no seu próprio computador quando você os usa. Se você ligar a **Página para tablet** do cronômetro, ele também serve essa página somente leitura na sua rede local. Suas configurações e mídias ficam no seu computador.
 
 ### O KMedia se atualiza sozinho?
 

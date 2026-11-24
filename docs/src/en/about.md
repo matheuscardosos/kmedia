@@ -16,6 +16,7 @@ Browser-wrapped desktop presenters consume hundreds of megabytes of RAM, spawn m
 - **Weekly Meeting Media:** Automatically organizes meeting images, videos, songs, and publications by date and language.
 - **Archive & Document Support:** Imports `.jwpub`, `.jwlplaylist`, `S-34` / `S-34mp` public talk packages, local video/audio/images, and multi-page PDFs.
 - **Precision Operator Controls:** Non-destructive start/end trim markers, synchronized zoom/pan viewports, drag-and-drop playlist ordering, and instant standby blackout.
+- **Meeting Timer:** Part by part timing with ahead or behind tracking, a timer window for a spare screen, a read only page for a lectern tablet opened by QR code, and PDF or CSV timing reports.
 - **Hybrid Booth Integrations:** Native OBS Studio WebSocket v5 control, Zoom launch (`zoommtg://`), and lightweight OS process detection.
 - **Multilingual Interface:** Interface translations managed via Qt Linguist independently from the downloaded meeting media language.
 
