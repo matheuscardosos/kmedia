@@ -63,7 +63,7 @@ jobs:
             ./build/linux-release/kmedia --demo --tab settings --theme dark --window-size 1280x800 --screenshot-delay 1800 --screenshot docs/src/assets/kmedia-settings-preview.png
 
       - name: Open pull request with refreshed screenshots
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           add-paths: |
             docs/src/assets/kmedia-preview.png
