@@ -310,3 +310,29 @@ TEST_CASE("The presentation player hands out its current video frame for the pre
     REQUIRE(frame.width() == 48);
     REQUIRE(QColor(frame.pixel(24, 13)).red() > 150);
 }
+
+TEST_CASE("PlaybackController defers video load until render context and hands off to preview",
+          "[media][playback]")
+{
+    kmedia::PlaybackController playback;
+    MpvRendererItem presentationMpv;
+    MpvRendererItem previewMpv;
+
+    playback.attachMpvItem(&presentationMpv);
+    playback.attachPreviewMpvItem(&previewMpv);
+
+    // Without a presentation window shown, loading a video keeps PlaybackController cleanly idle on
+    // presentationMpv (waiting for an OpenGL render context) rather than leaving vid=-1 black.
+    playback.setPresentationVisible(false);
+    const QUrl fakeVideo = QUrl::fromLocalFile(QStringLiteral("sample_video.mp4"));
+    playback.loadMedia(fakeVideo, QStringLiteral("Sample Video"));
+    REQUIRE(playback.mediaTitle() == QStringLiteral("Sample Video"));
+    REQUIRE(playback.mediaKind() == kmedia::PlaybackController::MediaKind::Video);
+
+    // Showing the presentation window hands target control to presentationMpv cleanly and
+    // detaching previewMpv clears without crashing.
+    playback.setPresentationVisible(true);
+    playback.detachPreviewMpvItem(&previewMpv);
+    playback.stop();
+    REQUIRE(playback.mediaKind() == kmedia::PlaybackController::MediaKind::None);
+}

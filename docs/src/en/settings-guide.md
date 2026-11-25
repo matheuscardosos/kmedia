@@ -10,9 +10,13 @@ Type in **Search settings...** to show every category that matches a word, such 
 
 - **Dark Booth Theme (Studio Carbon):** switches between the dark and the light theme. `Ctrl+D` does the same from anywhere.
 - **English** and **Português:** the interface language. It changes right away and is independent of the media language.
-- The active congregation is shown here. Switch congregations from the selector at the top of the navigation.
+- **Active Congregation & Manage:** shows the active congregation and opens the congregation manager (`Manage Congregations`) to add, switch, rename, or remove congregation profiles. Each congregation stores its own schedule, media language, and downloaded meeting files.
 
 ## Meetings
+
+### Congregation Profiles
+
+The top card in **Meetings** shows the active congregation and opens **Manage** (`Manage Congregations`) to add a congregation (with its name and initial media language), rename an existing congregation inline, switch between congregations, or remove unused ones (keeping at least one profile). Selecting a result in **Congregation Lookup** on an unrenamed default profile also adopts that congregation's name automatically.
 
 ### Congregation Lookup (hub.jw.org)
 
@@ -49,6 +53,7 @@ Turn it on and pick a folder. Every day with media is copied into a date folder 
 - **Screen list:** click a screen to present on it instead. If that screen is disconnected, KMedia goes back to presenting automatically.
 - **Standby picture:** the picture shown on the presentation display during standby and while nothing is presented, such as the yeartext. Without one, the yeartext of the current year shows, in the media language. **Blackout** in the preview panel always shows black.
 - **Floating preview:** while the preview panel is closed, a small live preview of the presentation display floats in the corner of the window whenever a picture, PDF page, or video is on it. It is on by default; the [User Guide](./user-guide.md#presenting) explains how to move, resize, and enlarge it.
+- **Presentation camera:** lets you choose a connected camera as the background of the presentation display (`Choose` or `Off`). You can also search `camera` or `preview` in **Search settings...** to reach these controls directly.
 
 The meeting timer's own choices (count down, timer window, page for a tablet) live in the timer pill, not here; see the [User Guide](./user-guide.md#meeting-timer).
 

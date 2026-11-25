@@ -197,6 +197,7 @@ ApplicationWindow {
             InspectorPanel {
                 visible: root.isWide && root.previewDocked
                 drawerMode: false
+                hostLocalPlayer: !drawerInspectorLoader.active
                 Layout.preferredWidth: Theme.inspectorPanelWidth
                 Layout.fillHeight: true
             }
@@ -222,6 +223,7 @@ ApplicationWindow {
 
         sourceComponent: InspectorPanel {
             drawerMode: true
+            hostLocalPlayer: true
             onCloseRequested: root.inspectorDrawerOpen = false
         }
     }

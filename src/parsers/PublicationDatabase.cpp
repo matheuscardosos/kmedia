@@ -891,10 +891,19 @@ void PublicationDatabase::alignSongOrdinals(std::vector<PublicationMediaRow>& ro
             return originalOrdinal.value(rows[a].multimediaId) <
                    originalOrdinal.value(rows[b].multimediaId);
         });
+        const int upperBound = rows[songs[s + 1]].beginParagraphOrdinal;
         int paragraph = current.beginParagraphOrdinal;
         int position = current.beginPosition;
         for (const size_t index : between) {
-            ++paragraph;
+            const int existing = rows[index].beginParagraphOrdinal;
+            if (existing > current.beginParagraphOrdinal &&
+                (upperBound <= current.beginParagraphOrdinal || existing < upperBound)) {
+                paragraph = std::max(paragraph, existing);
+                continue;
+            }
+            if (upperBound <= current.beginParagraphOrdinal || paragraph + 1 < upperBound) {
+                ++paragraph;
+            }
             ++position;
             rows[index].beginParagraphOrdinal = paragraph;
             rows[index].endParagraphOrdinal = paragraph;

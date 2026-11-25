@@ -235,7 +235,29 @@ Rectangle {
                             }
                         }
                     }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 1
+                        color: Theme.borderHairline
+                    }
+
+                    StudioButton {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 30
+                        variant: "ghost"
+                        iconName: "users"
+                        text: qsTr("Manage congregations...")
+                        onClicked: {
+                            profilePopup.close()
+                            congregationManagerPopup.open()
+                        }
+                    }
                 }
+            }
+
+            CongregationManagerPopup {
+                id: congregationManagerPopup
             }
         }
 

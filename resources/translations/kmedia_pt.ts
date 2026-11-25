@@ -97,12 +97,12 @@
         <translation>Cântico</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1086"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1142"/>
         <source>The shared folder and the export folder must be different</source>
         <translation>A pasta compartilhada e a pasta de exportação precisam ser diferentes</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../src/app/ApplicationController.cpp" line="1093"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1149"/>
         <source>%n file(s) could not be converted to MP4</source>
         <translation>
             <numerusform>%n arquivo não pôde ser convertido em MP4</numerusform>
@@ -110,12 +110,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1185"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1247"/>
         <source>Zoom screen share ready (%1): %2</source>
         <translation>Compartilhamento no Zoom pronto (%1): %2</translation>
     </message>
     <message>
-        <location filename="../../src/app/ApplicationController.cpp" line="1265"/>
+        <location filename="../../src/app/ApplicationController.cpp" line="1337"/>
         <source>Applied congregation schedule: %1</source>
         <translation>Horário da congregação aplicado: %1</translation>
     </message>
@@ -404,6 +404,110 @@
     </message>
 </context>
 <context>
+    <name>CongregationManagerPopup</name>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="37"/>
+        <source>Created congregation: %1</source>
+        <translation>Congregação criada: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="39"/>
+        <source>Could not create congregation</source>
+        <translation>Não foi possível criar a congregação</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="84"/>
+        <source>Manage Congregations</source>
+        <translation>Gerenciar Congregações</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="105"/>
+        <source>Each congregation keeps its own schedule, media language, and downloaded meeting files.</source>
+        <translation>Cada congregação guarda seus próprios horários, idioma das mídias e arquivos baixados da reunião.</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="140"/>
+        <source>Congregation renamed to %1</source>
+        <translation>Congregação renomeada para %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="142"/>
+        <source>Could not rename congregation</source>
+        <translation>Não foi possível renomear a congregação</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="162"/>
+        <source>Switched congregation to %1</source>
+        <translation>Congregação alterada para %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="210"/>
+        <source>Active</source>
+        <translation>Ativa</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="218"/>
+        <source>Rename</source>
+        <translation>Renomear</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="238"/>
+        <source>Delete congregation</source>
+        <translation>Excluir congregação</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="239"/>
+        <source>At least one congregation is required</source>
+        <translation>Pelo menos uma congregação é obrigatória</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="259"/>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="359"/>
+        <source>Congregation name</source>
+        <translation>Nome da congregação</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="274"/>
+        <source>Save</source>
+        <translation>Salvar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="300"/>
+        <source>Delete &quot;%1&quot; and its local media?</source>
+        <translation>Excluir &quot;%1&quot; e suas mídias locais?</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="309"/>
+        <source>Delete</source>
+        <translation>Excluir</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="315"/>
+        <source>Removed congregation: %1</source>
+        <translation>Congregação removida: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="322"/>
+        <source>Cancel</source>
+        <translation>Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="343"/>
+        <source>Add Congregation</source>
+        <translation>Adicionar Congregação</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="384"/>
+        <source>Add</source>
+        <translation>Adicionar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/CongregationManagerPopup.qml" line="422"/>
+        <source>Filter languages...</source>
+        <translation>Filtrar idiomas...</translation>
+    </message>
+</context>
+<context>
     <name>CustomSectionPopup</name>
     <message>
         <location filename="../qml/components/CustomSectionPopup.qml" line="106"/>
@@ -486,167 +590,167 @@
 <context>
     <name>InspectorPanel</name>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="94"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="95"/>
         <source>Live Preview</source>
         <translation>Prévia ao Vivo</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="151"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="153"/>
         <source>STANDBY ACTIVE</source>
         <translation>ESPERA ATIVA</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="152"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="154"/>
         <source>NO ACTIVE MEDIA</source>
         <translation>NENHUMA MÍDIA ATIVA</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="168"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="170"/>
         <source>STANDBY</source>
         <translation>ESPERA</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="170"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="172"/>
         <source>ON AIR</source>
         <translation>NO AR</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="171"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="173"/>
         <source>READY</source>
         <translation>PRONTO</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="215"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="217"/>
         <source>Standby</source>
         <translation>Espera</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="253"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="255"/>
         <source>Blackout</source>
         <translation>Blackout</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="326"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="328"/>
         <source>Toggle secondary presentation output window</source>
         <translation>Alternar janela secundária de apresentação</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="356"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="358"/>
         <source>File Information</source>
         <translation>Informações do arquivo</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="370"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="372"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="382"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="384"/>
         <source>Format</source>
         <translation>Formato</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="392"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="394"/>
         <source>Resolution</source>
         <translation>Resolução</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="402"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="404"/>
         <source>Duration</source>
         <translation>Duração</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="412"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="414"/>
         <source>File Size</source>
         <translation>Tamanho</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="449"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="451"/>
         <source>Outputs / Routing</source>
         <translation>Saídas / Roteamento</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="461"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="463"/>
         <source>Projector / 2nd Display</source>
         <translation>Projetor / 2ª Tela</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="473"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="475"/>
         <source>Active</source>
         <translation>Ativo</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="474"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="476"/>
         <source>Ready</source>
         <translation>Pronto</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="474"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="476"/>
         <source>Off</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="486"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="488"/>
         <source>OBS Scene Sync</source>
         <translation>Sincronia OBS</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="496"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="498"/>
         <source>Connected</source>
         <translation>Conectado</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="496"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="498"/>
         <source>Offline</source>
         <translation>Offline</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="508"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="510"/>
         <source>Audio Output</source>
         <translation>Saída de Áudio</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="518"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="520"/>
         <source>Muted</source>
         <translation>Silenciado</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="518"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="520"/>
         <source>Active (Stereo)</source>
         <translation>Ativo (Estéreo)</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="552"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="554"/>
         <source>Edit (Non-Destructive)</source>
         <translation>Edição (Não destrutiva)</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="573"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="575"/>
         <source>Reset trim markers and zoom</source>
         <translation>Redefinir cortes e zoom</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="582"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="584"/>
         <source>In</source>
         <translation>Início</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="618"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="620"/>
         <source>Set trim start at current position</source>
         <translation>Definir início na posição atual</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="624"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="626"/>
         <source>Out</source>
         <translation>Fim</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="662"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="664"/>
         <source>Set trim end at current position</source>
         <translation>Definir fim na posição atual</translation>
     </message>
     <message>
-        <location filename="../qml/components/InspectorPanel.qml" line="705"/>
+        <location filename="../qml/components/InspectorPanel.qml" line="707"/>
         <source>Page %1 of %2</source>
         <translation>Página %1 de %2</translation>
     </message>
@@ -699,53 +803,58 @@
         <translation>Congregação alterada para %1</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="285"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="250"/>
+        <source>Manage congregations...</source>
+        <translation>Gerenciar congregações...</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/LeftNavRail.qml" line="307"/>
         <source>Connected</source>
         <translation>Conectado</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="286"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="308"/>
         <source>Detected</source>
         <translation>Detectado</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="287"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="309"/>
         <source>Offline</source>
         <translation>Offline</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="297"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="319"/>
         <source>2nd Display</source>
         <translation>2ª Tela</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="299"/>
-        <location filename="../qml/components/LeftNavRail.qml" line="315"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="321"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="337"/>
         <source>Active</source>
         <translation>Ativo</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="301"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="323"/>
         <source>Ready</source>
         <translation>Pronto</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="302"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="324"/>
         <source>Single</source>
         <translation>Única</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="316"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="338"/>
         <source>Not running</source>
         <translation>Inativo</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="325"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="347"/>
         <source>Storage</source>
         <translation>Armazenamento</translation>
     </message>
     <message>
-        <location filename="../qml/components/LeftNavRail.qml" line="326"/>
+        <location filename="../qml/components/LeftNavRail.qml" line="348"/>
         <source>%1 free</source>
         <translation>%1 livres</translation>
     </message>
@@ -1195,37 +1304,37 @@
 <context>
     <name>MeetingSections</name>
     <message>
-        <location filename="../../src/core/MeetingSections.cpp" line="68"/>
+        <location filename="../../src/core/MeetingSections.cpp" line="69"/>
         <source>Treasures From God&apos;s Word</source>
         <translation>Tesouros da Palavra de Deus</translation>
     </message>
     <message>
-        <location filename="../../src/core/MeetingSections.cpp" line="71"/>
+        <location filename="../../src/core/MeetingSections.cpp" line="72"/>
         <source>Apply Yourself to the Field Ministry</source>
         <translation>Faça Seu Melhor no Ministério</translation>
     </message>
     <message>
-        <location filename="../../src/core/MeetingSections.cpp" line="75"/>
+        <location filename="../../src/core/MeetingSections.cpp" line="76"/>
         <source>Living as Christians</source>
         <translation>Nossa Vida Cristã</translation>
     </message>
     <message>
-        <location filename="../../src/core/MeetingSections.cpp" line="78"/>
+        <location filename="../../src/core/MeetingSections.cpp" line="79"/>
         <source>Public Talk</source>
         <translation>Discurso Público</translation>
     </message>
     <message>
-        <location filename="../../src/core/MeetingSections.cpp" line="81"/>
+        <location filename="../../src/core/MeetingSections.cpp" line="82"/>
         <source>Watchtower Study</source>
         <translation>Estudo de A Sentinela</translation>
     </message>
     <message>
-        <location filename="../../src/core/MeetingSections.cpp" line="84"/>
+        <location filename="../../src/core/MeetingSections.cpp" line="85"/>
         <source>Circuit Overseer</source>
         <translation>Superintendente de Circuito</translation>
     </message>
     <message>
-        <location filename="../../src/core/MeetingSections.cpp" line="87"/>
+        <location filename="../../src/core/MeetingSections.cpp" line="88"/>
         <source>Added Media</source>
         <translation>Mídia Adicionada</translation>
     </message>
@@ -1956,77 +2065,87 @@
         <translation>Atualizar lista completa de idiomas JW</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="239"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="259"/>
+        <source>Add, rename, switch, or remove congregations</source>
+        <translation>Adicione, renomeie, troque ou remova congregações</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="270"/>
+        <source>Manage</source>
+        <translation>Gerenciar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="295"/>
         <source>Congregation Lookup (hub.jw.org)</source>
         <translation>Busca de Congregação (hub.jw.org)</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="250"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="306"/>
         <source>City, congregation name...</source>
         <translation>Cidade, nome da congregação...</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="343"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="399"/>
         <source>Congregation Meeting Schedule</source>
         <translation>Horários das Reuniões da Congregação</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="348"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="404"/>
         <source>Midweek Meeting</source>
         <translation>Reunião de Meio de Semana</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="349"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="405"/>
         <source>Weekend Meeting</source>
         <translation>Reunião de Fim de Semana</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="439"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="495"/>
         <source>Save Times</source>
         <translation>Salvar Horários</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="443"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="499"/>
         <source>Meeting schedule updated</source>
         <translation>Horário das reuniões atualizado</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="464"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="520"/>
         <source>Meeting Media</source>
         <translation>Mídias da Reunião</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="473"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="529"/>
         <source>Media language</source>
         <translation>Idioma das mídias</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="504"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="560"/>
         <source>Fallback language</source>
         <translation>Idioma de reserva</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="536"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="592"/>
         <source>Hide media from footnotes</source>
         <translation>Ocultar mídias das notas de rodapé</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="542"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="598"/>
         <source>Include pictures meant only for the printed edition</source>
         <translation>Incluir imagens feitas só para a edição impressa</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="548"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="604"/>
         <source>Skip videos inside Watchtower paragraphs</source>
         <translation>Ignorar vídeos dentro dos parágrafos de A Sentinela</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="554"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="610"/>
         <source>Skip videos from the Teaching brochure</source>
         <translation>Ignorar vídeos da brochura Melhore</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsMeetingsPane.qml" line="560"/>
+        <location filename="../qml/components/SettingsMeetingsPane.qml" line="616"/>
         <source>Skip Congregation Bible Study videos</source>
         <translation>Ignorar vídeos do Estudo Bíblico de Congregação</translation>
     </message>
@@ -2155,11 +2274,6 @@
         <translation>Tela</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="20"/>
-        <source>display screen projector presentation standby blackout picture</source>
-        <translation>tela monitor projetor apresentação espera blackout imagem</translation>
-    </message>
-    <message>
         <location filename="../qml/components/SettingsView.qml" line="21"/>
         <source>Audio</source>
         <translation>Áudio</translation>
@@ -2205,17 +2319,17 @@
         <translation>Congregação ativa: %1</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="431"/>
+        <location filename="../qml/components/SettingsView.qml" line="439"/>
         <source>English</source>
         <translation>English</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="438"/>
+        <location filename="../qml/components/SettingsView.qml" line="446"/>
         <source>Português</source>
         <translation>Português</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="856"/>
+        <location filename="../qml/components/SettingsView.qml" line="1041"/>
         <source>OBS Host (127.0.0.1)</source>
         <translation>Host OBS (127.0.0.1)</translation>
     </message>
@@ -2230,137 +2344,174 @@
         <translation>Reuniões</translation>
     </message>
     <message>
+        <location filename="../qml/components/SettingsView.qml" line="20"/>
+        <source>display screen projector presentation standby blackout picture camera preview floating</source>
+        <translation>tela monitor projetor apresentação espera blackout imagem câmera prévia flutuante</translation>
+    </message>
+    <message>
         <location filename="../qml/components/SettingsView.qml" line="396"/>
         <source>Dark Booth Theme (Studio Carbon)</source>
         <translation>Tema Escuro da Cabine (Studio Carbon)</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="477"/>
+        <location filename="../qml/components/SettingsView.qml" line="432"/>
+        <source>Manage</source>
+        <translation>Gerenciar</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="485"/>
         <source>Display Routing &amp; Standby</source>
         <translation>Roteamento de Tela e Espera</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="487"/>
+        <location filename="../qml/components/SettingsView.qml" line="495"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="497"/>
+        <location filename="../qml/components/SettingsView.qml" line="505"/>
         <source>Presentation Output Active</source>
         <translation>Saída de Apresentação Ativa</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="519"/>
+        <location filename="../qml/components/SettingsView.qml" line="527"/>
         <source>Floating preview</source>
         <translation>Prévia flutuante</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="527"/>
+        <location filename="../qml/components/SettingsView.qml" line="535"/>
         <source>While the preview panel is closed, show a small live preview of the presentation screen while a picture, PDF page, or video is on it.</source>
         <translation>Com o painel de prévia fechado, mostra uma pequena prévia ao vivo da tela de apresentação enquanto uma imagem, página de PDF ou vídeo está nela.</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="603"/>
-        <location filename="../qml/components/SettingsView.qml" line="643"/>
+        <location filename="../qml/components/SettingsView.qml" line="611"/>
+        <location filename="../qml/components/SettingsView.qml" line="651"/>
         <source>Standby picture</source>
         <translation>Imagem de espera</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="622"/>
+        <location filename="../qml/components/SettingsView.qml" line="630"/>
+        <location filename="../qml/components/SettingsView.qml" line="703"/>
         <source>Choose</source>
         <translation>Escolher</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="637"/>
+        <location filename="../qml/components/SettingsView.qml" line="645"/>
         <source>Remove picture</source>
         <translation>Remover imagem</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="644"/>
+        <location filename="../qml/components/SettingsView.qml" line="652"/>
         <source>Pictures (*.png *.jpg *.jpeg *.webp *.bmp)</source>
         <translation>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="676"/>
+        <location filename="../qml/components/SettingsView.qml" line="669"/>
+        <location filename="../qml/components/SettingsView.qml" line="744"/>
+        <source>Off</source>
+        <translation>Desativada</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="677"/>
+        <source>Selected</source>
+        <translation>Selecionada</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="684"/>
+        <source>Presentation camera</source>
+        <translation>Câmera de apresentação</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="769"/>
+        <source>No camera detected</source>
+        <translation>Nenhuma câmera detectada</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="830"/>
+        <source>Turn off camera</source>
+        <translation>Desligar câmera</translation>
+    </message>
+    <message>
+        <location filename="../qml/components/SettingsView.qml" line="861"/>
         <source>Background Music &amp; Fade Timing</source>
         <translation>Música Ambiente e Tempo de Fade</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="708"/>
+        <location filename="../qml/components/SettingsView.qml" line="893"/>
         <source>Fade-Out Duration</source>
         <translation>Duração do Fade-Out</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="729"/>
+        <location filename="../qml/components/SettingsView.qml" line="914"/>
         <source>Updated fade duration</source>
         <translation>Duração do fade atualizada</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="740"/>
+        <location filename="../qml/components/SettingsView.qml" line="925"/>
         <source>Start before meetings</source>
         <translation>Começar antes das reuniões</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="760"/>
+        <location filename="../qml/components/SettingsView.qml" line="945"/>
         <source>Audio output</source>
         <translation>Saída de áudio</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="764"/>
-        <location filename="../qml/components/SettingsView.qml" line="766"/>
+        <location filename="../qml/components/SettingsView.qml" line="949"/>
+        <location filename="../qml/components/SettingsView.qml" line="951"/>
         <source>System default</source>
         <translation>Padrão do sistema</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="797"/>
-        <location filename="../qml/components/SettingsView.qml" line="902"/>
-        <location filename="../qml/components/SettingsView.qml" line="914"/>
+        <location filename="../qml/components/SettingsView.qml" line="982"/>
+        <location filename="../qml/components/SettingsView.qml" line="1087"/>
+        <location filename="../qml/components/SettingsView.qml" line="1099"/>
         <source>Not set</source>
         <translation>Não definida</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="830"/>
+        <location filename="../qml/components/SettingsView.qml" line="1015"/>
         <source>Connected</source>
         <translation>Conectado</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="830"/>
+        <location filename="../qml/components/SettingsView.qml" line="1015"/>
         <source>Not connected</source>
         <translation>Não conectado</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="879"/>
+        <location filename="../qml/components/SettingsView.qml" line="1064"/>
         <source>WebSocket password</source>
         <translation>Senha do WebSocket</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="900"/>
+        <location filename="../qml/components/SettingsView.qml" line="1085"/>
         <source>Stage scene</source>
         <translation>Cena de palco</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="912"/>
+        <location filename="../qml/components/SettingsView.qml" line="1097"/>
         <source>Media scene</source>
         <translation>Cena de mídia</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="924"/>
+        <location filename="../qml/components/SettingsView.qml" line="1109"/>
         <source>Image scene</source>
         <translation>Cena de imagens</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="926"/>
-        <location filename="../qml/components/SettingsView.qml" line="929"/>
+        <location filename="../qml/components/SettingsView.qml" line="1111"/>
+        <location filename="../qml/components/SettingsView.qml" line="1114"/>
         <source>Same as media scene</source>
         <translation>Igual à cena de mídia</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="981"/>
+        <location filename="../qml/components/SettingsView.qml" line="1166"/>
         <source>Zoom Meeting ID</source>
         <translation>ID da Reunião Zoom</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="886"/>
+        <location filename="../qml/components/SettingsView.qml" line="1071"/>
         <source>Save &amp; Connect</source>
         <translation>Salvar e Conectar</translation>
     </message>
@@ -2370,27 +2521,27 @@
         <translation>Configurações de integração salvas</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="988"/>
+        <location filename="../qml/components/SettingsView.qml" line="1173"/>
         <source>Passcode</source>
         <translation>Senha</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="997"/>
+        <location filename="../qml/components/SettingsView.qml" line="1182"/>
         <source>Name shown in Zoom</source>
         <translation>Nome exibido no Zoom</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="1007"/>
+        <location filename="../qml/components/SettingsView.qml" line="1192"/>
         <source>Save</source>
         <translation>Salvar</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="1022"/>
+        <location filename="../qml/components/SettingsView.qml" line="1207"/>
         <source>Launch Zoom Meeting</source>
         <translation>Abrir Reunião Zoom</translation>
     </message>
     <message>
-        <location filename="../qml/components/SettingsView.qml" line="1026"/>
+        <location filename="../qml/components/SettingsView.qml" line="1211"/>
         <source>Set a valid Zoom Meeting ID first</source>
         <translation>Defina um ID de reunião do Zoom válido primeiro</translation>
     </message>

@@ -1,4 +1,5 @@
 #include "TestZipFixtures.h"
+#include "core/MeetingSections.h"
 #include "parsers/JwpubParser.h"
 #include "parsers/MeetingMediaBuilder.h"
 #include "parsers/PublicationDatabase.h"
@@ -460,4 +461,92 @@ TEST_CASE("PublicationDatabase lists Study Bible media by book, chapter, and ver
     REQUIRE(db.verseMultimedia(43, 11).front().targetParagraphNumberLabel ==
             QStringLiteral("11:44"));
     REQUIRE(db.verseMultimedia(43, 12).empty());
+}
+
+TEST_CASE("alignSongOrdinals preserves valid ordinals between songs and cleans extract HTML",
+          "[publications][builder]")
+{
+    REQUIRE(kmedia::MeetingSections::cleanExtractCaption(
+                QStringLiteral("<span class=\"eloc\">w25.11 pp. 2-7</span> "
+                               "<span class=\"etitle\">Walk &amp; Serve</span>")) ==
+            QStringLiteral("w25.11 pp. 2-7 - Walk & Serve"));
+    REQUIRE(kmedia::MeetingSections::cleanExtractCaption(QStringLiteral("Lesson 3")) ==
+            QStringLiteral("Lesson 3"));
+
+    const QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+    const QString dbPath = extractFixture(
+        tempDir, QStringLiteral("mwb_ord"),
+        {
+            QStringLiteral("CREATE TABLE Document (DocumentId INTEGER PRIMARY KEY, MepsDocumentId "
+                           "INTEGER, Class INTEGER, Title TEXT)"),
+            QStringLiteral("INSERT INTO Document VALUES (1, 2026404, 106, 'Nov 23')"),
+            QStringLiteral("CREATE TABLE Multimedia (MultimediaId INTEGER PRIMARY KEY, KeySymbol "
+                           "TEXT, Track INTEGER, IssueTagNumber INTEGER, MepsLanguageIndex "
+                           "INTEGER, MimeType TEXT, CategoryType INTEGER, Label TEXT, Caption "
+                           "TEXT, FilePath TEXT, LinkMultimediaId INTEGER)"),
+            QStringLiteral(
+                "INSERT INTO Multimedia VALUES "
+                "(10, 'sjjm', 130, 0, 0, 'video/mp4', -1, '130. Song 1', '', 's130.mp4', NULL), "
+                "(11, NULL, 0, 0, 0, 'image/jpeg', 8, 'Treasures Art', '', 'art1.jpg', NULL), "
+                "(12, 'sjjm', 95, 0, 0, 'video/mp4', -1, '95. Song 2', '', 's95.mp4', NULL), "
+                "(13, NULL, 0, 0, 0, 'image/jpeg', 8, 'Living Art', '', 'art2.jpg', NULL), "
+                "(14, 'sjjm', 100, 0, 0, 'video/mp4', -1, '100. Song 3', '', 's100.mp4', NULL)"),
+            QStringLiteral("CREATE TABLE DocumentMultimedia (DocumentMultimediaId INTEGER PRIMARY "
+                           "KEY, DocumentId INTEGER, MultimediaId INTEGER, BeginParagraphOrdinal "
+                           "INTEGER, EndParagraphOrdinal INTEGER)"),
+            // Song rows carry early/stale ordinals (1, 15, 50) while non-song art sits at 9 and 33,
+            // matching extract paragraph ordinals at 17 and 42.
+            QStringLiteral("INSERT INTO DocumentMultimedia VALUES "
+                           "(1, 1, 10, 1, 1), (2, 1, 11, 9, 9), (3, 1, 12, 15, 15), "
+                           "(4, 1, 13, 33, 33), (5, 1, 14, 50, 50)"),
+            QStringLiteral(
+                "CREATE TABLE DocumentParagraph (DocumentParagraphId INTEGER PRIMARY KEY, "
+                "DocumentId INTEGER, ParagraphIndex INTEGER, ParagraphNumberLabel TEXT, "
+                "BeginPosition INTEGER, EndPosition INTEGER)"),
+            QStringLiteral("CREATE TABLE RefPublication (RefPublicationId INTEGER PRIMARY KEY, "
+                           "UniqueEnglishSymbol TEXT, UndatedSymbol TEXT, IssueTagNumber INTEGER)"),
+            QStringLiteral("INSERT INTO RefPublication VALUES (1, 'sjjm', 'sjj', 0)"),
+            QStringLiteral("CREATE TABLE Extract (ExtractId INTEGER PRIMARY KEY, RefMepsDocumentId "
+                           "INTEGER, RefPublicationId INTEGER, RefBeginParagraphOrdinal INTEGER, "
+                           "RefEndParagraphOrdinal INTEGER, Link TEXT, Caption TEXT, "
+                           "RefMepsDocumentClass INTEGER)"),
+            QStringLiteral("INSERT INTO Extract VALUES "
+                           "(1, 101, 1, 1, 2, 'jwpub://p/E:101/1', 'Song 1', 31), "
+                           "(2, 102, 1, 1, 2, 'jwpub://p/E:102/1', 'Song 2', 31), "
+                           "(3, 103, 1, 1, 2, 'jwpub://p/E:103/1', 'Song 3', 31)"),
+            QStringLiteral("CREATE TABLE DocumentExtract (DocumentExtractId INTEGER PRIMARY KEY, "
+                           "DocumentId INTEGER, ExtractId INTEGER, BeginParagraphOrdinal INTEGER, "
+                           "EndParagraphOrdinal INTEGER, SortPosition INTEGER)"),
+            QStringLiteral("INSERT INTO DocumentExtract VALUES "
+                           "(1, 1, 1, 3, 3, 10), "
+                           "(2, 1, 2, 26, 26, 200), "
+                           "(3, 1, 3, 47, 47, 400)"),
+        });
+
+    kmedia::PublicationDatabase db;
+    REQUIRE(db.open(dbPath));
+    kmedia::PublicationDatabase::MediaSelector selector;
+    selector.documentId = 1;
+    const auto rows = db.documentMultimedia(selector, true);
+    REQUIRE(rows.size() == 5);
+    // Songs adopt extract ordinals (3, 26, 47) while art keeps its exact paragraph ordinals (9, 33)
+    // instead of shifting to 4 and 27.
+    REQUIRE(rows[0].beginParagraphOrdinal == 3);
+    REQUIRE(rows[1].beginParagraphOrdinal == 9);
+    REQUIRE(rows[2].beginParagraphOrdinal == 26);
+    REQUIRE(rows[3].beginParagraphOrdinal == 33);
+    REQUIRE(rows[4].beginParagraphOrdinal == 47);
+
+    std::vector<PublicationMediaRow> htmlRows = {
+        mediaRow(90, 42),
+    };
+    htmlRows[0].extractCaption = QStringLiteral(
+        "<span class=\"eloc\">w25.11 p. 20</span> <span class=\"etitle\">Truth</span>");
+    kmedia::MeetingMediaContext ctx;
+    ctx.date = QDate(2026, 11, 25);
+    ctx.isMidweek = true;
+    const auto items = kmedia::MeetingMediaBuilder::buildDay(htmlRows, ctx);
+    REQUIRE(items.size() == 1);
+    REQUIRE(items[0].groupKey == QStringLiteral("w25.11 p. 20 - Truth"));
 }

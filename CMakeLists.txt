@@ -283,6 +283,7 @@ set(KMEDIA_QML_SUBDIR_FILES
     resources/qml/components/RenamePopup.qml
     resources/qml/components/CalendarEventPopup.qml
     resources/qml/components/CustomSectionPopup.qml
+    resources/qml/components/CongregationManagerPopup.qml
     resources/qml/components/SettingsPinGate.qml
     resources/qml/components/SettingsSecurityCard.qml
     resources/qml/components/SettingsView.qml

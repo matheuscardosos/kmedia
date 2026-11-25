@@ -17,7 +17,7 @@ ColumnLayout {
     readonly property var categories: [
         { id: "general", label: qsTr("General"), icon: "globe", keywords: qsTr("general appearance theme dark light interface language congregation profile") },
         { id: "schedule", label: qsTr("Meetings"), icon: "calendar-days", keywords: qsTr("meetings congregation lookup schedule midweek weekend day time media language fallback footnote printed watchtower teaching study filter export ffmpeg mp4") },
-        { id: "display", label: qsTr("Display"), icon: "monitor", keywords: qsTr("display screen projector presentation standby blackout picture") },
+        { id: "display", label: qsTr("Display"), icon: "monitor", keywords: qsTr("display screen projector presentation standby blackout picture camera preview floating") },
         { id: "audio", label: qsTr("Audio"), icon: "audio-lines", keywords: qsTr("audio background music fade volume output device speakers") },
         { id: "integrations", label: qsTr("Integrations"), icon: "radio", keywords: qsTr("obs websocket password scene zoom meeting passcode shared folder cloud dropbox onedrive") },
         { id: "security", label: qsTr("Security"), icon: "lock", keywords: qsTr("pin lock password security shortcuts diagnostics version memory") }
@@ -427,6 +427,14 @@ ColumnLayout {
                             }
 
                             StudioButton {
+                                variant: "secondary"
+                                iconName: "users"
+                                text: qsTr("Manage")
+                                Layout.preferredHeight: 30
+                                onClicked: settingsCongregationPopup.open()
+                            }
+
+                            StudioButton {
                                 variant: ApplicationController.uiLanguage === "en" ? "primary" : "secondary"
                                 text: qsTr("English")
                                 Layout.preferredHeight: 30
@@ -643,6 +651,183 @@ ColumnLayout {
                                 title: qsTr("Standby picture")
                                 nameFilters: [qsTr("Pictures (*.png *.jpg *.jpeg *.webp *.bmp)")]
                                 onAccepted: ApplicationController.saveStandbyImage(standbyDialog.selectedFile)
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: Theme.borderHairline
+                        }
+
+                        RowLayout {
+                            id: cameraRow
+
+                            readonly property string activeCameraLabel: {
+                                const cid = ApplicationController.camera.cameraId
+                                if (cid.length === 0) {
+                                    return qsTr("Off")
+                                }
+                                const cams = ApplicationController.camera.cameras
+                                for (let i = 0; i < cams.length; ++i) {
+                                    if (cams[i].id === cid) {
+                                        return cams[i].name
+                                    }
+                                }
+                                return qsTr("Selected")
+                            }
+
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Text {
+                                text: qsTr("Presentation camera")
+                                color: Theme.textPrimary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeSm
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: cameraRow.activeCameraLabel
+                                color: Theme.textMuted
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontSizeXs
+                                horizontalAlignment: Text.AlignRight
+                                elide: Text.ElideMiddle
+                            }
+
+                            StudioButton {
+                                variant: "secondary"
+                                iconName: "video"
+                                text: qsTr("Choose")
+                                Layout.preferredHeight: 30
+                                onClicked: {
+                                    ApplicationController.camera.refreshCameras()
+                                    cameraMenuPopup.open()
+                                }
+
+                                Popup {
+                                    id: cameraMenuPopup
+
+                                    y: parent.height + 4
+                                    x: Math.max(0, parent.width - width)
+                                    width: 240
+                                    padding: 6
+                                    focus: true
+                                    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+                                    background: StudioCard {
+                                        surfaceColor: Theme.cardElevated
+                                        strokeColor: Theme.borderStrong
+                                    }
+
+                                    contentItem: ColumnLayout {
+                                        spacing: 4
+
+                                        Rectangle {
+                                            id: camOffItem
+
+                                            readonly property bool selected: ApplicationController.camera.cameraId.length === 0
+
+                                            Layout.fillWidth: true
+                                            implicitHeight: 30
+                                            radius: Theme.radiusSmall
+                                            color: camOffMouse.containsMouse ? Theme.cardHover
+                                                 : (camOffItem.selected ? Theme.accentSoft : "transparent")
+
+                                            Text {
+                                                anchors.fill: parent
+                                                anchors.leftMargin: 8
+                                                anchors.rightMargin: 8
+                                                verticalAlignment: Text.AlignVCenter
+                                                text: qsTr("Off")
+                                                color: camOffItem.selected ? Theme.accentPrimary : Theme.textPrimary
+                                                font.family: Theme.fontFamily
+                                                font.pixelSize: Theme.fontSizeSm
+                                                elide: Text.ElideRight
+                                            }
+
+                                            MouseArea {
+                                                id: camOffMouse
+
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    ApplicationController.camera.cameraId = ""
+                                                    cameraMenuPopup.close()
+                                                }
+                                            }
+                                        }
+
+                                        Text {
+                                            visible: ApplicationController.camera.cameras.length === 0
+                                            Layout.fillWidth: true
+                                            Layout.leftMargin: 8
+                                            Layout.rightMargin: 8
+                                            text: qsTr("No camera detected")
+                                            color: Theme.textMuted
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: Theme.fontSizeXs
+                                            wrapMode: Text.WordWrap
+                                        }
+
+                                        Repeater {
+                                            model: ApplicationController.camera.cameras
+
+                                            delegate: Rectangle {
+                                                id: camItem
+
+                                                required property var modelData
+                                                readonly property bool selected: camItem.modelData.id === ApplicationController.camera.cameraId
+
+                                                Layout.fillWidth: true
+                                                implicitHeight: 30
+                                                radius: Theme.radiusSmall
+                                                color: camMouse.containsMouse ? Theme.cardHover
+                                                     : (camItem.selected ? Theme.accentSoft : "transparent")
+
+                                                Text {
+                                                    anchors.fill: parent
+                                                    anchors.leftMargin: 8
+                                                    anchors.rightMargin: 8
+                                                    verticalAlignment: Text.AlignVCenter
+                                                    text: camItem.modelData.name
+                                                    color: camItem.selected ? Theme.accentPrimary : Theme.textPrimary
+                                                    font.family: Theme.fontFamily
+                                                    font.pixelSize: Theme.fontSizeSm
+                                                    elide: Text.ElideRight
+                                                }
+
+                                                MouseArea {
+                                                    id: camMouse
+
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        ApplicationController.camera.cameraId = camItem.modelData.id
+                                                        cameraMenuPopup.close()
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            StudioButton {
+                                visible: ApplicationController.camera.cameraId.length > 0
+                                variant: "ghost"
+                                iconName: "x"
+                                leftPadding: 0
+                                rightPadding: 0
+                                Layout.preferredWidth: 30
+                                Layout.preferredHeight: 30
+                                onClicked: ApplicationController.camera.cameraId = ""
+                                ToolTip.visible: hovered
+                                ToolTip.text: qsTr("Turn off camera")
                             }
                         }
                     }
@@ -1042,6 +1227,10 @@ ColumnLayout {
                     Layout.fillWidth: true
                 }
             }
+        }
+
+        CongregationManagerPopup {
+            id: settingsCongregationPopup
         }
     }
 }

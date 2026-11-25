@@ -32,6 +32,7 @@ public:
     [[nodiscard]] static QString idForLegacyTitle(const QString& title);
     [[nodiscard]] static QString createCustomId();
     [[nodiscard]] static QString randomCustomColor();
+    [[nodiscard]] static QString cleanExtractCaption(const QString& rawCaption);
 };
 
 } // namespace kmedia

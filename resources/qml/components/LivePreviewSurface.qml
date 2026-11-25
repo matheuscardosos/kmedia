@@ -13,6 +13,9 @@ Item {
     // Drag to pan and Ctrl or Shift with the wheel to zoom toward the pointer (inspired by Meeting
     // Media Manager); the presentation screen follows.
     property bool interactive: false
+    property bool hostLocalPlayer: false
+    readonly property bool usingLocalPreviewPlayer: surface.hostLocalPlayer
+                                                    && !ApplicationController.displayManager.presentationWindowVisible
     readonly property bool zoomable: surface.interactive && !surface.standby
                                      && (surface.mediaKind === PlaybackController.Image
                                          || surface.mediaKind === PlaybackController.Pdf
@@ -82,10 +85,39 @@ Item {
                          ApplicationController.playback.panY)
     }
 
+    // Single-screen video playback directly in Live Preview while the presentation window stays hidden.
+    MpvRendererItem {
+        id: localPreviewMpv
+
+        anchors.fill: parent
+        visible: surface.usingLocalPreviewPlayer
+                 && surface.mediaKind === PlaybackController.Video
+                 && !surface.standby
+
+        function syncBinding() {
+            if (surface.hostLocalPlayer) {
+                ApplicationController.bindPreviewMpv(localPreviewMpv)
+            } else {
+                ApplicationController.unbindPreviewMpv(localPreviewMpv)
+            }
+        }
+
+        Component.onCompleted: localPreviewMpv.syncBinding()
+        Component.onDestruction: ApplicationController.unbindPreviewMpv(localPreviewMpv)
+    }
+
+    Connections {
+        target: surface
+        function onHostLocalPlayerChanged() {
+            localPreviewMpv.syncBinding()
+        }
+    }
+
     // A playing video shows live frames grabbed from the presentation player.
     Image {
         anchors.fill: parent
-        visible: surface.mediaKind === PlaybackController.Video
+        visible: !surface.usingLocalPreviewPlayer
+                 && surface.mediaKind === PlaybackController.Video
                  && !surface.standby
                  && ApplicationController.playback.previewSerial > 0
         source: visible ? "image://kmedia-preview/" + ApplicationController.playback.previewSerial : ""

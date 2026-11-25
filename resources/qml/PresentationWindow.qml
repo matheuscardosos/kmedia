@@ -6,16 +6,28 @@ import KMedia.UI
 Window {
     id: presentationRoot
 
+    readonly property bool dedicated: ApplicationController.displayManager.hasSecondaryDisplay
+                                      || ApplicationController.displayManager.manualScreenIndex >= 0
+
     title: "KMedia - Presentation"
     color: "#000000"
     visible: ApplicationController.displayManager.presentationWindowVisible
-    x: ApplicationController.displayManager.targetGeometry.x
-    y: ApplicationController.displayManager.targetGeometry.y
-    width: ApplicationController.displayManager.targetGeometry.width
-    height: ApplicationController.displayManager.targetGeometry.height
-    flags: Qt.Window | (ApplicationController.displayManager.hasSecondaryDisplay
-        ? Qt.FramelessWindowHint
-        : 0)
+    x: presentationRoot.dedicated
+       ? ApplicationController.displayManager.targetGeometry.x
+       : ApplicationController.displayManager.targetGeometry.x
+         + Math.max(0, Math.round((ApplicationController.displayManager.targetGeometry.width - 960) / 2))
+    y: presentationRoot.dedicated
+       ? ApplicationController.displayManager.targetGeometry.y
+       : ApplicationController.displayManager.targetGeometry.y
+         + Math.max(0, Math.round((ApplicationController.displayManager.targetGeometry.height - 540) / 2))
+    width: presentationRoot.dedicated
+           ? ApplicationController.displayManager.targetGeometry.width
+           : Math.min(960, ApplicationController.displayManager.targetGeometry.width)
+    height: presentationRoot.dedicated
+            ? ApplicationController.displayManager.targetGeometry.height
+            : Math.min(540, ApplicationController.displayManager.targetGeometry.height)
+    flags: Qt.Window | (presentationRoot.dedicated ? Qt.FramelessWindowHint : 0)
+    onClosing: ApplicationController.displayManager.presentationWindowVisible = false
 
     readonly property int activeKind: ApplicationController.playback.mediaKind
     readonly property bool cameraShown: ApplicationController.camera.active
@@ -32,8 +44,10 @@ Window {
             id: presentationMpv
 
             anchors.fill: parent
-            visible: presentationRoot.activeKind === PlaybackController.Video ||
-                presentationRoot.activeKind === PlaybackController.Audio
+            // Keep the FBO renderer attached while the window is open so loading a video never races.
+            visible: true
+            opacity: (presentationRoot.activeKind === PlaybackController.Video ||
+                presentationRoot.activeKind === PlaybackController.Audio) ? 1.0 : 0.0
 
             Component.onCompleted: ApplicationController.bindPresentationMpv(presentationMpv)
         }

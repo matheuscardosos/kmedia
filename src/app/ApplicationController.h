@@ -90,7 +90,9 @@ class ApplicationController : public QObject
     Q_PROPERTY(QString appVersion READ appVersion CONSTANT FINAL)
     Q_PROPERTY(QString qtVersion READ qtVersion CONSTANT FINAL)
     Q_PROPERTY(QString mpvVersion READ mpvVersion CONSTANT FINAL)
+    Q_PROPERTY(QString activeProfileId READ activeProfileId NOTIFY activeProfileChanged FINAL)
     Q_PROPERTY(QString activeProfileName READ activeProfileName NOTIFY activeProfileChanged FINAL)
+    Q_PROPERTY(QVariantList profiles READ profiles NOTIFY profilesChanged FINAL)
     Q_PROPERTY(
         QString storageAvailableText READ storageAvailableText NOTIFY activeProfileChanged FINAL)
     Q_PROPERTY(QString memoryUsage READ memoryUsage CONSTANT FINAL)
@@ -152,7 +154,9 @@ public:
     [[nodiscard]] QString appVersion() const;
     [[nodiscard]] QString qtVersion() const;
     [[nodiscard]] QString mpvVersion() const;
+    [[nodiscard]] QString activeProfileId() const;
     [[nodiscard]] QString activeProfileName() const;
+    [[nodiscard]] QVariantList profiles() const;
     [[nodiscard]] QString storageAvailableText() const;
     [[nodiscard]] QString memoryUsage() const;
     [[nodiscard]] QString uiLanguage() const;
@@ -198,10 +202,15 @@ public:
     [[nodiscard]] kmedia::MediaAutoExport* autoExport() const;
 
     Q_INVOKABLE void bindPresentationMpv(MpvRendererItem* mpvItem);
+    Q_INVOKABLE void bindPreviewMpv(MpvRendererItem* mpvItem);
+    Q_INVOKABLE void unbindPreviewMpv(MpvRendererItem* mpvItem);
     Q_INVOKABLE bool setUiLanguage(const QString& languageCode);
     Q_INVOKABLE bool switchProfile(const QString& profileId);
     Q_INVOKABLE QString createProfile(const QString& name,
-                                      const QString& mediaLanguage = QStringLiteral("E"));
+                                      const QString& mediaLanguage = QStringLiteral("E"),
+                                      bool switchToNew = false);
+    Q_INVOKABLE bool renameProfile(const QString& profileId, const QString& newName);
+    Q_INVOKABLE bool deleteProfile(const QString& profileId);
     Q_INVOKABLE void saveObsAndZoomSettings();
     Q_INVOKABLE void saveFadeDurationMs(int ms);
     // The output of media and background music; an empty name means the system default.

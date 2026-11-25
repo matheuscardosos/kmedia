@@ -224,6 +224,62 @@ ColumnLayout {
 
     StudioCard {
         Layout.fillWidth: true
+        implicitHeight: activeCongregationRow.implicitHeight + 24
+        surfaceColor: Theme.panelSurface
+
+        RowLayout {
+            id: activeCongregationRow
+
+            anchors.fill: parent
+            anchors.margins: 12
+            spacing: 10
+
+            StudioIcon {
+                name: "users"
+                size: 17
+                color: Theme.accentPrimary
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+
+                Text {
+                    Layout.fillWidth: true
+                    text: ApplicationController.activeProfileName
+                    color: Theme.textPrimary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeMd
+                    font.weight: Font.DemiBold
+                    elide: Text.ElideRight
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("Add, rename, switch, or remove congregations")
+                    color: Theme.textMuted
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSizeXs
+                    elide: Text.ElideRight
+                }
+            }
+
+            StudioButton {
+                variant: "secondary"
+                iconName: "users"
+                text: qsTr("Manage")
+                Layout.preferredHeight: 32
+                onClicked: congregationManagerPopup.open()
+            }
+        }
+    }
+
+    CongregationManagerPopup {
+        id: congregationManagerPopup
+    }
+
+    StudioCard {
+        Layout.fillWidth: true
         implicitHeight: congregationColumn.implicitHeight + 28
         surfaceColor: Theme.panelSurface
 

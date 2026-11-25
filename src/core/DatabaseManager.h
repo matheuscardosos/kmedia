@@ -166,6 +166,7 @@ private:
     QString m_databasePath;
     mutable QString m_lastError;
     bool m_isOpen{false};
+    int m_transactionDepth{0};
 };
 
 } // namespace kmedia
