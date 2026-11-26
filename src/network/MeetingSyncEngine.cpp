@@ -363,6 +363,39 @@ void MeetingSyncEngine::refresh()
         return;
     }
     const QDate now = today();
+    const QDate currentMonday = mondayOf(now);
+    bool removedStale = false;
+    for (const PlaylistRecord& playlist : m_database->listPlaylists()) {
+        if (playlist.isSpecialEvent || playlist.sortLocked || playlist.syncStatus.isEmpty()) {
+            continue;
+        }
+        const QDate date = QDate::fromString(playlist.meetingDate, Qt::ISODate);
+        if (!date.isValid() || date < currentMonday) {
+            continue;
+        }
+        const QString kind = m_meetingKind(date);
+        if (isMeetingKind(kind) && kind == playlist.meetingType) {
+            continue;
+        }
+        const std::vector<PlaylistEntryRecord> entries =
+            m_database->listPlaylistEntries(playlist.id);
+        const bool hasManualEntries =
+            std::any_of(entries.begin(), entries.end(),
+                        [](const PlaylistEntryRecord& entry) { return entry.source != kDynamic; });
+        if (hasManualEntries) {
+            continue;
+        }
+        if (m_database->deletePlaylist(playlist.id)) {
+            m_statuses.remove(playlist.meetingDate);
+            std::erase_if(m_queue,
+                          [&](const JobPtr& job) { return job->dateIso == playlist.meetingDate; });
+            removedStale = true;
+        }
+    }
+    if (removedStale) {
+        emit dayStatusesChanged();
+    }
+
     for (const QDate& date : lookupWindow(now, m_settings.meteredConnection)) {
         const QString kind = m_meetingKind(date);
         if (!isMeetingKind(kind)) {
@@ -669,6 +702,10 @@ void MeetingSyncEngine::processExtract(const JobPtr& job, size_t extractIndex, i
                     *rows = db.documentMultimedia(selector, settings.includePrinted);
                     resolveRowPaths(*rows, pub->folder);
                     std::erase_if(*rows, [&](const PublicationMediaRow& row) {
+                        const QString key = row.keySymbol.trimmed().toLower();
+                        if (key.startsWith(QStringLiteral("sjj"))) {
+                            return true;
+                        }
                         return !settings.signLanguage && symbol == QStringLiteral("lmd") &&
                                row.mimeType.contains(QStringLiteral("video"));
                     });

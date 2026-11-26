@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QRandomGenerator>
+#include <QRegularExpression>
 
 #include <algorithm>
 #include <atomic>
@@ -151,6 +152,78 @@ QString MeetingSections::randomCustomColor()
     const QColor color(random->bounded(80, 231), random->bounded(80, 231),
                        random->bounded(80, 231));
     return color.name(QColor::HexRgb).toUpper();
+}
+
+QString MeetingSections::cleanExtractCaption(const QString& rawCaption)
+{
+    if (rawCaption.isEmpty()) {
+        return {};
+    }
+    if (!rawCaption.contains(QLatin1Char('<')) && !rawCaption.contains(QLatin1Char('&'))) {
+        return rawCaption.simplified();
+    }
+
+    const auto stripAndDecode = [](QString text) {
+        static const QRegularExpression kHtmlTagRe(QStringLiteral("<[^>]*>"));
+        text.replace(kHtmlTagRe, QStringLiteral(" "));
+        text.replace(QStringLiteral("&nbsp;"), QStringLiteral(" "), Qt::CaseInsensitive);
+        text.replace(QStringLiteral("&quot;"), QStringLiteral("\""), Qt::CaseInsensitive);
+        text.replace(QStringLiteral("&apos;"), QStringLiteral("'"), Qt::CaseInsensitive);
+        text.replace(QStringLiteral("&#39;"), QStringLiteral("'"));
+        text.replace(QStringLiteral("&lt;"), QStringLiteral("<"), Qt::CaseInsensitive);
+        text.replace(QStringLiteral("&gt;"), QStringLiteral(">"), Qt::CaseInsensitive);
+
+        static const QRegularExpression kDecEntityRe(QStringLiteral("&#(\\d+);"));
+        QRegularExpressionMatchIterator decIt = kDecEntityRe.globalMatch(text);
+        QList<QRegularExpressionMatch> decMatches;
+        while (decIt.hasNext()) {
+            decMatches.append(decIt.next());
+        }
+        for (qsizetype i = decMatches.size() - 1; i >= 0; --i) {
+            const auto& m = decMatches[i];
+            bool ok = false;
+            const uint code = m.captured(1).toUInt(&ok, 10);
+            if (ok && code > 0 && code <= 0x10FFFF) {
+                const char32_t cp = static_cast<char32_t>(code);
+                text.replace(m.capturedStart(), m.capturedLength(), QString::fromUcs4(&cp, 1));
+            }
+        }
+
+        static const QRegularExpression kHexEntityRe(QStringLiteral("&#x([0-9a-fA-F]+);"));
+        QRegularExpressionMatchIterator hexIt = kHexEntityRe.globalMatch(text);
+        QList<QRegularExpressionMatch> hexMatches;
+        while (hexIt.hasNext()) {
+            hexMatches.append(hexIt.next());
+        }
+        for (qsizetype i = hexMatches.size() - 1; i >= 0; --i) {
+            const auto& m = hexMatches[i];
+            bool ok = false;
+            const uint code = m.captured(1).toUInt(&ok, 16);
+            if (ok && code > 0 && code <= 0x10FFFF) {
+                const char32_t cp = static_cast<char32_t>(code);
+                text.replace(m.capturedStart(), m.capturedLength(), QString::fromUcs4(&cp, 1));
+            }
+        }
+
+        text.replace(QStringLiteral("&amp;"), QStringLiteral("&"), Qt::CaseInsensitive);
+        return text.simplified();
+    };
+
+    static const QRegularExpression kElocTitleRe(
+        QStringLiteral("<span[^>]*class=[\"']?[^\"']*\\beloc\\b[^\"']*[\"']?[^>]*>(.*?)</span>\\s*"
+                       "<span[^>]*class=[\"']?[^\"']*\\betitle\\b[^\"']*[\"']?[^>]*>(.*?)</span>"),
+        QRegularExpression::CaseInsensitiveOption | QRegularExpression::DotMatchesEverythingOption);
+    const QRegularExpressionMatch match = kElocTitleRe.match(rawCaption);
+    if (match.hasMatch()) {
+        const QString loc = stripAndDecode(match.captured(1));
+        const QString title = stripAndDecode(match.captured(2));
+        if (!loc.isEmpty() && !title.isEmpty()) {
+            return QStringLiteral("%1 - %2").arg(loc, title);
+        }
+        return !loc.isEmpty() ? loc : title;
+    }
+
+    return stripAndDecode(rawCaption);
 }
 
 } // namespace kmedia

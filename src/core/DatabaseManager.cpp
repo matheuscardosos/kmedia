@@ -15,6 +15,7 @@
 #include <QSqlQuery>
 #include <QVariant>
 
+#include <algorithm>
 #include <atomic>
 
 namespace kmedia {
@@ -23,7 +24,7 @@ namespace {
 
 std::atomic<quint64> g_connectionCounter{0};
 
-constexpr int kLatestSchemaVersion = 4;
+constexpr int kLatestSchemaVersion = 5;
 
 QString utcIsoTimestamp()
 {
@@ -436,6 +437,134 @@ bool applyMigrationV4(QSqlDatabase& db, QString& errorOut)
     return recordMigration(db, 4, errorOut);
 }
 
+// V5: remove leaked extract song items, clean HTML tags in group captions, recover playlists whose
+// sort_order collapsed inside nested transactions, and refresh active synced weeks cleanly.
+bool applyMigrationV5(QSqlDatabase& db, QString& errorOut)
+{
+    QSqlQuery query(db);
+    if (!query.exec(
+            QStringLiteral("DELETE FROM playlist_items "
+                           "WHERE source = 'dynamic' AND tag_type = 'song' AND group_key <> ''"))) {
+        errorOut = query.lastError().text();
+        return false;
+    }
+
+    struct GroupKeyFix
+    {
+        qint64 id{0};
+        QString cleaned;
+    };
+    std::vector<GroupKeyFix> groupFixes;
+    if (!query.exec(QStringLiteral("SELECT id, group_key FROM playlist_items "
+                                   "WHERE group_key LIKE '%<%' OR group_key LIKE '%&%'"))) {
+        errorOut = query.lastError().text();
+        return false;
+    }
+    while (query.next()) {
+        const QString raw = query.value(1).toString();
+        const QString cleaned = MeetingSections::cleanExtractCaption(raw);
+        if (cleaned != raw) {
+            groupFixes.push_back({query.value(0).toLongLong(), cleaned});
+        }
+    }
+    if (!groupFixes.empty()) {
+        QSqlQuery updateGroup(db);
+        updateGroup.prepare(
+            QStringLiteral("UPDATE playlist_items SET group_key = :group_key WHERE id = :id"));
+        for (const GroupKeyFix& fix : groupFixes) {
+            updateGroup.bindValue(QStringLiteral(":group_key"), fix.cleaned);
+            updateGroup.bindValue(QStringLiteral(":id"), fix.id);
+            if (!execBound(updateGroup, errorOut)) {
+                return false;
+            }
+        }
+    }
+
+    struct BrokenPlaylist
+    {
+        qint64 id{0};
+        QString meetingType;
+        QString sectionsJson;
+    };
+    std::vector<BrokenPlaylist> brokenPlaylists;
+    if (!query.exec(QStringLiteral("SELECT p.id, p.meeting_type, p.sections_json "
+                                   "FROM playlists p "
+                                   "JOIN playlist_items pi ON pi.playlist_id = p.id "
+                                   "GROUP BY p.id "
+                                   "HAVING COUNT(pi.id) > 1 AND "
+                                   "SUM(CASE WHEN pi.sort_order = 0 THEN 1 ELSE 0 END) > 1"))) {
+        errorOut = query.lastError().text();
+        return false;
+    }
+    while (query.next()) {
+        brokenPlaylists.push_back(
+            {query.value(0).toLongLong(), query.value(1).toString(), query.value(2).toString()});
+    }
+    for (const BrokenPlaylist& pl : brokenPlaylists) {
+        QHash<QString, int> sectionRank;
+        const QJsonArray savedSections = QJsonDocument::fromJson(pl.sectionsJson.toUtf8()).array();
+        int rank = 0;
+        for (const QJsonValue& val : savedSections) {
+            const QString id = val.toObject().value(QStringLiteral("id")).toString();
+            if (!id.isEmpty() && !sectionRank.contains(id)) {
+                sectionRank.insert(id, rank++);
+            }
+        }
+        for (const QString& canonicalId :
+             MeetingSections::meetingSectionIds(pl.meetingType, false)) {
+            if (!sectionRank.contains(canonicalId)) {
+                sectionRank.insert(canonicalId, rank++);
+            }
+        }
+
+        struct SortRow
+        {
+            qint64 id{0};
+            int rank{0};
+            int originalOrder{0};
+        };
+        std::vector<SortRow> rows;
+        QSqlQuery itemQuery(db);
+        itemQuery.prepare(
+            QStringLiteral("SELECT id, section_id, sort_order_original "
+                           "FROM playlist_items WHERE playlist_id = :playlist_id ORDER BY id ASC"));
+        itemQuery.bindValue(QStringLiteral(":playlist_id"), pl.id);
+        if (!execBound(itemQuery, errorOut)) {
+            return false;
+        }
+        while (itemQuery.next()) {
+            const QString sectionId = itemQuery.value(1).toString();
+            const int r = sectionRank.value(sectionId, 1000);
+            rows.push_back({itemQuery.value(0).toLongLong(), r, itemQuery.value(2).toInt()});
+        }
+        std::stable_sort(rows.begin(), rows.end(), [](const SortRow& a, const SortRow& b) {
+            if (a.rank != b.rank) {
+                return a.rank < b.rank;
+            }
+            return a.originalOrder < b.originalOrder;
+        });
+        QSqlQuery updateSort(db);
+        updateSort.prepare(
+            QStringLiteral("UPDATE playlist_items SET sort_order = :sort_order WHERE id = :id"));
+        for (int index = 0; index < static_cast<int>(rows.size()); ++index) {
+            updateSort.bindValue(QStringLiteral(":sort_order"), index);
+            updateSort.bindValue(QStringLiteral(":id"), rows[static_cast<size_t>(index)].id);
+            if (!execBound(updateSort, errorOut)) {
+                return false;
+            }
+        }
+    }
+
+    if (!query.exec(
+            QStringLiteral("UPDATE playlists SET sync_status = '' "
+                           "WHERE sync_status <> '' AND meeting_date >= date('now', '-7 days')"))) {
+        errorOut = query.lastError().text();
+        return false;
+    }
+
+    return recordMigration(db, 5, errorOut);
+}
+
 PlaylistRecord readPlaylistRow(const QSqlQuery& query)
 {
     PlaylistRecord record;
@@ -576,6 +705,7 @@ void DatabaseManager::close()
     m_connectionName.clear();
     m_databasePath.clear();
     m_isOpen = false;
+    m_transactionDepth = 0;
 }
 
 bool DatabaseManager::isOpen() const
@@ -636,26 +766,34 @@ bool DatabaseManager::executeTransaction(const std::function<bool(QSqlDatabase&)
     }
 
     QSqlDatabase db = databaseHandle();
-    if (!db.transaction()) {
+    const bool outermost = (m_transactionDepth == 0);
+    if (outermost && !db.transaction()) {
         setLastError(db.lastError().text());
         return false;
     }
 
+    ++m_transactionDepth;
     bool ok = false;
     try {
         ok = operation(db);
     } catch (...) {
-        db.rollback();
+        --m_transactionDepth;
+        if (outermost) {
+            db.rollback();
+        }
         setLastError(QStringLiteral("Unhandled exception inside database transaction"));
         return false;
     }
+    --m_transactionDepth;
 
     if (!ok) {
-        db.rollback();
+        if (outermost) {
+            db.rollback();
+        }
         return false;
     }
 
-    if (!db.commit()) {
+    if (outermost && !db.commit()) {
         setLastError(db.lastError().text());
         db.rollback();
         return false;
@@ -1455,6 +1593,9 @@ bool DatabaseManager::runMigrations(QSqlDatabase& db)
     }
     if (ok && currentVersion < 4) {
         ok = applyMigrationV4(db, migrationError);
+    }
+    if (ok && currentVersion < 5) {
+        ok = applyMigrationV5(db, migrationError);
     }
 
     if (!ok) {

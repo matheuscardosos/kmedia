@@ -155,6 +155,9 @@ QString ProfileManager::createProfile(const QString& name, const QString& mediaL
         return {};
     }
 
+    const QString resolvedMediaLanguage =
+        mediaLanguage.trimmed().isEmpty() ? QStringLiteral("E") : mediaLanguage.trimmed();
+
     // Pre-initialize schema once at creation time so subsequent switches stay fast.
     {
         DatabaseManager seedDb;
@@ -168,8 +171,7 @@ QString ProfileManager::createProfile(const QString& name, const QString& mediaL
     ProfileMetadata profile;
     profile.id = profileId;
     profile.name = trimmedName;
-    profile.mediaLanguage =
-        mediaLanguage.trimmed().isEmpty() ? QStringLiteral("E") : mediaLanguage.trimmed();
+    profile.mediaLanguage = resolvedMediaLanguage;
     profile.storagePath = storageDir;
     profile.createdAt = now;
     profile.lastUsedAt = now;

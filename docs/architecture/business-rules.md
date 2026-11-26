@@ -8,11 +8,13 @@ This document defines the behavioral contracts and architectural invariants that
 - Registry metadata (`profiles.json`) must always be written atomically using `QSaveFile`.
 - Deleting the last remaining congregation profile is rejected so the workspace always retains a valid active profile.
 - Switching between profiles closes the active database cleanly, binds the target database and `SettingsStore`, and emits workspace reload signals in under `100 ms`.
+- Congregations can be created, renamed inline, switched, or deleted from the navigation congregation manager and *Settings* (`CongregationManagerPopup`), and selecting a `hub.jw.org` congregation while using the unrenamed default profile adopts its name automatically.
 
 ## 2. Database and Disk Persistence Invariants
 
 - SQLite3 opens in `WAL` mode (`synchronous = NORMAL`, `foreign_keys = ON`, `busy_timeout = 5000`, `mmap_size = 64 MB`) with versioned migrations tracked in `schema_migrations`.
-- Multi-step playlist or catalog updates must execute inside explicit transactions with automatic rollback on failure.
+- Multi-step playlist or catalog updates must execute inside explicit transactions with automatic rollback on failure. Reentrant `executeTransaction` calls share the active outermost transaction so helpers such as `reorderPlaylistEntries` commit atomically inside sync writes.
+- Database schema migration V5 cleans legacy extract song leaks (`source = 'dynamic'`, `tag_type = 'song'`, non-empty `group_key`), strips raw HTML extract spans into readable group labels, repairs playlists whose `sort_order` collapsed to `0`, and triggers clean re-sync of recent/upcoming days while keeping operator edits.
 - Empty optional text fields bind as empty strings rather than SQL `NULL` when stored in `TEXT NOT NULL` columns.
 - Thumbnails are downscaled asynchronously to a bounded width (default `320 px`) on a capped worker pool (`<= 2` threads) and evicted strictly by LRU byte budget. Media rows show these cached thumbnails, never the full-size file: pictures and PDF pages come from the file itself, synced media from the preview picture JW.org publishes for it (`trackImage` in GETPUBMEDIALINKS, `images` in the Mediator, wide first and from the `sm` size up, downloaded next to the media before the media itself), and other videos and audio covers from a frame five seconds in (the first frame for shorter files) read by a headless mpv instance (`VideoFrameExtractor`). A file that cannot be decoded is not tried again until it changes.
 - Opening a day reads its items and their media metadata in one joined query (`listPlaylistItemRows`), and image dimensions are captured once at import (`media_items.width`, `media_items.height`) instead of re-reading files on every load.
@@ -20,7 +22,7 @@ This document defines the behavioral contracts and architectural invariants that
 ## 3. Dual-Monitor Presentation and Standby Rules
 
 - Display monitoring reacts exclusively to `QGuiApplication::screens()` events (`screenAdded` / `screenRemoved`), with zero timer polling.
-- When a secondary monitor is detected, the presentation output targets that display in borderless fullscreen unless a manual screen override is active.
+- When a secondary monitor is detected, the presentation output targets that display in borderless fullscreen unless a manual screen override is active. On single-monitor setups without a presentation window exposed, `MpvRendererItem` defers video load until an OpenGL render context exists and `PlaybackController` routes live video through the embedded preview player (`LivePreviewSurface`), handing off position, pause state, trim, zoom, speed, and subtitles seamlessly when toggling a centered `960 x 540` single-screen presentation window.
 - The external output window carries a consistent title (`"KMedia - Presentation"`) and composited backing so OBS Window Capture and Zoom Window Share capture cleanly without black frames.
 - **Standby / Blackout Priority:** Activating Standby or Blackout takes visual precedence over video, audio artwork, images, and PDF output without tearing down the active playback queue, fading in and out over 0.3 s (inspired by Meeting Media Manager).
 - Standby, and the presentation display while nothing is presented, show the standby picture picked in *Settings > Display* (`presentation/standby_image`, a local path), or else the yeartext of the current year (`YeartextProvider`, inspired by Meeting Media Manager: `wol.jw.org/wol/finder?docid=110<year>800`, in the media language, then the fallback language, then English, kept by the catalog cache for offline use, none for sign languages or in `--demo`). Blackout is a standby that always shows black and pauses the media; leaving standby ends a blackout.

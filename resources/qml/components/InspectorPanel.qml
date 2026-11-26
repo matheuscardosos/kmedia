@@ -10,6 +10,7 @@ Rectangle {
     id: root
 
     property bool drawerMode: false
+    property bool hostLocalPlayer: false
     signal closeRequested()
 
     readonly property int mediaKind: ApplicationController.playback.mediaKind
@@ -127,6 +128,7 @@ Rectangle {
 
                             anchors.fill: parent
                             interactive: true
+                            hostLocalPlayer: root.hostLocalPlayer
                         }
 
                         Rectangle {

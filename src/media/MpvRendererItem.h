@@ -99,7 +99,8 @@ public:
 
 public slots:
     void loadFile(const QUrl& url);
-    void loadMedia(const QUrl& url, qint64 trimStartMs, qint64 trimEndMs);
+    void loadMedia(const QUrl& url, qint64 trimStartMs, qint64 trimEndMs,
+                   bool videoExpected = true);
     void play();
     void pause();
     void togglePause();
@@ -128,9 +129,11 @@ signals:
 
 private slots:
     void processMpvEvents();
+    void onRenderContextReady();
 
 private:
     void initializeMpv();
+    void dispatchLoad(const QUrl& url, qint64 trimStartMs, qint64 trimEndMs, bool videoExpected);
     void applyTrimProperties(qint64 trimStartMs, qint64 trimEndMs);
     void handleTrackListNode(const void* nodePtr);
     void handleAudioDeviceListNode(const void* nodePtr);
@@ -140,6 +143,13 @@ private:
     QUrl m_source;
     bool m_paused{true};
     bool m_mediaLoaded{false};
+    bool m_pendingLoad{false};
+    bool m_pendingVideoExpected{true};
+    bool m_loadedWithoutRenderContext{false};
+    QUrl m_pendingUrl;
+    qint64 m_pendingTrimStartMs{0};
+    qint64 m_pendingTrimEndMs{0};
+    qint64 m_pendingSeekMs{-1};
     bool m_frameRequested{false};
     // Frames are only handed out once the current file has started, and a grab taken for an
     // earlier file is dropped, so the preview never shows the previous video.

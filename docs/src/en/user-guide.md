@@ -12,7 +12,7 @@ Download KMedia for Windows, macOS, or Linux from the [download page](./download
 
 ### First launch
 
-1. Open **Settings > Meetings** and search for your congregation (city or congregation name). Picking it from the list sets the media language and the meeting days and times.
+1. Open **Settings > Meetings** (or click the congregation switcher at the top left and choose **Manage congregations...**) to rename your congregation or add separate congregation profiles, and search for your congregation (city or congregation name) in **Congregation Lookup** to set the media language and meeting schedule automatically.
 2. Check the **Media language** and the **Fallback language**. The fallback is used when a publication or video is not available in the media language.
 3. Go back to **Meeting**. KMedia starts syncing the media of the next five weeks right away, closest meeting first.
 
@@ -89,7 +89,7 @@ To work on several items at once, `Ctrl`+click each one, or click one and `Shift
 - **Camera as background:** for sign language congregations, the **Display** pill lists the connected cameras. Pick one and the presentation display shows it, instead of the standby picture or the yeartext, while nothing is presented and during standby; media still plays over it. Pick **No camera** to go back. The choice is kept per profile, and a message under the list says when the camera is not connected or not allowed (on macOS, allow KMedia under *System Settings > Privacy & Security > Camera*).
 - **Subtitles** (pill bar) show or hide the subtitles of a video. Videos from JW.org that have subtitles in the media language download them along with the video.
 - **Trims** set a start and an end for a video or audio without changing the file. **Zoom and pan** work on pictures, videos, and PDF pages, and PDF documents can be paged. In the preview panel, hold `Ctrl` or `Shift` and turn the mouse wheel to zoom toward the pointer (up to 5x), and drag a zoomed picture to move it; the media always covers its frame, and the presentation display follows smoothly. The zoom and position are kept with the item.
-- With a second display or projector connected, KMedia presents on it full screen and keeps the controls on the main screen. *Settings > Display* picks another screen, and *Settings > Audio* picks where the sound plays.
+- With a second display or projector connected, KMedia presents on it full screen and keeps the controls on the main screen. On a single monitor without a second screen, video plays directly inside the live preview panel and hands off seamlessly to a centered `960 x 540` presentation window whenever **Presentation Output** is toggled on. *Settings > Display* picks another screen, and *Settings > Audio* picks where the sound plays.
 
 ### Meeting timer
 

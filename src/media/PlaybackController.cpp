@@ -62,7 +62,8 @@ void PlaybackController::setPreviewFrameWidth(int width)
 
 void PlaybackController::grabPreviewFrame()
 {
-    if (m_mpvItem.isNull() || m_mediaKind != MediaKind::Video) {
+    if (m_mediaKind != MediaKind::Video || activeMpvTarget() != m_mpvItem.data() ||
+        m_mpvItem.isNull()) {
         return;
     }
     m_mpvItem->requestVideoFrame(m_previewFrameWidth);
@@ -90,6 +91,99 @@ void PlaybackController::clearPreviewFrame()
     }
 }
 
+MpvRendererItem* PlaybackController::activeMpvTarget() const
+{
+    if (m_presentationVisible && !m_mpvItem.isNull()) {
+        return m_mpvItem.data();
+    }
+    if (!m_previewMpvItem.isNull()) {
+        return m_previewMpvItem.data();
+    }
+    return m_mpvItem.data();
+}
+
+void PlaybackController::applySettingsToTarget(MpvRendererItem* item) const
+{
+    if (item == nullptr) {
+        return;
+    }
+    item->setVolume(m_volume);
+    item->setSpeed(m_speed);
+    item->setMuted(m_muted);
+    item->setAudioDevice(m_audioDevice);
+    item->setSubtitlesVisible(m_subtitlesVisible);
+    item->setZoomScale(m_zoomScale);
+    item->setPanX(m_panX);
+    item->setPanY(m_panY);
+}
+
+void PlaybackController::bindMpvSignals(MpvRendererItem* item)
+{
+    if (item == nullptr) {
+        return;
+    }
+
+    connect(item, &MpvRendererItem::pausedChanged, this, [this, item]() {
+        if (activeMpvTarget() != item) {
+            return;
+        }
+        const bool pausedNow = item->isPaused();
+        if (m_paused != pausedNow) {
+            m_paused = pausedNow;
+            emit transportChanged();
+        }
+    });
+
+    connect(item, &MpvRendererItem::positionChanged, this, [this, item]() {
+        if (activeMpvTarget() != item) {
+            return;
+        }
+        m_positionMs = item->positionMs();
+        emit positionChanged();
+    });
+
+    connect(item, &MpvRendererItem::durationChanged, this, [this, item]() {
+        if (activeMpvTarget() != item) {
+            return;
+        }
+        m_durationMs = item->durationMs();
+        emit durationChanged();
+    });
+
+    connect(item, &MpvRendererItem::tracksChanged, this, [this, item]() {
+        if (activeMpvTarget() != item) {
+            return;
+        }
+        const bool subVisible = item->areSubtitlesVisible();
+        if (m_subtitlesVisible != subVisible) {
+            m_subtitlesVisible = subVisible;
+            emit subtitlesChanged();
+        }
+        emit tracksChanged();
+    });
+
+    connect(item, &MpvRendererItem::videoFrameReady, this, [this, item](const QImage& frame) {
+        if (activeMpvTarget() == item) {
+            storePreviewFrame(frame);
+        }
+    });
+    connect(item, &MpvRendererItem::audioDevicesChanged, this, [this, item]() {
+        if (activeMpvTarget() == item) {
+            emit audioChanged();
+        }
+    });
+    connect(item, &MpvRendererItem::playbackFinished, this, [this, item]() {
+        if (activeMpvTarget() == item) {
+            emit playbackFinished();
+        }
+    });
+    connect(item, &MpvRendererItem::playbackError, this, [this, item](const QString& message) {
+        if (activeMpvTarget() == item) {
+            emit playbackError(message);
+        }
+    });
+}
+
 void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
 {
     if (m_mpvItem == mpvItem) {
@@ -104,59 +198,87 @@ void PlaybackController::attachMpvItem(MpvRendererItem* mpvItem)
         return;
     }
 
-    connect(m_mpvItem.data(), &MpvRendererItem::pausedChanged, this, [this]() {
-        if (m_mpvItem.isNull()) {
-            return;
-        }
-        const bool pausedNow = m_mpvItem->isPaused();
-        if (m_paused != pausedNow) {
-            m_paused = pausedNow;
-            emit transportChanged();
-        }
-    });
+    bindMpvSignals(m_mpvItem.data());
+    applySettingsToTarget(m_mpvItem.data());
+}
 
-    connect(m_mpvItem.data(), &MpvRendererItem::positionChanged, this, [this]() {
-        if (m_mpvItem.isNull()) {
-            return;
-        }
-        m_positionMs = m_mpvItem->positionMs();
-        emit positionChanged();
-    });
+void PlaybackController::attachPreviewMpvItem(MpvRendererItem* mpvItem)
+{
+    if (m_previewMpvItem == mpvItem) {
+        return;
+    }
+    if (!m_previewMpvItem.isNull()) {
+        disconnect(m_previewMpvItem.data(), nullptr, this, nullptr);
+    }
 
-    connect(m_mpvItem.data(), &MpvRendererItem::durationChanged, this, [this]() {
-        if (m_mpvItem.isNull()) {
-            return;
-        }
-        m_durationMs = m_mpvItem->durationMs();
-        emit durationChanged();
-    });
+    m_previewMpvItem = mpvItem;
+    if (m_previewMpvItem.isNull()) {
+        return;
+    }
 
-    connect(m_mpvItem.data(), &MpvRendererItem::tracksChanged, this, [this]() {
-        if (m_mpvItem.isNull()) {
-            return;
-        }
-        const bool subVisible = m_mpvItem->areSubtitlesVisible();
-        if (m_subtitlesVisible != subVisible) {
-            m_subtitlesVisible = subVisible;
-            emit subtitlesChanged();
-        }
-        emit tracksChanged();
-    });
+    bindMpvSignals(m_previewMpvItem.data());
+    applySettingsToTarget(m_previewMpvItem.data());
 
-    connect(m_mpvItem.data(), &MpvRendererItem::videoFrameReady, this,
-            &PlaybackController::storePreviewFrame);
-    connect(m_mpvItem.data(), &MpvRendererItem::audioDevicesChanged, this,
-            &PlaybackController::audioChanged);
-    connect(m_mpvItem.data(), &MpvRendererItem::playbackFinished, this,
-            &PlaybackController::playbackFinished);
-    connect(m_mpvItem.data(), &MpvRendererItem::playbackError, this,
-            &PlaybackController::playbackError);
+    if (!m_presentationVisible &&
+        (m_mediaKind == MediaKind::Video || m_mediaKind == MediaKind::Audio) &&
+        m_source.isValid() && !m_source.isEmpty()) {
+        const qint64 resumePos = m_positionMs;
+        const bool wasPaused = m_paused;
+        if (!m_mpvItem.isNull()) {
+            m_mpvItem->stop();
+        }
+        m_previewMpvItem->setPaused(wasPaused);
+        m_previewMpvItem->loadMedia(m_source, m_trimStartMs, m_trimEndMs,
+                                    m_mediaKind == MediaKind::Video);
+        if (resumePos > m_trimStartMs) {
+            m_previewMpvItem->seekMs(resumePos);
+        }
+    }
+}
 
-    m_mpvItem->setVolume(m_volume);
-    m_mpvItem->setSpeed(m_speed);
-    m_mpvItem->setMuted(m_muted);
-    m_mpvItem->setAudioDevice(m_audioDevice);
-    m_mpvItem->setSubtitlesVisible(m_subtitlesVisible);
+void PlaybackController::detachPreviewMpvItem(MpvRendererItem* mpvItem)
+{
+    if (mpvItem == nullptr || m_previewMpvItem != mpvItem) {
+        return;
+    }
+    disconnect(m_previewMpvItem.data(), nullptr, this, nullptr);
+    m_previewMpvItem->stop();
+    m_previewMpvItem.clear();
+}
+
+void PlaybackController::setPresentationVisible(bool visible)
+{
+    if (m_presentationVisible == visible) {
+        return;
+    }
+    MpvRendererItem* previous = activeMpvTarget();
+    m_presentationVisible = visible;
+    MpvRendererItem* current = activeMpvTarget();
+
+    if (previous != current &&
+        (m_mediaKind == MediaKind::Video || m_mediaKind == MediaKind::Audio) &&
+        m_source.isValid() && !m_source.isEmpty()) {
+        const qint64 resumePos = m_positionMs;
+        const bool wasPaused = m_paused;
+        clearPreviewFrame();
+        if (previous != nullptr) {
+            previous->stop();
+        }
+        if (current != nullptr) {
+            applySettingsToTarget(current);
+            current->setPaused(wasPaused);
+            current->loadMedia(m_source, m_trimStartMs, m_trimEndMs,
+                               m_mediaKind == MediaKind::Video);
+            if (resumePos > m_trimStartMs) {
+                current->seekMs(resumePos);
+            }
+        }
+    } else if (visible) {
+        clearPreviewFrame();
+    }
+
+    emit audioChanged();
+    emit tracksChanged();
 }
 
 void PlaybackController::attachPdfController(PdfViewerController* pdfController)
@@ -247,8 +369,8 @@ void PlaybackController::setPaused(bool paused)
         m_paused = paused;
         emit transportChanged();
     }
-    if (!m_mpvItem.isNull()) {
-        m_mpvItem->setPaused(paused);
+    if (MpvRendererItem* target = activeMpvTarget()) {
+        target->setPaused(paused);
     }
 }
 
@@ -340,6 +462,9 @@ void PlaybackController::setSpeed(double speed)
     if (!m_mpvItem.isNull()) {
         m_mpvItem->setSpeed(clamped);
     }
+    if (!m_previewMpvItem.isNull()) {
+        m_previewMpvItem->setSpeed(clamped);
+    }
     emit speedChanged();
 }
 
@@ -352,6 +477,9 @@ void PlaybackController::setVolume(int volume)
     m_volume = clamped;
     if (!m_mpvItem.isNull()) {
         m_mpvItem->setVolume(clamped);
+    }
+    if (!m_previewMpvItem.isNull()) {
+        m_previewMpvItem->setVolume(clamped);
     }
     emit audioChanged();
 }
@@ -370,6 +498,9 @@ void PlaybackController::setMuted(bool muted)
     if (!m_mpvItem.isNull()) {
         m_mpvItem->setMuted(muted);
     }
+    if (!m_previewMpvItem.isNull()) {
+        m_previewMpvItem->setMuted(muted);
+    }
     emit audioChanged();
 }
 
@@ -380,7 +511,10 @@ QString PlaybackController::audioDevice() const
 
 QVariantList PlaybackController::audioDevices() const
 {
-    return m_mpvItem.isNull() ? QVariantList{} : m_mpvItem->audioDevices();
+    if (MpvRendererItem* target = activeMpvTarget(); target != nullptr) {
+        return target->audioDevices();
+    }
+    return {};
 }
 
 QString PlaybackController::audioDeviceDescription() const
@@ -409,6 +543,9 @@ void PlaybackController::setAudioDevice(const QString& deviceId)
     if (!m_mpvItem.isNull()) {
         m_mpvItem->setAudioDevice(cleaned);
     }
+    if (!m_previewMpvItem.isNull()) {
+        m_previewMpvItem->setAudioDevice(cleaned);
+    }
     emit audioChanged();
 }
 
@@ -426,23 +563,28 @@ void PlaybackController::setSubtitlesVisible(bool visible)
     if (!m_mpvItem.isNull()) {
         m_mpvItem->setSubtitlesVisible(visible);
     }
+    if (!m_previewMpvItem.isNull()) {
+        m_previewMpvItem->setSubtitlesVisible(visible);
+    }
     emit subtitlesChanged();
 }
 
 QVariantList PlaybackController::subtitleTracks() const
 {
-    return m_mpvItem.isNull() ? QVariantList{} : m_mpvItem->subtitleTracks();
+    MpvRendererItem* target = activeMpvTarget();
+    return target != nullptr ? target->subtitleTracks() : QVariantList{};
 }
 
 int PlaybackController::currentSubtitleTrack() const
 {
-    return m_mpvItem.isNull() ? 0 : m_mpvItem->currentSubtitleTrack();
+    MpvRendererItem* target = activeMpvTarget();
+    return target != nullptr ? target->currentSubtitleTrack() : 0;
 }
 
 void PlaybackController::setCurrentSubtitleTrack(int trackId)
 {
-    if (!m_mpvItem.isNull()) {
-        m_mpvItem->setCurrentSubtitleTrack(trackId);
+    if (MpvRendererItem* target = activeMpvTarget(); target != nullptr) {
+        target->setCurrentSubtitleTrack(trackId);
     }
 }
 
@@ -528,6 +670,9 @@ void PlaybackController::loadMediaWithKind(const QUrl& url, MediaKind kind, cons
         if (!m_mpvItem.isNull()) {
             m_mpvItem->stop();
         }
+        if (!m_previewMpvItem.isNull()) {
+            m_previewMpvItem->stop();
+        }
         if (!m_pdfController.isNull()) {
             const bool loaded = m_pdfController->load(url);
             Q_UNUSED(loaded)
@@ -537,6 +682,9 @@ void PlaybackController::loadMediaWithKind(const QUrl& url, MediaKind kind, cons
         if (!m_mpvItem.isNull()) {
             m_mpvItem->stop();
         }
+        if (!m_previewMpvItem.isNull()) {
+            m_previewMpvItem->stop();
+        }
         if (!m_pdfController.isNull()) {
             m_pdfController->close();
         }
@@ -545,9 +693,16 @@ void PlaybackController::loadMediaWithKind(const QUrl& url, MediaKind kind, cons
         if (!m_pdfController.isNull()) {
             m_pdfController->close();
         }
-        if (!m_mpvItem.isNull()) {
-            m_mpvItem->resetViewport();
-            m_mpvItem->loadMedia(url, cleanStart, cleanEnd);
+        MpvRendererItem* target = activeMpvTarget();
+        if (!m_mpvItem.isNull() && target != m_mpvItem.data()) {
+            m_mpvItem->stop();
+        }
+        if (!m_previewMpvItem.isNull() && target != m_previewMpvItem.data()) {
+            m_previewMpvItem->stop();
+        }
+        if (target != nullptr) {
+            target->resetViewport();
+            target->loadMedia(url, cleanStart, cleanEnd, kind == MediaKind::Video);
         }
     }
 
@@ -578,6 +733,9 @@ void PlaybackController::stop()
     if (!m_mpvItem.isNull()) {
         m_mpvItem->stop();
     }
+    if (!m_previewMpvItem.isNull()) {
+        m_previewMpvItem->stop();
+    }
     if (!m_pdfController.isNull()) {
         m_pdfController->close();
     }
@@ -607,8 +765,8 @@ void PlaybackController::seekMs(qint64 positionMs)
 {
     const qint64 clamped = qMax<qint64>(0, positionMs);
     m_positionMs = clamped;
-    if (!m_mpvItem.isNull()) {
-        m_mpvItem->seekMs(clamped);
+    if (MpvRendererItem* target = activeMpvTarget(); target != nullptr) {
+        target->seekMs(clamped);
     }
     emit positionChanged();
 }
@@ -631,8 +789,8 @@ void PlaybackController::setTrimRange(qint64 startMs, qint64 endMs)
     }
     m_trimStartMs = cleanStart;
     m_trimEndMs = cleanEnd;
-    if (!m_mpvItem.isNull()) {
-        m_mpvItem->setTrimRange(cleanStart, cleanEnd);
+    if (MpvRendererItem* target = activeMpvTarget(); target != nullptr) {
+        target->setTrimRange(cleanStart, cleanEnd);
     }
     emit trimChanged();
 }
@@ -667,11 +825,12 @@ void PlaybackController::syncViewportToActiveTarget()
         m_pdfController->setZoomScale(m_zoomScale);
         m_pdfController->setPanX(m_panX);
         m_pdfController->setPanY(m_panY);
-    } else if (!m_mpvItem.isNull() &&
+    } else if (MpvRendererItem* target = activeMpvTarget();
+               target != nullptr &&
                (m_mediaKind == MediaKind::Video || m_mediaKind == MediaKind::Audio)) {
-        m_mpvItem->setZoomScale(m_zoomScale);
-        m_mpvItem->setPanX(m_panX);
-        m_mpvItem->setPanY(m_panY);
+        target->setZoomScale(m_zoomScale);
+        target->setPanX(m_panX);
+        target->setPanY(m_panY);
     }
 }
 

@@ -12,7 +12,7 @@ Baixe o KMedia para Windows, macOS ou Linux na [página de download](./download.
 
 ### Primeira abertura
 
-1. Abra **Configurações > Reuniões** e procure sua congregação (cidade ou nome da congregação). Escolhê-la na lista define o idioma das mídias e os dias e horários das reuniões.
+1. Abra **Configurações > Reuniões** (ou clique no seletor de congregação no canto superior esquerdo e escolha **Gerenciar congregações...**) para renomear sua congregação ou criar perfis separados, e procure sua congregação (cidade ou nome) na **Busca de Congregação** para definir o idioma das mídias e os horários das reuniões automaticamente.
 2. Confira o **Idioma das mídias** e o **Idioma de reserva**. O idioma de reserva é usado quando uma publicação ou um vídeo não existe no idioma das mídias.
 3. Volte para **Reunião**. O KMedia começa na hora a sincronizar as mídias das próximas cinco semanas, a reunião mais próxima primeiro.
 
@@ -89,7 +89,7 @@ Para trabalhar com vários itens de uma vez, use `Ctrl`+clique em cada um, ou cl
 - **Câmera como fundo:** para congregações de língua de sinais, a pílula **Tela** lista as câmeras conectadas. Escolha uma e a tela de apresentação passa a mostrá-la, no lugar da imagem de espera ou do texto do ano, enquanto nada é apresentado e durante a espera; a mídia continua tocando por cima. Escolha **Nenhuma câmera** para voltar. A escolha fica salva por perfil, e uma mensagem abaixo da lista avisa quando a câmera não está conectada ou não tem permissão (no macOS, permita o KMedia em *Ajustes do Sistema > Privacidade e Segurança > Câmera*).
 - **Legendas** (barra em pílula) mostram ou escondem as legendas de um vídeo. Os vídeos do JW.org que têm legendas no idioma das mídias baixam as legendas junto com o vídeo.
 - **Cortes** definem início e fim de um vídeo ou áudio sem mudar o arquivo. **Zoom e posição** funcionam em imagens, vídeos e páginas de PDF, e documentos PDF podem ser folheados. No painel de prévia, segure `Ctrl` ou `Shift` e gire a roda do mouse para dar zoom na direção do ponteiro (até 5x), e arraste uma imagem com zoom para movê-la; a mídia sempre cobre o próprio quadro, e a tela de apresentação acompanha suavemente. O zoom e a posição ficam salvos com o item.
-- Com uma segunda tela ou projetor conectado, o KMedia apresenta nela em tela cheia e deixa os controles na tela principal. *Configurações > Tela* escolhe outra tela, e *Configurações > Áudio* escolhe onde o som toca.
+- Com uma segunda tela ou projetor conectado, o KMedia apresenta nela em tela cheia e deixa os controles na tela principal. Em computador com apenas uma tela, o vídeo reproduz ao vivo no próprio painel de prévia e alterna de forma contínua para a janela de apresentação centralizada de `960 x 540` quando a saída é ativada. *Configurações > Tela* escolhe outra tela, e *Configurações > Áudio* escolhe onde o som toca.
 
 ### Cronômetro da reunião
 

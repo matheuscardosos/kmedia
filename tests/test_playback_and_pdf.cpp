@@ -273,16 +273,20 @@ TEST_CASE("The presentation player hands out its current video frame for the pre
 {
     const QTemporaryDir dir;
     REQUIRE(dir.isValid());
-    // Two seconds of a red 64x36 raw video.
+    // Two seconds of an asymmetric 64x36 raw video (top half red, bottom half blue) so any
+    // vertical flip regression fails the pixel check.
     const QString clip = dir.filePath(QStringLiteral("clip.y4m"));
     QFile video(clip);
     REQUIRE(video.open(QIODevice::WriteOnly));
     video.write(QByteArrayLiteral("YUV4MPEG2 W64 H36 F10:1 Ip A1:1 C420jpeg\n"));
     for (int frame = 0; frame < 20; ++frame) {
         video.write(QByteArrayLiteral("FRAME\n"));
-        video.write(QByteArray(64 * 36, static_cast<char>(81)));
-        video.write(QByteArray(32 * 18, static_cast<char>(90)));
-        video.write(QByteArray(32 * 18, static_cast<char>(240)));
+        video.write(QByteArray(18 * 64, static_cast<char>(81)));
+        video.write(QByteArray(18 * 64, static_cast<char>(41)));
+        video.write(QByteArray(9 * 32, static_cast<char>(90)));
+        video.write(QByteArray(9 * 32, static_cast<char>(240)));
+        video.write(QByteArray(9 * 32, static_cast<char>(240)));
+        video.write(QByteArray(9 * 32, static_cast<char>(110)));
     }
     video.close();
 
@@ -308,5 +312,42 @@ TEST_CASE("The presentation player hands out its current video frame for the pre
     const QImage frame = frames.first().first().value<QImage>();
     REQUIRE_FALSE(frame.isNull());
     REQUIRE(frame.width() == 48);
-    REQUIRE(QColor(frame.pixel(24, 13)).red() > 150);
+    const QColor topColor = frame.pixelColor(24, frame.height() / 4);
+    const QColor bottomColor = frame.pixelColor(24, (frame.height() * 3) / 4);
+    REQUIRE(topColor.red() > 150);
+    REQUIRE(topColor.blue() < 50);
+    REQUIRE(bottomColor.blue() > 150);
+    REQUIRE(bottomColor.red() < 50);
+
+    const QImage winShot = window.grabWindow();
+    const QColor winTop = winShot.pixelColor(winShot.width() / 2, winShot.height() / 4);
+    const QColor winBot = winShot.pixelColor(winShot.width() / 2, (winShot.height() * 3) / 4);
+    REQUIRE(winTop.red() > 150);
+    REQUIRE(winBot.blue() > 150);
+}
+
+TEST_CASE("PlaybackController defers video load until render context and hands off to preview",
+          "[media][playback]")
+{
+    kmedia::PlaybackController playback;
+    MpvRendererItem presentationMpv;
+    MpvRendererItem previewMpv;
+
+    playback.attachMpvItem(&presentationMpv);
+    playback.attachPreviewMpvItem(&previewMpv);
+
+    // Without a presentation window shown, loading a video keeps PlaybackController cleanly idle on
+    // presentationMpv (waiting for an OpenGL render context) rather than leaving vid=-1 black.
+    playback.setPresentationVisible(false);
+    const QUrl fakeVideo = QUrl::fromLocalFile(QStringLiteral("sample_video.mp4"));
+    playback.loadMedia(fakeVideo, QStringLiteral("Sample Video"));
+    REQUIRE(playback.mediaTitle() == QStringLiteral("Sample Video"));
+    REQUIRE(playback.mediaKind() == kmedia::PlaybackController::MediaKind::Video);
+
+    // Showing the presentation window hands target control to presentationMpv cleanly and
+    // detaching previewMpv clears without crashing.
+    playback.setPresentationVisible(true);
+    playback.detachPreviewMpvItem(&previewMpv);
+    playback.stop();
+    REQUIRE(playback.mediaKind() == kmedia::PlaybackController::MediaKind::None);
 }

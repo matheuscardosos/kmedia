@@ -443,18 +443,19 @@ std::vector<DayMediaItem> MeetingMediaBuilder::buildDay(std::vector<PublicationM
                                                             : item.streamUrl;
         item.uniqueKey = datePart + QLatin1Char('-') + source;
 
-        if (row.extractCaption.isEmpty()) {
+        const QString caption = MeetingSections::cleanExtractCaption(row.extractCaption);
+        if (caption.isEmpty()) {
             entries.push_back(Entry{item.sortOrderOriginal, QString(), item.isCbs, {item}});
             continue;
         }
-        item.groupKey = row.extractCaption;
-        const auto group = groupIndex.constFind(row.extractCaption);
+        item.groupKey = caption;
+        const auto group = groupIndex.constFind(caption);
         if (group != groupIndex.constEnd()) {
             entries[group.value()].children.push_back(item);
             continue;
         }
-        groupIndex.insert(row.extractCaption, entries.size());
-        entries.push_back(Entry{item.sortOrderOriginal, row.extractCaption, item.isCbs, {item}});
+        groupIndex.insert(caption, entries.size());
+        entries.push_back(Entry{item.sortOrderOriginal, caption, item.isCbs, {item}});
     }
 
     std::stable_sort(entries.begin(), entries.end(),

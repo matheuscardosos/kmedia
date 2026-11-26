@@ -16,6 +16,7 @@
 #include <mpv/render.h>
 #include <mpv/render_gl.h>
 
+#include <atomic>
 #include <cmath>
 #include <cstring>
 #include <memory>
@@ -26,6 +27,7 @@ struct MpvRendererItem::WakeupBridge
 {
     std::mutex mutex;
     QPointer<MpvRendererItem> item;
+    std::atomic<bool> renderReady{false};
 };
 
 namespace {
@@ -149,10 +151,19 @@ public:
         }
 
         mpv_render_context_set_update_callback(m_renderCtx, &onMpvRenderUpdate, m_bridge.get());
+        m_bridge->renderReady.store(true);
+        std::scoped_lock lock(m_bridge->mutex);
+        if (!m_bridge->item.isNull()) {
+            QMetaObject::invokeMethod(m_bridge->item.data(), "onRenderContextReady",
+                                      Qt::QueuedConnection);
+        }
     }
 
     ~MpvFboRenderer() override
     {
+        if (m_bridge != nullptr) {
+            m_bridge->renderReady.store(false);
+        }
         if (m_renderCtx != nullptr) {
             mpv_render_context_set_update_callback(m_renderCtx, nullptr, nullptr);
             mpv_render_context_free(m_renderCtx);
@@ -188,7 +199,9 @@ public:
             fbo->height(),
             0,
         };
-        int flipY = 1;
+        // QQuickFramebufferObject composites standard OpenGL FBO textures bottom-up cleanly when
+        // mirrorVertically() is false; flipping inside mpv would invert the rendered video.
+        int flipY = 0;
 
         mpv_render_param params[] = {
             {MPV_RENDER_PARAM_OPENGL_FBO, &mpvFbo},
@@ -533,10 +546,11 @@ double MpvRendererItem::zoomScaleToMpvLog2(double zoomScale)
 
 void MpvRendererItem::loadFile(const QUrl& url)
 {
-    loadMedia(url, 0, 0);
+    loadMedia(url, 0, 0, true);
 }
 
-void MpvRendererItem::loadMedia(const QUrl& url, qint64 trimStartMs, qint64 trimEndMs)
+void MpvRendererItem::loadMedia(const QUrl& url, qint64 trimStartMs, qint64 trimEndMs,
+                                bool videoExpected)
 {
     if (m_mpv == nullptr || !url.isValid() || url.isEmpty()) {
         return;
@@ -547,9 +561,44 @@ void MpvRendererItem::loadMedia(const QUrl& url, qint64 trimStartMs, qint64 trim
         emit sourceChanged();
     }
 
-    applyTrimProperties(trimStartMs, trimEndMs);
     ++m_frameGeneration;
     m_frameShown = false;
+    m_mediaLoaded = false;
+    m_pendingSeekMs = -1;
+    m_pendingUrl = url;
+    m_pendingTrimStartMs = trimStartMs;
+    m_pendingTrimEndMs = trimEndMs;
+    m_pendingVideoExpected = videoExpected;
+
+    const bool renderReady = (m_wakeupBridge != nullptr) && m_wakeupBridge->renderReady.load();
+    if (videoExpected && !renderReady) {
+        // Opening a video before the FBO renderer creates mpv's OpenGL context drops vid=-1.
+        m_pendingLoad = true;
+        m_loadedWithoutRenderContext = false;
+        applyTrimProperties(trimStartMs, trimEndMs);
+        update();
+        return;
+    }
+
+    m_pendingLoad = false;
+    dispatchLoad(url, trimStartMs, trimEndMs, videoExpected);
+}
+
+void MpvRendererItem::dispatchLoad(const QUrl& url, qint64 trimStartMs, qint64 trimEndMs,
+                                   bool videoExpected)
+{
+    if (m_mpv == nullptr || !url.isValid() || url.isEmpty()) {
+        return;
+    }
+
+    const bool renderReady = (m_wakeupBridge != nullptr) && m_wakeupBridge->renderReady.load();
+    m_loadedWithoutRenderContext = !renderReady;
+    const char* vidMode = (videoExpected || renderReady) ? "auto" : "no";
+    mpv_set_property_string(m_mpv.get(), "vid", vidMode);
+
+    applyTrimProperties(trimStartMs, trimEndMs);
+    int pauseFlag = m_paused ? 1 : 0;
+    mpv_set_property(m_mpv.get(), "pause", MPV_FORMAT_FLAG, &pauseFlag);
 
     const QByteArray pathUtf8 =
         url.isLocalFile() ? url.toLocalFile().toUtf8() : url.toString().toUtf8();
@@ -558,6 +607,26 @@ void MpvRendererItem::loadMedia(const QUrl& url, qint64 trimStartMs, qint64 trim
     const int status = mpv_command_async(m_mpv.get(), 0, cmd);
     if (status < 0) {
         emit playbackError(QString::fromUtf8(mpv_error_string(status)));
+    }
+}
+
+void MpvRendererItem::onRenderContextReady()
+{
+    if (m_mpv == nullptr) {
+        return;
+    }
+    mpv_set_property_string(m_mpv.get(), "vid", "auto");
+    if (m_pendingLoad && m_pendingUrl.isValid() && !m_pendingUrl.isEmpty()) {
+        m_pendingLoad = false;
+        dispatchLoad(m_pendingUrl, m_pendingTrimStartMs, m_pendingTrimEndMs,
+                     m_pendingVideoExpected);
+    } else if (m_loadedWithoutRenderContext && m_pendingVideoExpected && m_source.isValid() &&
+               !m_source.isEmpty()) {
+        m_loadedWithoutRenderContext = false;
+        if (m_positionMs > 0 && m_pendingSeekMs < 0) {
+            m_pendingSeekMs = m_positionMs;
+        }
+        dispatchLoad(m_source, m_pendingTrimStartMs, m_pendingTrimEndMs, true);
     }
 }
 
@@ -581,6 +650,11 @@ void MpvRendererItem::stop()
     if (m_mpv == nullptr) {
         return;
     }
+
+    m_pendingLoad = false;
+    m_pendingSeekMs = -1;
+    m_loadedWithoutRenderContext = false;
+    m_pendingUrl.clear();
 
     const char* cmd[] = {"stop", nullptr};
     mpv_command_async(m_mpv.get(), 0, cmd);
@@ -607,6 +681,10 @@ void MpvRendererItem::seekMs(qint64 positionMs)
         return;
     }
     const qint64 clamped = qMax<qint64>(0, positionMs);
+    if (m_pendingLoad || !m_mediaLoaded) {
+        m_pendingSeekMs = clamped;
+        return;
+    }
     const QByteArray secondsStr = QByteArray::number(static_cast<double>(clamped) / 1000.0, 'f', 3);
     const char* cmd[] = {"seek", secondsStr.constData(), "absolute", nullptr};
     mpv_command_async(m_mpv.get(), 0, cmd);
@@ -760,6 +838,11 @@ void MpvRendererItem::processMpvEvents()
             if (!m_mediaLoaded) {
                 m_mediaLoaded = true;
                 emit mediaLoadedChanged();
+            }
+            if (m_pendingSeekMs >= 0) {
+                const qint64 targetSeek = m_pendingSeekMs;
+                m_pendingSeekMs = -1;
+                seekMs(targetSeek);
             }
             break;
         case MPV_EVENT_END_FILE: {

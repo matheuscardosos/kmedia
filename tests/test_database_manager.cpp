@@ -1,10 +1,12 @@
 #include "core/DatabaseManager.h"
 
+#include <QDate>
 #include <QDir>
 #include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QTemporaryDir>
@@ -21,7 +23,7 @@ TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs schema migrations",
     REQUIRE(db.open(dbPath));
     REQUIRE(db.isOpen());
     REQUIRE(QFileInfo::exists(dbPath));
-    REQUIRE(db.schemaVersion() == 4);
+    REQUIRE(db.schemaVersion() == 5);
     REQUIRE(db.pragmaValue(QStringLiteral("journal_mode")).toLower() == QStringLiteral("wal"));
     REQUIRE(db.pragmaValue(QStringLiteral("foreign_keys")) == QStringLiteral("1"));
 
@@ -30,7 +32,7 @@ TEST_CASE("DatabaseManager opens SQLite in WAL mode and runs schema migrations",
 
     // Reopening an existing database preserves schema version without reapplying migrations
     REQUIRE(db.open(dbPath));
-    REQUIRE(db.schemaVersion() == 4);
+    REQUIRE(db.schemaVersion() == 5);
 }
 
 TEST_CASE("DatabaseManager supports date-keyed playlists and v2 entry metadata", "[database][core]")
@@ -261,7 +263,7 @@ TEST_CASE("DatabaseManager migrates title-based sections to stable section ids",
 
     kmedia::DatabaseManager reopened;
     REQUIRE(reopened.open(dbPath));
-    REQUIRE(reopened.schemaVersion() == 4);
+    REQUIRE(reopened.schemaVersion() == 5);
 
     const auto entries = reopened.listPlaylistEntries(playlistId);
     REQUIRE(entries.size() == 2);
@@ -291,4 +293,107 @@ TEST_CASE("DatabaseManager migrates title-based sections to stable section ids",
     REQUIRE(rows[0].media->sourceKind == QStringLiteral("jwpub"));
     REQUIRE(reopened.setPlaylistSyncStatus(playlistId, QStringLiteral("complete")));
     REQUIRE(reopened.findPlaylistById(playlistId)->syncStatus == QStringLiteral("complete"));
+}
+
+TEST_CASE("DatabaseManager supports reentrant executeTransaction and Migration V5 repairs",
+          "[database][core]")
+{
+    QTemporaryDir tempDir;
+    REQUIRE(tempDir.isValid());
+    const QString dbPath = tempDir.filePath(QStringLiteral("reentrant_v5.db"));
+
+    qint64 playlistId = 0;
+    const QString upcomingIso = QDate::currentDate().addDays(2).toString(Qt::ISODate);
+    {
+        kmedia::DatabaseManager db;
+        REQUIRE(db.open(dbPath));
+        const kmedia::PlaylistRecord pl =
+            db.findOrCreatePlaylistForDate(upcomingIso, QStringLiteral("midweek"), upcomingIso);
+        playlistId = pl.id;
+        REQUIRE(playlistId > 0);
+
+        // Nested executeTransaction + reorderPlaylistEntries must commit together cleanly.
+        std::vector<qint64> ids;
+        const bool ok = db.executeTransaction([&](QSqlDatabase&) {
+            kmedia::PlaylistEntryRecord first;
+            first.playlistId = playlistId;
+            first.sectionId = QStringLiteral("lac");
+            first.customTitle = QStringLiteral("Study Extract");
+            first.source = QStringLiteral("dynamic");
+            first.groupKey =
+                QStringLiteral("<span class=\"eloc\">w25.11</span> <span class=\"etitle\">Walk "
+                               "&amp; Grow</span>");
+            first.sortOrderOriginal = 40;
+            const qint64 id1 = db.addPlaylistEntry(first);
+
+            kmedia::PlaylistEntryRecord leakedSong;
+            leakedSong.playlistId = playlistId;
+            leakedSong.sectionId = QStringLiteral("lac");
+            leakedSong.customTitle = QStringLiteral("Leaked Watchtower Song");
+            leakedSong.source = QStringLiteral("dynamic");
+            leakedSong.tagType = QStringLiteral("song");
+            leakedSong.tagValue = QStringLiteral("111");
+            leakedSong.groupKey =
+                QStringLiteral("<span class=\"eloc\">w25.11</span> <span class=\"etitle\">Walk "
+                               "&amp; Grow</span>");
+            leakedSong.sortOrderOriginal = 41;
+            const qint64 id2 = db.addPlaylistEntry(leakedSong);
+
+            kmedia::PlaylistEntryRecord second;
+            second.playlistId = playlistId;
+            second.sectionId = QStringLiteral("tgw");
+            second.customTitle = QStringLiteral("Opening Song");
+            second.source = QStringLiteral("dynamic");
+            second.tagType = QStringLiteral("song");
+            second.tagValue = QStringLiteral("130");
+            second.sortOrderOriginal = 3;
+            const qint64 id3 = db.addPlaylistEntry(second);
+
+            if (id1 <= 0 || id2 <= 0 || id3 <= 0) {
+                return false;
+            }
+            ids = {id3, id1, id2};
+            return db.reorderPlaylistEntries(playlistId, ids);
+        });
+        REQUIRE(ok);
+
+        const auto ordered = db.listPlaylistEntries(playlistId);
+        REQUIRE(ordered.size() == 3);
+        REQUIRE(ordered[0].customTitle == QStringLiteral("Opening Song"));
+        REQUIRE(ordered[0].sortOrder == 0);
+        REQUIRE(ordered[1].sortOrder == 1);
+        REQUIRE(ordered[2].sortOrder == 2);
+        REQUIRE(db.setPlaylistSyncStatus(playlistId, QStringLiteral("complete")));
+        db.close();
+    }
+
+    // Downgrade schema marker to V4 with corrupted sort_order = 0 to test Migration V5 recovery.
+    {
+        const QString connName = QStringLiteral("seed_v4_downgrade");
+        {
+            QSqlDatabase raw = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), connName);
+            raw.setDatabaseName(dbPath);
+            REQUIRE(raw.open());
+            QSqlQuery q(raw);
+            REQUIRE(q.exec(QStringLiteral("DELETE FROM schema_migrations WHERE version >= 5")));
+            REQUIRE(q.exec(QStringLiteral("UPDATE playlist_items SET sort_order = 0")));
+        }
+        QSqlDatabase::removeDatabase(connName);
+    }
+
+    kmedia::DatabaseManager healed;
+    REQUIRE(healed.open(dbPath));
+    REQUIRE(healed.schemaVersion() == 5);
+
+    const auto healedEntries = healed.listPlaylistEntries(playlistId);
+    REQUIRE(healedEntries.size() == 2);
+    REQUIRE(healedEntries[0].sectionId == QStringLiteral("tgw"));
+    REQUIRE(healedEntries[0].sortOrder == 0);
+    REQUIRE(healedEntries[1].sectionId == QStringLiteral("lac"));
+    REQUIRE(healedEntries[1].sortOrder == 1);
+    REQUIRE(healedEntries[1].groupKey == QStringLiteral("w25.11 - Walk & Grow"));
+
+    const auto refreshedPlaylist = healed.findPlaylistById(playlistId);
+    REQUIRE(refreshedPlaylist.has_value());
+    REQUIRE(refreshedPlaylist->syncStatus.isEmpty());
 }

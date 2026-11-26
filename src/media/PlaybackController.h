@@ -75,7 +75,10 @@ public:
     Q_DISABLE_COPY_MOVE(PlaybackController)
 
     void attachMpvItem(MpvRendererItem* mpvItem);
+    void attachPreviewMpvItem(MpvRendererItem* mpvItem);
+    void detachPreviewMpvItem(MpvRendererItem* mpvItem);
     void attachPdfController(PdfViewerController* pdfController);
+    void setPresentationVisible(bool visible);
 
     [[nodiscard]] MediaKind mediaKind() const;
     [[nodiscard]] QUrl source() const;
@@ -170,10 +173,15 @@ signals:
     void playbackError(const QString& message);
 
 private:
+    [[nodiscard]] MpvRendererItem* activeMpvTarget() const;
+    void bindMpvSignals(MpvRendererItem* item);
+    void applySettingsToTarget(MpvRendererItem* item) const;
     void syncViewportToActiveTarget();
 
     QPointer<MpvRendererItem> m_mpvItem;
+    QPointer<MpvRendererItem> m_previewMpvItem;
     QPointer<PdfViewerController> m_pdfController;
+    bool m_presentationVisible{false};
 
     MediaKind m_mediaKind{MediaKind::None};
     QUrl m_source;

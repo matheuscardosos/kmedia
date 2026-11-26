@@ -389,3 +389,119 @@ TEST_CASE("MeetingSyncEngine marks days that hold added media", "[sync][engine][
     REQUIRE(engine.dayWithContent(QStringLiteral("2026-11-18"), -1).isEmpty());
     REQUIRE(engine.dayWithContent(QStringLiteral("2026-11-01"), 0) == QStringLiteral("2026-11-18"));
 }
+
+TEST_CASE("MeetingSyncEngine removes orphan synced weekday playlists when schedule changes",
+          "[sync][engine]")
+{
+    const QTemporaryDir root;
+    REQUIRE(root.isValid());
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(root.filePath(QStringLiteral("profile.db"))));
+
+    // Seed two synced Sundays: one pure dynamic orphan, one containing an operator-added file.
+    const kmedia::PlaylistRecord orphanSunday = db.findOrCreatePlaylistForDate(
+        QStringLiteral("2026-11-22"), QStringLiteral("weekend"), QStringLiteral("2026-11-22"));
+    kmedia::PlaylistEntryRecord dynEntry;
+    dynEntry.playlistId = orphanSunday.id;
+    dynEntry.customTitle = QStringLiteral("Watchtower Lead");
+    dynEntry.streamUrl = QStringLiteral("https://example.org/wt.jpg");
+    dynEntry.source = QStringLiteral("dynamic");
+    REQUIRE(db.addPlaylistEntry(dynEntry) > 0);
+    REQUIRE(db.setPlaylistSyncStatus(orphanSunday.id, QStringLiteral("complete")));
+
+    const kmedia::PlaylistRecord sundayWithManual = db.findOrCreatePlaylistForDate(
+        QStringLiteral("2026-11-29"), QStringLiteral("weekend"), QStringLiteral("2026-11-29"));
+    kmedia::PlaylistEntryRecord manualEntry;
+    manualEntry.playlistId = sundayWithManual.id;
+    manualEntry.customTitle = QStringLiteral("Public Talk Slide");
+    manualEntry.streamUrl = QStringLiteral("https://example.org/slide.jpg");
+    manualEntry.source = QStringLiteral("additional");
+    REQUIRE(db.addPlaylistEntry(manualEntry) > 0);
+    REQUIRE(db.setPlaylistSyncStatus(sundayWithManual.id, QStringLiteral("complete")));
+
+    kmedia::PublicationStore store(nullptr, nullptr);
+    MeetingSyncEngine engine(&store);
+    engine.setToday(QDate(2026, 11, 18));
+    engine.setDatabase(&db);
+    // Change weekend meeting from Sunday (7) to Saturday (6).
+    engine.setScheduleProviders(
+        [](const QDate& date) {
+            if (date.dayOfWeek() == 3) {
+                return QStringLiteral("midweek");
+            }
+            return date.dayOfWeek() == 6 ? QStringLiteral("weekend") : QStringLiteral("custom");
+        },
+        [](const QDate&) { return false; });
+
+    engine.refresh();
+
+    REQUIRE_FALSE(db.findPlaylistById(orphanSunday.id).has_value());
+    REQUIRE(db.findPlaylistById(sundayWithManual.id).has_value());
+    REQUIRE(db.findPlaylistByDateAndType(QStringLiteral("2026-11-21"), QStringLiteral("weekend"))
+                .has_value());
+}
+
+TEST_CASE("MeetingSyncEngine excludes songs leaked by article extracts and formats captions",
+          "[sync][engine][midweek]")
+{
+    const QTemporaryDir root;
+    REQUIRE(root.isValid());
+
+    QStringList mwb = mediaTables();
+    mwb << QStringLiteral("CREATE TABLE RefPublication (RefPublicationId INTEGER PRIMARY KEY, "
+                          "UniqueEnglishSymbol TEXT, UndatedSymbol TEXT, IssueTagNumber INTEGER)")
+        << QStringLiteral("CREATE TABLE Extract (ExtractId INTEGER PRIMARY KEY, RefMepsDocumentId "
+                          "INTEGER, RefPublicationId INTEGER, RefBeginParagraphOrdinal INTEGER, "
+                          "RefEndParagraphOrdinal INTEGER, Link TEXT, Caption TEXT, "
+                          "RefMepsDocumentClass INTEGER)")
+        << QStringLiteral("CREATE TABLE DocumentExtract (DocumentExtractId INTEGER PRIMARY KEY, "
+                          "DocumentId INTEGER, ExtractId INTEGER, BeginParagraphOrdinal INTEGER, "
+                          "EndParagraphOrdinal INTEGER, SortPosition INTEGER)")
+        << QStringLiteral("INSERT INTO Document VALUES (1, 202026401, 106, 'Nov 23-29')")
+        << QStringLiteral("INSERT INTO DatedText VALUES (1, 1, 20261123, 20261129)")
+        << QStringLiteral(
+               "INSERT INTO Multimedia VALUES "
+               "(10, 'sjjm', 12, 0, 0, 'video/mp4', -1, '12. Opening', '', 'song12.mp4'), "
+               "(18, 'sjjm', 56, 0, 0, 'video/mp4', -1, '56. Closing', '', 'song56.mp4')")
+        << QStringLiteral(
+               "INSERT INTO DocumentMultimedia VALUES (1, 1, 10, 1, 1), (2, 1, 18, 42, 42)")
+        << QStringLiteral("INSERT INTO RefPublication VALUES (1, 'w', 'w', 202610)")
+        << QStringLiteral(
+               "INSERT INTO Extract VALUES (1, 2026502, 1, 1, 10, 'jwpub://p/E:2026502/1-10', "
+               "'<span class=\"eloc\">w25.10 p. 20</span> <span class=\"etitle\">Truth</span>', 0)")
+        << QStringLiteral("INSERT INTO DocumentExtract VALUES (1, 1, 1, 35, 35, 100)");
+    writePublication(root, QStringLiteral("mwb_E_202611"), mwb,
+                     {QStringLiteral("song12.mp4"), QStringLiteral("song56.mp4")});
+
+    QStringList wt = mediaTables();
+    wt << QStringLiteral("INSERT INTO Document VALUES (3, 2026502, 40, 'Truth')")
+       << QStringLiteral(
+              "INSERT INTO Multimedia VALUES "
+              "(30, 'sjjm', 111, 0, 0, 'video/mp4', -1, '111. Study Song', '', 's111.mp4'), "
+              "(31, NULL, 0, 0, 0, 'image/jpeg', 8, 'Article Photo', '', 'article.jpg')")
+       << QStringLiteral(
+              "INSERT INTO DocumentMultimedia VALUES (1, 3, 30, 1, 1), (2, 3, 31, 4, 4)");
+    writePublication(root, QStringLiteral("w_E_202610"), wt,
+                     {QStringLiteral("s111.mp4"), QStringLiteral("article.jpg")});
+
+    kmedia::DatabaseManager db;
+    REQUIRE(db.open(root.filePath(QStringLiteral("profile.db"))));
+    kmedia::PublicationStore store(nullptr, nullptr);
+    store.setCacheRoot(root.path());
+    MeetingSyncEngine engine(&store);
+    configureEngine(engine, db, QDate(2026, 11, 23));
+    QSignalSpy idle(&engine, &MeetingSyncEngine::syncIdle);
+
+    engine.refresh();
+    REQUIRE(idle.wait(15000));
+
+    const auto playlist =
+        db.findPlaylistByDateAndType(QStringLiteral("2026-11-25"), QStringLiteral("midweek"));
+    REQUIRE(playlist.has_value());
+    const auto rows = db.listPlaylistItemRows(playlist->id);
+    REQUIRE(rows.size() == 3);
+    REQUIRE(rows[0].entry.tagValue == QStringLiteral("12"));
+    REQUIRE(rows[1].entry.customTitle == QStringLiteral("Article Photo"));
+    REQUIRE(rows[1].entry.groupKey == QStringLiteral("w25.10 p. 20 - Truth"));
+    REQUIRE(rows[2].entry.tagValue == QStringLiteral("56"));
+}

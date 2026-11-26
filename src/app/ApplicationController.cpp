@@ -180,6 +180,7 @@ ApplicationController::ApplicationController(QObject* parent)
             [this](const QString&) {
                 applyProfileSettings();
                 emit activeProfileChanged();
+                emit profilesChanged();
             });
     connect(m_profileManager.get(), &kmedia::ProfileManager::profilesChanged, this,
             &ApplicationController::profilesChanged);
@@ -232,10 +233,32 @@ QString ApplicationController::mpvVersion() const
     return kmedia::RuntimeInfo::mpvVersion();
 }
 
+QString ApplicationController::activeProfileId() const
+{
+    return m_profileManager->activeProfileId();
+}
+
 QString ApplicationController::activeProfileName() const
 {
     const auto profile = m_profileManager->activeProfile();
     return profile ? profile->name : QStringLiteral("Default Congregation");
+}
+
+QVariantList ApplicationController::profiles() const
+{
+    QVariantList result;
+    const QString activeId = m_profileManager->activeProfileId();
+    for (const auto& p : m_profileManager->profiles()) {
+        QVariantMap entry;
+        entry.insert(QStringLiteral("id"), p.id);
+        entry.insert(QStringLiteral("name"), p.name);
+        entry.insert(QStringLiteral("mediaLanguage"), p.mediaLanguage);
+        entry.insert(QStringLiteral("midweekSchedule"), p.midweekSchedule);
+        entry.insert(QStringLiteral("weekendSchedule"), p.weekendSchedule);
+        entry.insert(QStringLiteral("active"), p.id == activeId);
+        result.append(entry);
+    }
+    return result;
 }
 
 QString ApplicationController::storageAvailableText() const
@@ -493,6 +516,16 @@ void ApplicationController::bindPresentationMpv(MpvRendererItem* mpvItem)
     m_playbackController->attachMpvItem(mpvItem);
 }
 
+void ApplicationController::bindPreviewMpv(MpvRendererItem* mpvItem)
+{
+    m_playbackController->attachPreviewMpvItem(mpvItem);
+}
+
+void ApplicationController::unbindPreviewMpv(MpvRendererItem* mpvItem)
+{
+    m_playbackController->detachPreviewMpvItem(mpvItem);
+}
+
 bool ApplicationController::setUiLanguage(const QString& languageCode)
 {
     const QString normalized = languageCode.trimmed().toLower().startsWith(QStringLiteral("pt"))
@@ -533,9 +566,28 @@ bool ApplicationController::switchProfile(const QString& profileId)
     return m_profileManager->switchProfile(profileId);
 }
 
-QString ApplicationController::createProfile(const QString& name, const QString& mediaLanguage)
+QString ApplicationController::createProfile(const QString& name, const QString& mediaLanguage,
+                                             bool switchToNew)
 {
-    return m_profileManager->createProfile(name, mediaLanguage);
+    const QString createdId = m_profileManager->createProfile(name, mediaLanguage);
+    if (!createdId.isEmpty() && switchToNew) {
+        (void)m_profileManager->switchProfile(createdId);
+    }
+    return createdId;
+}
+
+bool ApplicationController::renameProfile(const QString& profileId, const QString& newName)
+{
+    const bool updated = m_profileManager->renameProfile(profileId, newName);
+    if (updated && profileId == m_profileManager->activeProfileId()) {
+        emit activeProfileChanged();
+    }
+    return updated;
+}
+
+bool ApplicationController::deleteProfile(const QString& profileId)
+{
+    return m_profileManager->deleteProfile(profileId);
 }
 
 void ApplicationController::saveObsAndZoomSettings()
@@ -803,7 +855,11 @@ void ApplicationController::applyProfileSettings()
         return;
     }
 
-    const QString mediaLang = settings->mediaLanguage();
+    const QString mediaLang =
+        settings->contains(QLatin1StringView(kmedia::settings_keys::kMediaLanguage))
+            ? settings->mediaLanguage()
+            : (profile.has_value() && !profile->mediaLanguage.isEmpty() ? profile->mediaLanguage
+                                                                        : QStringLiteral("E"));
     if (!mediaLang.isEmpty()) {
         m_meetingCatalog->setSelectedLanguageCode(mediaLang);
     }
@@ -1171,6 +1227,12 @@ void ApplicationController::wireIntegrations()
         });
     }
 
+    m_playbackController->setPresentationVisible(m_displayManager->isPresentationWindowVisible());
+    connect(m_displayManager.get(), &kmedia::DisplayManager::visibilityChanged, this, [this]() {
+        m_playbackController->setPresentationVisible(
+            m_displayManager->isPresentationWindowVisible());
+    });
+
     connect(m_processMonitor.get(), &kmedia::ProcessMonitor::statusChanged, this, [this]() {
         m_obsClient->setProcessRunning(m_processMonitor->isObsRunning());
         m_zoomBridge->setZoomRunning(m_processMonitor->isZoomRunning());
@@ -1261,6 +1323,15 @@ void ApplicationController::wireIntegrations()
         m_meetingCatalog.get(), &kmedia::MeetingCatalogService::congregationScheduleApplied, this,
         [this](const QString& name, const QString&, int midDay, const QString& midTime, int endDay,
                const QString& endTime) {
+            if (!m_demoMode && !name.trimmed().isEmpty()) {
+                if (auto profile = m_profileManager->activeProfile();
+                    profile.has_value() && profile->id == QStringLiteral("default-congregation") &&
+                    profile->name == QStringLiteral("Default Congregation")) {
+                    if (m_profileManager->renameProfile(profile->id, name.trimmed())) {
+                        emit activeProfileChanged();
+                    }
+                }
+            }
             m_calendarModel->setScheduleDays(midDay, midTime, endDay, endTime);
             showToast(tr("Applied congregation schedule: %1").arg(name), QStringLiteral("success"));
         });

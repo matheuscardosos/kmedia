@@ -10,9 +10,13 @@ Digite em **Buscar configurações...** para mostrar todas as categorias que com
 
 - **Tema Escuro da Cabine (Studio Carbon):** alterna entre o tema escuro e o claro. `Ctrl+D` faz o mesmo de qualquer lugar.
 - **English** e **Português:** o idioma da interface. Muda na hora e não depende do idioma das mídias.
-- A congregação ativa aparece aqui. Troque de congregação pelo seletor no topo da navegação.
+- **Congregação Ativa e Gerenciar:** mostra a congregação ativa e abre o gerenciador (`Gerenciar Congregações`) para adicionar, trocar, renomear ou remover perfis de congregação. Cada congregação guarda seus próprios horários, idioma das mídias e arquivos baixados.
 
 ## Reuniões
+
+### Perfis de Congregação
+
+O cartão superior em **Reuniões** mostra a congregação ativa e abre **Gerenciar** (`Gerenciar Congregações`) para adicionar uma congregação (com nome e idioma inicial das mídias), renomear na própria linha, alternar entre congregações ou remover perfis que não são mais usados (mantendo sempre pelo menos um). Escolher uma congregação na **Busca de Congregação** quando o perfil padrão ainda não foi renomeado também aplica esse nome automaticamente.
 
 ### Busca de Congregação (hub.jw.org)
 
@@ -49,6 +53,7 @@ Ative e escolha uma pasta. Cada dia com mídias é copiado para uma pasta com a 
 - **Lista de telas:** clique numa tela para apresentar nela. Se essa tela for desconectada, o KMedia volta a apresentar automaticamente.
 - **Imagem de espera:** a imagem mostrada na tela de apresentação durante a espera e enquanto nada é apresentado, como o texto do ano. Sem ela, aparece o texto do ano atual, no idioma das mídias. **Blackout**, no painel de prévia, sempre mostra preto.
 - **Prévia flutuante:** com o painel de prévia fechado, uma pequena prévia ao vivo da tela de apresentação flutua no canto da janela sempre que uma imagem, página de PDF ou vídeo está nela. Vem ligada; o [Guia do Usuário](./user-guide.md#apresentar) explica como mover, redimensionar e ampliar.
+- **Câmera de apresentação:** permite escolher ou desligar a câmera exibida como fundo da apresentação (**Escolher** / **Desligada**). Também é possível pesquisar por `camera` ou `previa` na busca das configurações para chegar direto aqui.
 
 As escolhas do cronômetro da reunião (contagem regressiva, janela do cronômetro, página para tablet) ficam na pílula do cronômetro, não aqui; veja o [Guia do Usuário](./user-guide.md#cronometro-da-reuniao).
 

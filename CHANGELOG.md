@@ -8,6 +8,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Full congregation profile management (`CongregationManagerPopup`, accessible from the left navigation congregation menu, *Settings > General*, and *Settings > Meetings*) to add, switch, rename inline, or delete congregation profiles, plus automatic adoption of a selected `hub.jw.org` congregation name when still using the unrenamed default profile.
+- Direct **Presentation camera** picker and **Floating preview** toggle inside *Settings > Display*, along with searchable `camera` and `preview` keywords in settings search.
+
+### Fixed
+
+- Fixed video playback rendering black when loaded before a presentation OpenGL render context exists (`MpvRendererItem` now waits for context readiness and defers early seeks until file load), fixed upside-down OpenGL FBO video orientation (`MPV_RENDER_PARAM_FLIP_Y = 0`), and enabled live single-monitor video playback inside the preview panel with seamless state handoff to a centered `960 x 540` presentation window.
+- Fixed nested SQLite transaction failure during meeting sync (`DatabaseManager::executeTransaction` is now reentrant) that caused synced entries to lose `sort_order`, added self-healing database migration V5, excluded leaked embedded songs (`sjj`/`sjjm`) inside extracted study articles, preserved valid non-song paragraph ordinals in `PublicationDatabase::alignSongOrdinals`, formatted `<span class="eloc">...</span> <span class="etitle">...</span>` extract HTML captions cleanly, and pruned stale dynamic weekday playlists when congregation meeting days change.
+
 - A read only timer page for a tablet or phone at the lectern, inspired by Meeting Media Manager's timer remote: KMedia serves it on the local network with a QR code to open it and an access code in the address, so only devices given the link can see it. It updates as the timer changes, shows a progress ring if wanted, and keeps the tablet's screen on. The Nayuki QR Code generator (MIT) is now a dependency.
 - A timer window for the chairman or the speaker, inspired by Meeting Media Manager: the part, the time in large digits, and a ring that turns yellow in the last minute and red past the time, on a screen of its own when there is a third one. It shows the time of day between parts and counts down the last five minutes before the meeting. The timer now shows only the extra time by default once a part runs over.
 - The meeting timer times each part of the meeting, inspired by Meeting Media Manager: the parts of the midweek or weekend meeting (with the circuit overseer's week) with their usual minutes, changeable by hand, counting up or down, a study that can count down to a set end, how far ahead or behind the meeting is, and the real times kept with each day. Days without a meeting take custom parts. The day's timing report can be saved as PDF or CSV.
